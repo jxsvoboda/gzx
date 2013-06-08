@@ -15,6 +15,8 @@ CFLAGS_w32	= -O2 -mno-cygwin -march=i386 -Wall -I../../cygtst/mydirx/include
 LIBS_gnu	= -lefence -lvga -lasound
 LIBS_w32	= -lgdi32 -lwinmm
 
+bkqual = $$(date '+%Y-%m-%d')
+
 sources_generic = \
     gzx.c \
     z80.c \
@@ -64,3 +66,7 @@ $(objects): $(headers)
 
 clean:
 	rm -f *.o $(binary)
+
+backup: clean
+	cd .. && tar czf gzx-$(bkqual).tar.gz trunk
+	cd .. && rm -f gzx-latest.tar.gz && ln -s gzx-$(bkqual).tar.gz gzx-latest.tar.gz
