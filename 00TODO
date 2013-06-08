@@ -1,0 +1,13 @@
+Dulezite!!
+----------
+- resit synchronizaci (casovani dle audia?)
+
+- zjistit zda se neda zabranit blokovani programu behem manipulace s oknem
+  (presun, otevreni syst. menu, otvirani tooltipu na syst. tlacitka)
+
+Hotovo
+------
+- otestovat zda zapsane snapshoty lze nahrat v jinem emulatoru
+>Z80 i SNA funguji v Z80v2 a X128
+
+- vylepsit,zjednodusit snd_win (pouzivat waveOutPause,...)

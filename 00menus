@@ -1,0 +1,47 @@
+
+functions:
+emulator
+    exit
+    rel. speed
+    rel. speed/tape playing
+    screen res./fullscr
+    screen skip/dblsize/interlace
+    play/record samplerate
+    edit key map
+    zx keyboard layout
+    joy emu
+    
+    reset
+    nmi
+    
+    load alt. rom
+    debugger
+    
+hardware
+    mem. model
+    peripherals - if1, kempston if
+    ay-3-8912
+    
+snapshots
+    load
+    save
+    
+screen/mem block
+    load
+    save
+    
+tape
+    sel. ld. tape (disk/mem-a,b/sndcard)
+    sel. sa. tape
+    disk tape
+	sel. input file(s)
+	sel. output dir
+	close output file
+	close output after each head/body pair
+	
+    mem tape
+	load file to deck a/b
+	save file from deck a/b
+	clear deck a/b
+	tape browser
+
