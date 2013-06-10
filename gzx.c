@@ -892,14 +892,19 @@ extern int dln_odd;
 int main(int argc, char **argv) {
   int ic;
   int frmno=0;
+  int argi;
   timer frmt;
   u8 tape_smp;
   wkey_t k;
   
   //printf("start\n");
+  argi = 1;
   
   dbl_ln=0;
-  if(argc==2 && !strcmp(argv[1],"d")) dbl_ln=1;
+  if(argc > argi && !strcmp(argv[argi],"d")) {
+    dbl_ln=1;
+    argi++;
+  }
 
   uoc=0;
   smc=0;
@@ -918,7 +923,7 @@ int main(int argc, char **argv) {
     return -1;
   }*/
 
-  if(argc == 2 && zx_load_snap(argv[1])<0) {
+  if(argc > argi && zx_load_snap(argv[argi])<0) {
     printf("error loading snapshot\n");
     return -1;
   }

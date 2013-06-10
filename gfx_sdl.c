@@ -198,30 +198,47 @@ int mgfx_init(void) {
 }
 
 void mgfx_updscr(void) {
-  unsigned u,pln,y;
-  unsigned char *sp,*dp;
-  unsigned char *src_scr;
-  unsigned w_mask[2];
+//  unsigned u,pln;
+  unsigned y;
+//  unsigned char *sp,*dp;
+//  unsigned char *src_scr;
+//  unsigned w_mask[2];
   
-  w_mask[0]=write_l0;
-  w_mask[1]=write_l1;
+//  w_mask[0]=write_l0;
+//  w_mask[1]=write_l1;
   
   if(dbl_ln) {
-    for(y=0;y<scr_ys<<1;y++) {
+/*    for(y=0;y<scr_ys<<1;y++) {
       src_scr=(y&1) ? vscr1 : vscr0;
       if(w_mask[y&1])
         for(pln=0;pln<4;pln++) {
 //          vga_drawpixel(pln,y);
 //          dp=graph_mem+(scr_xs>>2)*y;
+          dp = sdl_screen->pixels + screen->pitch * (scr
           sp=src_scr+scr_xs*(y>>1)+pln;
           for(u=0;u<scr_xs;u+=4)
           *dp++=sp[u];
         }
     }
+*/
+    for (y = 0; y < scr_ys; y++) {
+      memcpy(sdl_screen->pixels + sdl_screen->pitch * 2 * y,
+        vscr0 + scr_xs * y, scr_xs);
+      memcpy(sdl_screen->pixels + sdl_screen->pitch * (2 * y + 1),
+        vscr1 + scr_xs * y, scr_xs);
+    }
   } else {
-//    vga_drawscansegment(vscr0,0,0,scr_xs*scr_ys*sizeof(_U8));
-    SDL_UpdateRect(sdl_screen, 0, 0, 0, 0);
+    for (y = 0; y < scr_ys; y++) {
+      memcpy(sdl_screen->pixels + sdl_screen->pitch * y,
+        vscr0 + scr_xs * y, scr_xs);
+    }
   }
+  SDL_UpdateRect(sdl_screen, 0, 0, 0, 0);
+}
+
+static unsigned b6to8(unsigned cval)
+{
+  return 255 * cval / 63;
 }
 
 void mgfx_setpal(int base, int cnt, int *p) {
@@ -229,9 +246,9 @@ void mgfx_setpal(int base, int cnt, int *p) {
   int i;
   
   for (i = 0; i < cnt; i++) {
-    color[i].r = p[3*i];
-    color[i].g = p[3*i + 1];
-    color[i].b = p[3*i + 1];
+    color[i].r = b6to8(p[3*i]);
+    color[i].g = b6to8(p[3*i + 1]);
+    color[i].b = b6to8(p[3*i + 2]);
   }
   
   SDL_SetColors(sdl_screen, color, 0, 256);
@@ -244,6 +261,9 @@ void mgfx_input_update(void) {
   
   while (SDL_PollEvent(&event)) {
     switch (event.type) {
+    case SDL_QUIT:
+      exit(0);
+      break;
     case SDL_KEYDOWN:
     case SDL_KEYUP:
       // XXX use SDL key to character translation
