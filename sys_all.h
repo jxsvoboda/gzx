@@ -10,8 +10,6 @@ typedef struct {
 void timer_reset(timer *t);
 unsigned long timer_val(timer *t);
 
-unsigned usleep(unsigned int useconds);
-
 int sys_chdir(const char *path);
 char *sys_getcwd(char *buf, int buflen);
 

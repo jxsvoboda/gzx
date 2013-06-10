@@ -4,5 +4,6 @@
 #include "sys_all.h"
 
 unsigned long win_enumdrives(void);
+unsigned usleep(unsigned int useconds);
 
 #endif

@@ -232,7 +232,7 @@ int zx_scr_init(void) {
   int b;
   FILE *f;
   
-  f=fopen("sp256.pal","rt");
+/*  f=fopen("sp256.pal","rt");
   if(!f) return -1;
   
   for(i=0;i<3*256;i++) {
@@ -247,7 +247,7 @@ int zx_scr_init(void) {
   if(!f) return -1;
   fread(background,1,64000,f);
   fclose(f);
-  
+  */
   for(i=0;i<3*16;i++) zxpal[i]>>=2;
   
   if(mgfx_init()) return -1;

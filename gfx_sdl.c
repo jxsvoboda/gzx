@@ -1,0 +1,261 @@
+/*
+  SDL wrapper
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <SDL.h>
+#include "mgfx.h"
+
+static SDL_Surface *sdl_screen;
+
+int *txkey;
+int txsize;
+int ktabsrc[]= {
+  SDLK_ESCAPE,			WKEY_ESC,
+  SDLK_1,			WKEY_1,
+  SDLK_2,			WKEY_2,
+  SDLK_3,			WKEY_3,
+  SDLK_4,			WKEY_4,
+  SDLK_5,			WKEY_5,
+  SDLK_6,			WKEY_6,
+  SDLK_7,			WKEY_7,
+  SDLK_8,			WKEY_8,
+  SDLK_9,			WKEY_9,
+  SDLK_0,			WKEY_0,
+  SDLK_MINUS,			WKEY_MINUS,
+  SDLK_EQUALS,			WKEY_EQUAL,
+  SDLK_BACKSPACE,		WKEY_BS,
+  SDLK_TAB,			WKEY_TAB,
+  SDLK_q,			WKEY_Q,
+  SDLK_w,			WKEY_W,
+  SDLK_e,			WKEY_E,
+  SDLK_r,			WKEY_R,
+  SDLK_t,			WKEY_T,
+  SDLK_y,			WKEY_Y,
+  SDLK_u,			WKEY_U,
+  SDLK_i,			WKEY_I,
+  SDLK_o,			WKEY_O,
+  SDLK_p,			WKEY_P,
+  SDLK_LEFTBRACKET,		WKEY_LBR,
+  SDLK_RIGHTBRACKET,		WKEY_RBR,
+  SDLK_RETURN,			WKEY_ENTER,
+  SDLK_LCTRL,			WKEY_LCTRL,
+  SDLK_a,			WKEY_A,
+  SDLK_s,			WKEY_S,
+  SDLK_d,			WKEY_D,
+  SDLK_f,			WKEY_F,
+  SDLK_g,			WKEY_G,
+  SDLK_h,			WKEY_H,
+  SDLK_j,			WKEY_J,
+  SDLK_k,			WKEY_K,
+  SDLK_l,			WKEY_L,
+  SDLK_SEMICOLON,		WKEY_SCOLON,
+  SDLK_QUOTE,			WKEY_FOOT,
+  SDLK_BACKQUOTE,		WKEY_GRAVE,
+  SDLK_LSHIFT,			WKEY_LSHIFT,
+  SDLK_BACKSLASH,		WKEY_BSLASH,
+  SDLK_z,			WKEY_Z,
+  SDLK_x,			WKEY_X,
+  SDLK_c,			WKEY_C,
+  SDLK_v,			WKEY_V,
+  SDLK_b,			WKEY_B,
+  SDLK_n,			WKEY_N,
+  SDLK_m,			WKEY_M,
+  SDLK_COMMA,			WKEY_COMMA,
+  SDLK_PERIOD,			WKEY_PERIOD,
+  SDLK_SLASH,			WKEY_SLASH,
+  SDLK_RSHIFT,			WKEY_RSHIFT,
+  SDLK_KP_MULTIPLY,		WKEY_NSTAR,
+  SDLK_LALT,			WKEY_LALT,
+  SDLK_SPACE,			WKEY_SPACE,
+  SDLK_CAPSLOCK,		WKEY_CLOCK,
+  SDLK_F1,			WKEY_F1,
+  SDLK_F2,			WKEY_F2,
+  SDLK_F3,			WKEY_F3,
+  SDLK_F4,			WKEY_F4,
+  SDLK_F5,			WKEY_F5,
+  SDLK_F6,			WKEY_F6,
+  SDLK_F7,			WKEY_F7,
+  SDLK_F8,			WKEY_F8,
+  SDLK_F9,			WKEY_F9,
+  SDLK_F10,			WKEY_F10,
+  SDLK_NUMLOCK,			WKEY_NLOCK,
+  SDLK_SCROLLOCK,		WKEY_SLOCK,
+  SDLK_KP7,			WKEY_N7,
+  SDLK_KP8,			WKEY_N8,
+  SDLK_KP9,			WKEY_N9,
+  SDLK_KP_MINUS,		WKEY_NMINUS,
+  SDLK_KP4,			WKEY_N4,
+  SDLK_KP5,			WKEY_N5,
+  SDLK_KP6,			WKEY_N6,
+  SDLK_KP_PLUS,			WKEY_NPLUS,
+  SDLK_KP1,			WKEY_N1,
+  SDLK_KP2,			WKEY_N2,
+  SDLK_KP3,			WKEY_N3,
+  SDLK_KP0,			WKEY_N0,
+  SDLK_KP_PERIOD,		WKEY_NPERIOD,
+  SDLK_LESS,			WKEY_LESS,
+  SDLK_F11,			WKEY_F11,
+  SDLK_F12,			WKEY_F12,
+  SDLK_KP_ENTER,		WKEY_NENTER,
+  SDLK_RCTRL,			WKEY_RCTRL,
+  SDLK_KP_DIVIDE,		WKEY_NSLASH,
+  SDLK_PRINT,			WKEY_PRNSCR,
+  SDLK_RALT,			WKEY_RALT,
+  SDLK_BREAK,			WKEY_BRK,
+  SDLK_HOME,			WKEY_HOME,
+  SDLK_UP,			WKEY_UP,
+  SDLK_PAGEUP,			WKEY_PGUP,
+  SDLK_LEFT,			WKEY_LEFT,
+  SDLK_RIGHT,			WKEY_RIGHT,
+  SDLK_END,			WKEY_END,
+  SDLK_DOWN,			WKEY_DOWN,
+  SDLK_PAGEDOWN,		WKEY_PGDN,
+  SDLK_INSERT,			WKEY_INS,
+  SDLK_DELETE,			WKEY_DEL,
+  SDLK_LSUPER,			WKEY_LOS,
+  SDLK_RSUPER,			WKEY_ROS,
+  -1,				-1
+};
+
+/* graphics */
+
+void w_vga_problem(void) {
+  fprintf(stderr, "vga Problem!");
+  exit(1);
+}
+
+void w_restoremode(void) {
+  SDL_Quit();
+}
+
+void w_restorekeyboard(void) {
+}
+
+int mgfx_init(void) {
+  int i;
+  
+  printf("mgfx_init()\n");
+  /* Initialize SDL */
+  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    w_vga_problem();
+  }
+  
+  atexit(SDL_Quit);
+  
+  scr_xs=320;
+  scr_ys=200;
+  
+  if (dbl_ln)
+    sdl_screen = SDL_SetVideoMode(320, 400, 8, SDL_SWSURFACE);
+  else
+    
+    sdl_screen = SDL_SetVideoMode(320, 200, 8, SDL_SWSURFACE);
+  
+  if (sdl_screen == NULL)
+    w_vga_problem();
+  
+  w_initkey();
+  
+  /* set up key translation table */
+  txsize=1;
+  for(i=0;ktabsrc[i*2+1]!=-1;i++)
+    if(ktabsrc[i*2]>=txsize) txsize=ktabsrc[i*2]+1;
+    
+  txkey=calloc(txsize,sizeof(int));
+  if(!txkey) {
+    printf("malloc failed\n");
+    exit(1);
+  }
+  
+  for(i=0;ktabsrc[i*2+1]!=-1;i++)
+    txkey[ktabsrc[i*2]]=ktabsrc[i*2+1];
+    
+  /* set up virtual frame buffer */
+  
+  vscr0=malloc(scr_xs*scr_ys*sizeof(_U8));
+  if(!vscr0) {
+    printf("malloc failed\n");
+    exit(1);
+  }
+  
+  if(dbl_ln) {
+    vscr1=malloc(scr_xs*scr_ys*sizeof(_U8));
+    if(!vscr1) {
+      printf("malloc failed\n");
+      exit(1);
+    }
+  }
+  
+  mgfx_selln(3);
+
+  clip_x0=clip_y0=0;
+  clip_x1=scr_xs-1;
+  clip_y1=scr_ys-1;
+  
+  return 0;
+}
+
+void mgfx_updscr(void) {
+  unsigned u,pln,y;
+  unsigned char *sp,*dp;
+  unsigned char *src_scr;
+  unsigned w_mask[2];
+  
+  w_mask[0]=write_l0;
+  w_mask[1]=write_l1;
+  
+  if(dbl_ln) {
+    for(y=0;y<scr_ys<<1;y++) {
+      src_scr=(y&1) ? vscr1 : vscr0;
+      if(w_mask[y&1])
+        for(pln=0;pln<4;pln++) {
+//          vga_drawpixel(pln,y);
+//          dp=graph_mem+(scr_xs>>2)*y;
+          sp=src_scr+scr_xs*(y>>1)+pln;
+          for(u=0;u<scr_xs;u+=4)
+          *dp++=sp[u];
+        }
+    }
+  } else {
+//    vga_drawscansegment(vscr0,0,0,scr_xs*scr_ys*sizeof(_U8));
+    SDL_UpdateRect(sdl_screen, 0, 0, 0, 0);
+  }
+}
+
+void mgfx_setpal(int base, int cnt, int *p) {
+  SDL_Color color[256];
+  int i;
+  
+  for (i = 0; i < cnt; i++) {
+    color[i].r = p[3*i];
+    color[i].g = p[3*i + 1];
+    color[i].b = p[3*i + 1];
+  }
+  
+  SDL_SetColors(sdl_screen, color, 0, 256);
+}
+
+/* input */
+
+void mgfx_input_update(void) {
+  SDL_Event event;
+  
+  while (SDL_PollEvent(&event)) {
+    switch (event.type) {
+    case SDL_KEYDOWN:
+    case SDL_KEYUP:
+      // XXX use SDL key to character translation
+      w_putkey(event.type == SDL_KEYDOWN, txkey[event.key.keysym.sym], -1);
+      break;
+    default:
+      break;
+    }
+  }
+}
+
+int mgfx_toggle_fs(void) {
+  /* Toggle fullscreen mode */
+  return 0;
+}

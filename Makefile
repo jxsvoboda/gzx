@@ -9,10 +9,10 @@ bld_target = gnu
 
 CC		= gcc
 
-CFLAGS_gnu	= -O2 -Wall
+CFLAGS_gnu	= -O2 -Wall -I/usr/include/SDL
 CFLAGS_w32	= -O2 -mno-cygwin -march=i386 -Wall -I../../cygtst/mydirx/include
 
-LIBS_gnu	= -lefence -lvga -lasound
+LIBS_gnu	= -lSDL
 LIBS_w32	= -lgdi32 -lwinmm
 
 bkqual = $$(date '+%Y-%m-%d')
@@ -34,8 +34,9 @@ sources_generic = \
     disasm.c
 
 sources_gnu = \
-    gfx_vga.c \
-    snd_alsa.c
+    gfx_sdl.c \
+    snd_sdl.c \
+    sys_unix.c
 
 sources_w32 = \
     gfx_win.c \

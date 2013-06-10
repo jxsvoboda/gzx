@@ -742,7 +742,7 @@ int zx_init(void) {
 #endif  
   printf("load font\n");
   gloadfont("font.bin");
-
+  printf("init screen\n");
   if(zx_scr_init()<0) return -1;
   if(zx_keys_init()<0) return -1;
   printf("sound\n");
