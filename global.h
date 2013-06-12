@@ -7,6 +7,8 @@
 
 #ifdef __MINGW32__
 #include "sys_win.h"
+#else
+#include <unistd.h>
 #endif
 
 //#define USE_GPU
