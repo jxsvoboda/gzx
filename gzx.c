@@ -256,6 +256,7 @@ u8 zx_in8(u16 a) {
 
 void zx_out8(u16 addr, u8 val) {
 //  printf("out (0x%04x),0x%02x\n",addr,val);
+  iorec_out(z80_clock, addr, val);
   val=val;
   if((addr&0xff)==0xfe) {  /* the ULA (border/speaker/mic) */
     border=val&7;
@@ -323,6 +324,7 @@ void xmap_save(void) {
 u8 zx_keymap[8];
 int key_state[KST_SIZE];
 u8 key_mask[KST_SIZE*8];
+int key_lalt_held;
 
 /* returns the 6 keyboard bits */
 u8 zx_key_in(u8 pwr) { /* power mask */
@@ -351,17 +353,9 @@ void zx_keys_recalc(void) {
   }
 }
 
-static void key_handler(wkey_t *k) {
-  
-  if(k->key>=KST_SIZE) {
-    printf("warning. got a key with a too high scancode (>=KST_SIZE)\n");
-    printf("ignoring key\n");
-    return;
-  }
-  key_state[k->key]=k->press?1:0;
-  zx_keys_recalc();
-  if(k->press) {
-    switch(k->key) {
+static void key_unmod(wkey_t *k)
+{
+   switch(k->key) {
       case WKEY_ESC:
 	main_menu();
 	break;
@@ -414,6 +408,43 @@ static void key_handler(wkey_t *k) {
       case WKEY_F12: debugger(); break;
       default: break;
     }
+}
+
+static void key_lalt(wkey_t *k)
+{
+   switch(k->key) {
+      case WKEY_R:
+	iorec_enable();
+	break;
+      case WKEY_T:
+	iorec_disable();
+	break;
+    }
+}
+
+static void key_handler(wkey_t *k) {
+  
+  if (k->key == WKEY_LALT) {
+    key_lalt_held = k->press;
+    return;
+  }
+  
+  if (key_lalt_held && k->press) {
+      key_lalt(k);
+      return;
+  }
+  
+  if(k->key>=KST_SIZE) {
+    printf("warning. got a key with a too high scancode (>=KST_SIZE)\n");
+    printf("ignoring key\n");
+    return;
+  }
+  
+  key_state[k->key]=k->press?1:0;
+  zx_keys_recalc();
+  
+  if (k->press) {
+      key_unmod(k);
   }
 }
 

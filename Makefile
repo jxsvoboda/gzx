@@ -31,7 +31,8 @@ sources_generic = \
     menus.c \
     mgfx.c \
     debug.c \
-    disasm.c
+    disasm.c \
+    iorec.c
 
 sources_gnu = \
     gfx_sdl.c \
