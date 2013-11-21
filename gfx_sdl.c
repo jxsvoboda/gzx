@@ -8,6 +8,9 @@
 #include "mgfx.h"
 
 static SDL_Surface *sdl_screen;
+static int fs = 0;
+static  SDL_Color color[256];
+
 
 int *txkey;
 int txsize;
@@ -133,28 +136,39 @@ void w_restoremode(void) {
 void w_restorekeyboard(void) {
 }
 
-int mgfx_init(void) {
-  int i;
+static void init_video(void) {
+  int flags;
   
-  printf("mgfx_init()\n");
   /* Initialize SDL */
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     w_vga_problem();
   }
   
-  atexit(SDL_Quit);
-  
-  scr_xs=320;
-  scr_ys=200;
+  flags = SDL_SWSURFACE | (fs ? SDL_FULLSCREEN : 0);
+  scr_xs = 320;
+  scr_ys = 200;
   
   if (dbl_ln)
-    sdl_screen = SDL_SetVideoMode(320, 400, 8, SDL_SWSURFACE);
+    sdl_screen = SDL_SetVideoMode(320, 400, 8, flags);
   else
-    
-    sdl_screen = SDL_SetVideoMode(320, 200, 8, SDL_SWSURFACE);
+    sdl_screen = SDL_SetVideoMode(320, 200, 8, flags);
   
   if (sdl_screen == NULL)
     w_vga_problem();
+}
+
+static void quit_video(void) {
+  SDL_QuitSubSystem(SDL_INIT_VIDEO);
+}
+
+int mgfx_init(void) {
+  int i;
+  
+  printf("mgfx_init()\n");
+  
+  atexit(SDL_Quit);
+  
+  init_video();
   
   w_initkey();
   
@@ -242,7 +256,6 @@ static unsigned b6to8(unsigned cval)
 }
 
 void mgfx_setpal(int base, int cnt, int *p) {
-  SDL_Color color[256];
   int i;
   
   for (i = 0; i < cnt; i++) {
@@ -277,5 +290,9 @@ void mgfx_input_update(void) {
 
 int mgfx_toggle_fs(void) {
   /* Toggle fullscreen mode */
+  quit_video();
+  fs = !fs;
+  init_video();
+  SDL_SetColors(sdl_screen, color, 0, 256);
   return 0;
 }
