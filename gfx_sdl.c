@@ -10,7 +10,7 @@
 static SDL_Surface *sdl_screen;
 static int fs = 0;
 static  SDL_Color color[256];
-
+static int scale = 2;
 
 int *txkey;
 int txsize;
@@ -138,6 +138,7 @@ void w_restorekeyboard(void) {
 
 static void init_video(void) {
   int flags;
+  int vw, vh;
   
   /* Initialize SDL */
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -148,10 +149,14 @@ static void init_video(void) {
   scr_xs = 320;
   scr_ys = 200;
   
-  if (dbl_ln)
-    sdl_screen = SDL_SetVideoMode(320, 400, 8, flags);
-  else
-    sdl_screen = SDL_SetVideoMode(320, 200, 8, flags);
+  vw = scr_xs * scale;
+  vh = scr_ys * scale;
+  
+  if (dbl_ln) {
+    vh *= 2;
+  }
+  
+  sdl_screen = SDL_SetVideoMode(vw, vh, 8, flags);
   
   if (sdl_screen == NULL)
     w_vga_problem();
@@ -211,40 +216,37 @@ int mgfx_init(void) {
   return 0;
 }
 
-void mgfx_updscr(void) {
-//  unsigned u,pln;
-  unsigned y;
-//  unsigned char *sp,*dp;
-//  unsigned char *src_scr;
-//  unsigned w_mask[2];
+static void render_display_line(int dy, uint8_t *spix)
+{
+  uint8_t *dp;
+  int i, j, k;
   
-//  w_mask[0]=write_l0;
-//  w_mask[1]=write_l1;
+  dp = sdl_screen->pixels + sdl_screen->pitch * dy * scale;
+  if (scale != 1) {
+    for (j = 0; j < scale; j++) {
+      for (i = 0; i < scr_xs; i++) {
+        for (k = 0; k < scale; k++) {
+          dp[scale * i + k] = spix[i];
+        }
+      }
+      dp += sdl_screen->pitch;
+    }
+  } else {
+    memcpy(dp, spix, scr_xs);
+  }
+}
+
+void mgfx_updscr(void) {
+  unsigned y;
   
   if(dbl_ln) {
-/*    for(y=0;y<scr_ys<<1;y++) {
-      src_scr=(y&1) ? vscr1 : vscr0;
-      if(w_mask[y&1])
-        for(pln=0;pln<4;pln++) {
-//          vga_drawpixel(pln,y);
-//          dp=graph_mem+(scr_xs>>2)*y;
-          dp = sdl_screen->pixels + screen->pitch * (scr
-          sp=src_scr+scr_xs*(y>>1)+pln;
-          for(u=0;u<scr_xs;u+=4)
-          *dp++=sp[u];
-        }
-    }
-*/
     for (y = 0; y < scr_ys; y++) {
-      memcpy(sdl_screen->pixels + sdl_screen->pitch * 2 * y,
-        vscr0 + scr_xs * y, scr_xs);
-      memcpy(sdl_screen->pixels + sdl_screen->pitch * (2 * y + 1),
-        vscr1 + scr_xs * y, scr_xs);
+      render_display_line(2 * y, vscr0 + scr_xs * y);
+      render_display_line(2 * y + 1, vscr1 + scr_xs * y);
     }
   } else {
     for (y = 0; y < scr_ys; y++) {
-      memcpy(sdl_screen->pixels + sdl_screen->pitch * y,
-        vscr0 + scr_xs * y, scr_xs);
+      render_display_line(y, vscr0 + scr_xs * y);
     }
   }
   SDL_UpdateRect(sdl_screen, 0, 0, 0, 0);
