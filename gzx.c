@@ -203,6 +203,11 @@ void zx_memset8(u16 addr, u8 val) {
   }
 }
 
+/** Write byte without ROM protection */
+void zx_memset8f(u16 addr, u8 val) {
+  zxbnk[addr >> 14][addr & 0x3fff] = val;
+}
+
 u16 zx_memget16(u16 addr) {
   return (u16)zx_memget8(addr)+(((u16)zx_memget8(addr+1))<<8);
 }

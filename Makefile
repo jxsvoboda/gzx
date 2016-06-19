@@ -21,6 +21,7 @@ sources_generic = \
     gzx.c \
     z80.c \
     snap.c \
+    snap_ay.c \
     zx_sound.c \
     zx_tape.c \
     zxt_tap.c \

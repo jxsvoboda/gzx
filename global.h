@@ -56,6 +56,7 @@ int strcmpci(char *a, char *b);
 /* spectrum memory access */
 u8 zx_memget8(u16 addr);
 void zx_memset8(u16 addr, u8 val);
+void zx_memset8f(u16 addr, u8 val);
 u16 zx_memget16(u16 addr);
 void zx_memset16(u16 addr, u16 val);
 

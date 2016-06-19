@@ -11,6 +11,7 @@
 #include "z80.h"
 #include "global.h"
 #include "ay.h"
+#include "snap_ay.h"
 
 /*
   prevede cislovani stranek v 48k (8,4,5) na nase
@@ -640,6 +641,7 @@ int zx_load_snap(char *name) {
   
   if(!strcmpci(ext,".z80")) return zx_load_snap_z80(name);
   if(!strcmpci(ext,".sna")) return zx_load_snap_sna(name);
+  if(!strcmpci(ext,".ay")) return zx_load_snap_ay(name);
   
   printf("unknown extension\n");
   return -1;

@@ -1676,19 +1676,16 @@ void ei_halt(void) {
 /************************************************************************/
 
 void ei_im_0(void) {
-  printf("IM 0\n");
   cpus.int_mode=0;
   z80_clock+=8;
 }
 
 void ei_im_1(void) {
-  printf("IM 1\n");
   cpus.int_mode=1;
   z80_clock+=8;
 }
 
 void ei_im_2(void) {
-  printf("IM 2\n");
   cpus.int_mode=2;
   z80_clock+=8;
 }
