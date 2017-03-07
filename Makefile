@@ -9,7 +9,7 @@ bld_target = gnu
 
 CC		= gcc
 
-CFLAGS_gnu	= -O2 -Wall -Werror -I/usr/include/SDL
+CFLAGS_gnu	= -O2 -Wall -Werror -Wmissing-prototypes -I/usr/include/SDL
 CFLAGS_w32	= -O2 -mno-cygwin -march=i386 -Wall -I../../cygtst/mydirx/include
 
 LIBS_gnu	= -lSDL

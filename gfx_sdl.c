@@ -124,16 +124,9 @@ int ktabsrc[]= {
 
 /* graphics */
 
-void w_vga_problem(void) {
+static void w_vga_problem(void) {
   fprintf(stderr, "vga Problem!");
   exit(1);
-}
-
-void w_restoremode(void) {
-  SDL_Quit();
-}
-
-void w_restorekeyboard(void) {
 }
 
 static void init_video(void) {

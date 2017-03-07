@@ -99,7 +99,7 @@ void (*ei_ddop[256])(void) = {
   Ui_ld_E_IXh,	Ui_ld_E_IXl,	ei_ld_E_iIXN,	Si_stray, 	/* 0x5C */
   Ui_ld_IXh_B,	Ui_ld_IXh_C,	Ui_ld_IXh_D,	Ui_ld_IXh_E, 	/* 0x60 */
   Ui_ld_IXh_IXh,Ui_ld_IXh_IXl,	ei_ld_H_iIXN,	Ui_ld_IXh_A, 	/* 0x64 */
-  Ui_ld_IXl_B,	Ui_ld_IXl_C,	Ui_ld_IXl_D,	Ui_ld_IXl_B, 	/* 0x68 */
+  Ui_ld_IXl_B,	Ui_ld_IXl_C,	Ui_ld_IXl_D,	Ui_ld_IXl_E, 	/* 0x68 */
   Ui_ld_IXl_IXh,Ui_ld_IXl_IXl,	ei_ld_L_iIXN,	Ui_ld_IXl_A, 	/* 0x6C */
   ei_ld_iIXN_r,	ei_ld_iIXN_r,	ei_ld_iIXN_r,	ei_ld_iIXN_r, 	/* 0x70 */
   ei_ld_iIXN_r,	ei_ld_iIXN_r,	Si_stray,	ei_ld_iIXN_r, 	/* 0x74 */
@@ -235,7 +235,7 @@ void (*ei_fdop[256])(void) = {
   Ui_ld_E_IYh,	Ui_ld_E_IYl,	ei_ld_E_iIYN,	Si_stray, 	/* 0x5C */
   Ui_ld_IYh_B,	Ui_ld_IYh_C,	Ui_ld_IYh_D,	Ui_ld_IYh_E, 	/* 0x60 */
   Ui_ld_IYh_IYh,Ui_ld_IYh_IYl,	ei_ld_H_iIYN,	Ui_ld_IYh_A, 	/* 0x64 */
-  Ui_ld_IYl_B,	Ui_ld_IYl_C,	Ui_ld_IYl_D,	Ui_ld_IYl_B, 	/* 0x68 */
+  Ui_ld_IYl_B,	Ui_ld_IYl_C,	Ui_ld_IYl_D,	Ui_ld_IYl_E, 	/* 0x68 */
   Ui_ld_IYl_IYh,Ui_ld_IYl_IYl,	ei_ld_L_iIYN,	Ui_ld_IYl_A, 	/* 0x6C */
   ei_ld_iIYN_r,	ei_ld_iIYN_r,	ei_ld_iIYN_r,	ei_ld_iIYN_r, 	/* 0x70 */
   ei_ld_iIYN_r,	ei_ld_iIYN_r,	Si_stray,	ei_ld_iIYN_r, 	/* 0x74 */

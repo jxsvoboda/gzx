@@ -4,6 +4,7 @@
 */
 
 #include <string.h>
+#include "debug.h"
 #include "mgfx.h"
 #include "zx_scr.h"
 #include "z80.h"

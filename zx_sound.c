@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include "global.h"
 #include "sndw.h"
+#include "zx_sound.h"
 
 static u8 *snd_buf;
 static int snd_bufs,snd_bff;

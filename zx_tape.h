@@ -49,6 +49,7 @@ void zx_tape_sabytes(void);
 /* real-time tape */
 void zx_tape_getsmp(u8 *smp);
 void zx_tape_play(void);
+void zx_tape_pause(void);
 void zx_tape_stop(void);
 
 /* common */

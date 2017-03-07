@@ -11,6 +11,7 @@
 #include "z80.h"
 #include "global.h"
 #include "ay.h"
+#include "snap.h"
 #include "snap_ay.h"
 
 /*
@@ -290,7 +291,7 @@ static void z80_write_page(FILE *f, int page_i, int page_n) {
 }
 
 /* returns 0 when ok, -1 on error */
-int zx_save_snap_z80(char *name) {
+static int zx_save_snap_z80(char *name) {
   FILE *f;
   u8 flags1,flags2,flags3,hw,i1rp;
   int hdr_len,hdr_end;
@@ -406,7 +407,7 @@ static void snap_sna_write_128k_page(FILE *f, int page_n) {
 
 
 /* returns 0 when ok, -1 on error -> reset ZX */
-static int zx_load_snap_sna(char *name) {
+int zx_load_snap_sna(char *name) {
   FILE *f;
   u8 inter;
   unsigned size;

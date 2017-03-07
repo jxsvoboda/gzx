@@ -32,13 +32,13 @@ typedef struct {
   int focus;
 } teline_t;
 
-void teline_empty(teline_t *t) {  
+static void teline_empty(teline_t *t) {  
   t->len = t->pos = 0;
   memset(t->buf,' ',t->maxlen);
   t->buf[t->maxlen]=0;
 }
 
-void teline_settext(teline_t *t, char *s) {
+static void teline_settext(teline_t *t, char *s) {
   int l;
   
   l=strlen(s);
@@ -49,7 +49,7 @@ void teline_settext(teline_t *t, char *s) {
 }
 
 
-void teline_init(teline_t *t, int x, int y, int maxlen) {
+static void teline_init(teline_t *t, int x, int y, int maxlen) {
   if(maxlen>TELINE_MAX) maxlen = TELINE_MAX;
   t->maxlen = maxlen;
 
@@ -60,7 +60,7 @@ void teline_init(teline_t *t, int x, int y, int maxlen) {
   teline_empty(t);
 }
 
-void teline_draw(teline_t *t) {
+static void teline_draw(teline_t *t) {
   int p = t->pos;
   
   fgc=7; bgc=0;
@@ -81,7 +81,7 @@ static void teline_rmchar(teline_t *t, int pos) {
   t->buf[-- t->len] = ' ';
 }
 
-void teline_key(teline_t *t, wkey_t *k) {
+static void teline_key(teline_t *t, wkey_t *k) {
   if(!k->press) return;
   switch(k->key) {
     case WKEY_BS:

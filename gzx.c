@@ -346,7 +346,7 @@ u8 zx_key_in(u8 pwr) { /* power mask */
 }
 
 /* figure out which crossings are connected */
-void zx_keys_recalc(void) {
+static void zx_keys_recalc(void) {
   int i,j;
   
   for(i=0;i<8;i++) zx_keymap[i]=0x00;
@@ -454,7 +454,7 @@ static void key_handler(wkey_t *k) {
   }
 }
 
-void zx_key_register(int key, u16 m0,u16 m1,u16 m2,u16 m3,
+static void zx_key_register(int key, u16 m0,u16 m1,u16 m2,u16 m3,
                               u16 m4,u16 m5,u16 m6,u16 m7) {
   if(key>=KST_SIZE) {
     printf("error: key cannot be registered - scancode too high. enlarge KST_SIZE\n");
@@ -470,7 +470,7 @@ void zx_key_register(int key, u16 m0,u16 m1,u16 m2,u16 m3,
   key_mask[8*key + 7]=m7;
 }
 
-int zx_keys_init(void) {
+static int zx_keys_init(void) {
   int i;
   
   for(i=0;i<KST_SIZE;i++) key_state[i]=0;
@@ -551,7 +551,7 @@ void zx_scr_save(void) {
 
 static unsigned long snd_t,tapp_t;
 
-int rom_load(char *fname, int bank, int banksize) {
+static int rom_load(char *fname, int bank, int banksize) {
   FILE *f;
 
   f=fopen(fname,"rb");
@@ -567,11 +567,12 @@ int rom_load(char *fname, int bank, int banksize) {
   return 0;
 }
 
-int spec_rom_load(char *fname, int bank) {
+static int spec_rom_load(char *fname, int bank) {
   return rom_load(fname,bank,0x4000);
 }
 
-int gfxrom_load(char *fname, unsigned bank) {
+#ifdef USE_GPU
+static int gfxrom_load(char *fname, unsigned bank) {
   FILE *f;
   unsigned u,v,w;
   u8 buf[8];
@@ -595,6 +596,7 @@ int gfxrom_load(char *fname, unsigned bank) {
   fclose(f);
   return 0;
 }
+#endif
 
 int gfxram_load(char *fname) {
   FILE *f;
@@ -755,7 +757,7 @@ int zx_select_memmodel(int model) {
 
 //#include <alloc.h>
 
-int zx_init(void) {
+static int zx_init(void) {
 #ifdef USE_GPU
   int i;
 #endif
@@ -800,7 +802,7 @@ int zx_init(void) {
   return 0;
 }
 
-void writestat_i(int i) {
+static void writestat_i(int i) {
   int j;
   
   for(j=0;j<64;j++)
@@ -809,7 +811,7 @@ void writestat_i(int i) {
       stat_tab[i][4*j+2],stat_tab[i][4*j+3]);
 }
 
-void writestat(void) {
+static void writestat(void) {
   fprintf(logfi,"\nop:\n");     writestat_i(0);
   fprintf(logfi,"\nDDop:\n");   writestat_i(1);
   fprintf(logfi,"\nFDop:\n");   writestat_i(2);
