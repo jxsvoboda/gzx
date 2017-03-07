@@ -240,7 +240,7 @@ static unsigned da_getw(void) {
   return r;
 }
 
-static void da_puts(unsigned char *s) {
+static void da_puts(char *s) {
   while(*s) da_putc(*s++);
 }
 
@@ -384,7 +384,7 @@ static int dec_instr(void) {
 }
 
 int disasm_instr(void) {
-  unsigned char *ops;
+  char *ops;
   int l;
 
   in_pos = disasm_org;

@@ -689,20 +689,18 @@ u8 _rrc8(u8 a) {
 /************************************************************************/
 
 u8 _sla8(u8 a) {
-  u8 nC,oC;
+  u8 nC;
 
   nC=a>>7;
-  oC=(cpus.F & fC)?1:0;
   a<<=1;
   cpus.F=ox_tab[a]|nC;
   return a;
 }
 
 u8 _sra8(u8 a) {
-  u8 nC,oC;
+  u8 nC;
 
   nC=a&1;
-  oC=(cpus.F & fC)?1:0;
   a=(a&0x80) | (a>>1);
   cpus.F=ox_tab[a]|nC;
   return a;
@@ -719,10 +717,9 @@ u8 _sll8(u8 a) {
 }
 
 u8 _srl8(u16 a) {
-  u16 nC,oC;
+  u16 nC;
 
   nC=a&1;
-  oC=(cpus.F & fC)!=0;
   a>>=1;
   cpus.F=ox_tab[a]|nC;
   return a;
@@ -5106,6 +5103,7 @@ void z80_execinstr(void) {
     lastuoc=uoc;
     ei_tab[opcode](); /* FAST branch .. execute the instruction */
     
+    (void)lastuoc;
 /*    switch(cpus.modifier) {
       case 0: prefix1=0;    break;
       case 1: prefix1=0xdd; break;

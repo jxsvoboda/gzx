@@ -130,6 +130,9 @@ static int wav_open_file(char *filename) {
   bytes_smp=bits_smp>>3;
   
   tapf_fb=ftell(tapf);
+
+  (void) avgb_sec;
+  (void) blk_align; /* XXX */
   
   printf(".wav opened\n");
   

@@ -229,10 +229,10 @@ void zx_scr_mode(int mode) {
 
 int zx_scr_init(void) {
   int i;
-  int b;
+/*  int b;
   FILE *f;
   
-/*  f=fopen("sp256.pal","rt");
+  f=fopen("sp256.pal","rt");
   if(!f) return -1;
   
   for(i=0;i<3*256;i++) {

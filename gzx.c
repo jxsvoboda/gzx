@@ -18,6 +18,7 @@
 #include <time.h>
 #include "mgfx.h"
 #include "global.h"
+#include "iorec.h"
 #include "z80.h"
 #include "zx_keys.h"
 #include "zx_scr.h"

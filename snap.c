@@ -176,7 +176,9 @@ int zx_load_snap_z80(char *name) {
     }
     
     i1rp=fgetu8(f);
+    (void) i1rp;
     flags3=fgetu8(f); /* totally useless */
+    (void) flags3;
     ay_r=fgetu8(f); /* sound chip register number */
     ay_reg_select(ay_r);
     /* contents of sound registers */
