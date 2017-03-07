@@ -14,7 +14,7 @@ _U8 *vscr0,*vscr1;
 int scr_xs,scr_ys;
 int clip_x0,clip_x1,clip_y0,clip_y1;
 
-int drw_clr;
+static int drw_clr;
 
 /* 
   povoleni zapisu do sudych/lichych radek 

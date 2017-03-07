@@ -18,7 +18,7 @@
 #define SCR_SCAN_RIGHT   352
 			  /* 48 left border + 256 screen + 48 right b. */
 
-int zxpal[3*16]={ /* taken from X128 */
+static int zxpal[3*16]={ /* taken from X128 */
       0,  0,  0,	  0,  0,159,	223,  0,  0,	224,  0,176,
       0,208,  0,	  0,208,208,	207,207,  0,	192,192,192,
       
@@ -26,7 +26,7 @@ int zxpal[3*16]={ /* taken from X128 */
       0,239,  0,	  0,255,255,	255,255,  0,	255,255,255
 };
 
-int gfxpal[3*256];
+static int gfxpal[3*256];
 
 static u16 vxswapb(u16 ofs) {
   return (ofs & 0xf81f) | ((ofs & 0x00e0)<<3) | ((ofs & 0x0700)>>3);
@@ -35,8 +35,8 @@ static u16 vxswapb(u16 ofs) {
 unsigned long disp_t;
 int fl_rev;
 
-unsigned mains_x0,mains_x1i,mains_y0,mains_y1i;
-unsigned scan_x0,scan_x1i,scan_y0,scan_y1i;
+static unsigned mains_x0,mains_x1i,mains_y0,mains_y1i;
+static unsigned scan_x0,scan_x1i,scan_y0,scan_y1i;
 
 unsigned long disp_clock,disp_cbase;
 

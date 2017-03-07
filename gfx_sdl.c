@@ -12,9 +12,9 @@ static int fs = 0;
 static  SDL_Color color[256];
 static int scale = 2;
 
-int *txkey;
-int txsize;
-int ktabsrc[]= {
+static int *txkey;
+static int txsize;
+static int ktabsrc[]= {
   SDLK_ESCAPE,			WKEY_ESC,
   SDLK_1,			WKEY_1,
   SDLK_2,			WKEY_2,

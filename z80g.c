@@ -15,16 +15,16 @@ z80s tmps;		/* docasne ulozeni hlav. procesoru */
 u8 *gfxrom[NGP];
 u8 *gfxram[NGP];
 u8 *gfxscr[NGP];
-u8 *gfxbnk[NGP][4];
+static u8 *gfxbnk[NGP][4];
 
-u8 *tmpram,*tmprom,*tmpscr;
-u8 *tmpbnk[4];
 
 /************************************************************************/
 /************************************************************************/
 
 void gfx_select_memmodel(int model) {
   int i;
+  u8 *tmpram,*tmprom,*tmpscr;
+  u8 *tmpbnk[4];
   
   tmprom=zxrom;
   tmpram=zxram;
@@ -68,7 +68,9 @@ void gfx_select_memmodel(int model) {
 void z80_g_execinstr(void) {
   int i,j;
   unsigned long tmp_clock;
-  
+  u8 *tmpram,*tmprom,*tmpscr;
+  u8 *tmpbnk[4];
+
   tmp_clock=z80_clock;
 
   /* synchronise GPUs with CPU */
@@ -140,7 +142,9 @@ void z80_g_execinstr(void) {
 void z80_g_int(u8 bus) {
   int i;
   unsigned long tmp_clock;
-  
+  u8 *tmpram,*tmprom,*tmpscr;
+  u8 *tmpbnk[4];
+ 
   tmp_clock=z80_clock;
     
   /* execute int on all GPUs */
