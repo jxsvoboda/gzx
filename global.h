@@ -18,12 +18,6 @@
 #define u16 unsigned short
 #define u32 unsigned long
 
-/* mechine-independent typedefs */
-#define uchar unsigned char
-#define ushort unsigned short
-#define uint unsigned int
-#define ulong unsigned long
-
 /* memory models */
 #define ZXM_48K   0
 #define ZXM_128K  1
