@@ -7,6 +7,7 @@
 #include <string.h>
 #include "disasm.h"
 #include "global.h"
+#include "memio.h"
 
 #define MAXARGLEN 20
 

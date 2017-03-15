@@ -47,33 +47,14 @@ void fputu16be(FILE *f, u16 val);
 /* case insensitive strcmp */
 int strcmpci(char *a, char *b);
 
-/* spectrum memory access */
-u8 zx_memget8(u16 addr);
-void zx_memset8(u16 addr, u8 val);
-void zx_memset8f(u16 addr, u8 val);
-u16 zx_memget16(u16 addr);
-void zx_memset16(u16 addr, u16 val);
-
-/* spectrum i/o port access */
-void zx_out8(u16 addr, u8 val);
-u8 zx_in8(u16 addr);
+u8 zx_key_in(u8 pwr);
 
 void zx_reset(void);
-int zx_select_memmodel(int model);
-void zx_mem_page_select(u8 val);
 
 void zx_debug_mstep(void);
 void zx_debug_key(int press, int key);
 
-extern u8 page_reg;
-extern u8 border;
-extern u8 spk,mic,ear;
-extern u8 *zxram,*zxrom,*zxscr,*zxbnk[4];
-extern int mem_model;
-
-extern int bnk_lock48;
-extern unsigned ram_size,rom_size;
-
+extern char *start_dir;
 extern FILE *logfi;
 extern int quit;
 

@@ -10,6 +10,7 @@
 #include <string.h>
 #include "z80.h"
 #include "global.h"
+#include "memio.h"
 #include "ay.h"
 #include "snap.h"
 #include "snap_ay.h"

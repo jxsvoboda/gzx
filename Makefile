@@ -19,6 +19,7 @@ bkqual = $$(date '+%Y-%m-%d')
 
 sources_generic = \
     gzx.c \
+    memio.c \
     z80.c \
     snap.c \
     snap_ay.c \

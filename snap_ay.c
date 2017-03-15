@@ -11,6 +11,7 @@
 #include <string.h>
 #include "z80.h"
 #include "global.h"
+#include "memio.h"
 #include "snap_ay.h"
 
 /** Get absolutized value of AY relative pointer or 0 if pointer is 0. */

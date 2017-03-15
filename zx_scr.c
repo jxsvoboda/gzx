@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "mgfx.h"
+#include "memio.h"
 #include "global.h"
 #include "zx_scr.h"
 #include "z80.h"

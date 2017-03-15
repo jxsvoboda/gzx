@@ -55,6 +55,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "global.h"
+#include "memio.h"
 #include "z80.h"
 
 static void z80_printstatus(void);

@@ -14,6 +14,7 @@
 #include <limits.h>
 
 #include "global.h"
+#include "memio.h"
 #include "mgfx.h"
 #include "zx_tape.h"
 #include "snap.h"
