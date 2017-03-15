@@ -18,6 +18,7 @@ LIBS_w32	= -lgdi32 -lwinmm
 bkqual = $$(date '+%Y-%m-%d')
 
 sources_generic = \
+    fileutil.c \
     gzx.c \
     memio.c \
     z80.c \

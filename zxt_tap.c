@@ -3,6 +3,7 @@
   Gerton Lunter's TAP fileformat support
 */
 
+#include "fileutil.h"
 #include "global.h"
 #include "zx_tape.h"
 #include "zxt_fif.h"

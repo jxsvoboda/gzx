@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "z80.h"
+#include "fileutil.h"
 #include "global.h"
 #include "memio.h"
 #include "ay.h"
