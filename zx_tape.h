@@ -42,6 +42,8 @@ typedef struct {
 #define BT_VOICE   3
 #define BT_TONES   4
 
+#include "intdef.h"
+
 /* quick tape loading */
 void zx_tape_ldbytes(void);
 void zx_tape_sabytes(void);

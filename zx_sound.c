@@ -8,7 +8,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "global.h"
 #include "memio.h"
 #include "sndw.h"
 #include "zx_sound.h"

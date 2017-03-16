@@ -9,7 +9,9 @@
 #include <string.h>
 #include <ctype.h>
 #include "global.h"
+#include "intdef.h"
 #include "memio.h"
+#include "strutil.h"
 #include "zx_tape.h"
 #include "z80.h"
 #include "zxt_fif.h"

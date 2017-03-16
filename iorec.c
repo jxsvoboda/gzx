@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "fileutil.h"
-#include "global.h"
 #include "iorec.h"
 
 static char *iorec_file = "out.ior";

@@ -1,7 +1,7 @@
 #ifndef _Z80G_H
 #define _Z80G_H
 
-#include "global.h"
+#include "intdef.h"
 
 /* pocet bitovych rovin GPU */
 #define NGP 8

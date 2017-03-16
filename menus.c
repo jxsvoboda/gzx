@@ -20,6 +20,7 @@
 #include "snap.h"
 #include "menus.h"
 #include "sys_all.h"
+#include "uniemu.h"
 
 #define MIN(x,y) ((x)<(y) ? (x) : (y))
 

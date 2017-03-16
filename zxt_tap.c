@@ -5,6 +5,7 @@
 
 #include "fileutil.h"
 #include "global.h"
+#include "intdef.h"
 #include "zx_tape.h"
 #include "zxt_fif.h"
 

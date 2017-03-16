@@ -54,7 +54,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "global.h"
+#include "intdef.h"
 #include "memio.h"
 #include "z80.h"
 

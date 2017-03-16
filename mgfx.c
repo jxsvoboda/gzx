@@ -7,7 +7,6 @@
 #include <string.h>
 #include <stdarg.h>
 #include "mgfx.h"
-#include "global.h"
 
 _U8 *vscr0,*vscr1;
 

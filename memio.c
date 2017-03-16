@@ -2,6 +2,7 @@
  * Memory and I/O port access
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include "ay.h"
@@ -11,6 +12,7 @@
 #include "sys_all.h"
 #include "z80.h"
 #include "z80g.h"
+#include "zx_kbd.h"
 
 u8 *zxram,*zxrom; /* whole memory */
 u8 *zxbnk[4];	  /* currently switched in banks */

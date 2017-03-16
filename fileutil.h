@@ -2,7 +2,7 @@
 #define _FILEUTIL_H
 
 #include <stdio.h>
-#include "global.h"
+#include "intdef.h"
 
 /* useful file i/o routines */
 unsigned fgetu8(FILE *f);

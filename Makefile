@@ -10,6 +10,7 @@ bld_target = gnu
 CC		= gcc
 
 CFLAGS_gnu	= -O2 -Wall -Werror -Wmissing-prototypes -I/usr/include/SDL
+#CFLAGS_gnu	+= -DUSE_GPU
 CFLAGS_w32	= -O2 -mno-cygwin -march=i386 -Wall -I../../cygtst/mydirx/include
 
 LIBS_gnu	= -lSDL
@@ -24,6 +25,8 @@ sources_generic = \
     z80.c \
     snap.c \
     snap_ay.c \
+    strutil.c \
+    zx_kbd.c \
     zx_sound.c \
     zx_tape.c \
     zxt_tap.c \

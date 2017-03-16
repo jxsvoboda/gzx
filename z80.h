@@ -1,7 +1,7 @@
 #ifndef _Z80_H
 #define _Z80_H
 
-#include "global.h"
+#include "intdef.h"
 
 /* flags */
 #define fS  0x80

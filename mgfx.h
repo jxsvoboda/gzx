@@ -1,11 +1,12 @@
 #ifndef _CGFX_H
 #define _CGFX_H
 
-#include "global.h"
+#include "intdef.h"
 
 #define _U8 unsigned char
 
 #define WKEYBUF_SIZE 64
+#define KST_SIZE 128
 
 typedef struct {
   int press;            /* 1=press, 0=release */

@@ -1,7 +1,7 @@
 #ifndef _MEMIO_H
 #define _MEMIO_H
 
-#include "global.h"
+#include "intdef.h"
 
 /* memory models */
 #define ZXM_48K   0

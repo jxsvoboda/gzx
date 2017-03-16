@@ -1,7 +1,7 @@
 #ifndef _AY_H
 #define _AY_H
 
-#include "global.h"
+#include "intdef.h"
 
 #define AY_REG_SEL_PORT   0xfffd
 #define AY_REG_READ_PORT  0xfffd

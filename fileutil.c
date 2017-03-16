@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include "fileutil.h"
-#include "global.h"
+#include "intdef.h"
 
 unsigned fgetu8(FILE *f) {
   u8 tmp;

@@ -5,7 +5,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "global.h"
 #include "ay.h"
 
 u8 ay_reg[16];

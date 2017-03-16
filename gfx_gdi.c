@@ -7,7 +7,6 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <string.h>
-#include "global.h"
 #include "mgfx.h"
 
 #define WINDOW_CLASS_NAME "gzxwin"

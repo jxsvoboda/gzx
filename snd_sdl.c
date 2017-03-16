@@ -7,9 +7,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include "global.h"
 #include "mgfx.h"
 #include "sndw.h"
+#include "uniemu.h"
 
 static u8 *audio_ring;
 static int audio_bufsize;
