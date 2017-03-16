@@ -10,7 +10,7 @@
 #include <string.h>
 //#include <sys/stat.h>
 //#include <sys/fcntl.h>
-//#include <unistd.h>
+#include <unistd.h>
 #include <limits.h>
 
 #include "global.h"
@@ -20,7 +20,7 @@
 #include "snap.h"
 #include "menus.h"
 #include "sys_all.h"
-#include "uniemu.h"
+#include "sys_win.h"
 
 #define MIN(x,y) ((x)<(y) ? (x) : (y))
 

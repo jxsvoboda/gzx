@@ -2,4 +2,7 @@ syntax: glob
 
 *.o
 gzx
+gzx-g
+gzx.exe
+gzx-g.exe
 log.txt

@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <unistd.h>
 #include <windows.h>
 #include "mgfx.h"
 #include "sndw.h"
@@ -73,7 +74,7 @@ int sndw_init(int bufs) {
   for(i=0;i<N_BUF;i++) {
     sndbuf[i]=malloc(buf_size);
     memset(&wavehdr[i],0,sizeof(WAVEHDR));
-    wavehdr[i].lpData=sndbuf[i];
+    wavehdr[i].lpData=(LPSTR)sndbuf[i];
     wavehdr[i].dwBufferLength=buf_size;
     waveOutPrepareHeader(hwaveout,&wavehdr[i],sizeof(WAVEHDR));
   }

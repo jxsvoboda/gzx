@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include "debug.h"
 #include "global.h"
 #include "memio.h"
@@ -12,7 +13,6 @@
 #include "zx_scr.h"
 #include "z80.h"
 #include "disasm.h"
-#include "uniemu.h"
 
 #define MK_PAIR(hi,lo) ( (((u16)(hi)) << 8) | (lo) )
 

@@ -1,19 +1,19 @@
 #
 # GZX makefile
 #
-# We can build either in generic GNU/Unix-like environment or
-# in Cygwin/Win32
+# We can build either natively in generic GNU/Unix-like environment or
+# cross compile for Win32 using MinGW cross-compiler
 #
 
-bld_target = gnu
-
 CC		= gcc
+CC_w32		= i686-w64-mingw32-gcc
 
-CFLAGS_gnu	= -O2 -Wall -Werror -Wmissing-prototypes -I/usr/include/SDL
-#CFLAGS_gnu	+= -DUSE_GPU
-CFLAGS_w32	= -O2 -mno-cygwin -march=i386 -Wall -I../../cygtst/mydirx/include
+CFLAGS		= -O2 -Wall -Werror -Wmissing-prototypes -I/usr/include/SDL
+CFLAGS_g	= $(CFLAGS) -DUSE_GPU
+CFLAGS_w32	= -O2 -Wall -Werror -Wmissing-prototypes
+CFLAGS_w32_g	= $(CFLAGS_w32) -DUSE_GPU
 
-LIBS_gnu	= -lSDL
+LIBS		= -lSDL
 LIBS_w32	= -lgdi32 -lwinmm
 
 bkqual = $$(date '+%Y-%m-%d')
@@ -40,40 +40,59 @@ sources_generic = \
     disasm.c \
     iorec.c
 
-sources_gnu = \
+sources = \
+    $(sources_generic) \
     gfx_sdl.c \
     snd_sdl.c \
     sys_unix.c
 
 sources_w32 = \
+    $(sources_generic) \
     gfx_win.c \
     snd_win.c \
     sys_win.c
 
-ifeq ($(bld_target), w32)
-	sources = $(sources_generic) $(sources_w32)
-	binary = gzxwin.exe
-	CFLAGS = $(CFLAGS_w32)
-	LIBS = $(LIBS_w32)
-else
-	sources = $(sources_generic) $(sources_gnu)
-	binary = gzx
-	CFLAGS = $(CFLAGS_gnu)
-	LIBS = $(LIBS_gnu)
-endif
+binary = gzx
+binary_g = gzx-g
+binary_w32 = gzx.exe
+binary_w32_g = gzx-g.exe
 
 objects = $(sources:.c=.o)
+objects_g = $(sources:.c=.g.o)
+objects_w32 = $(sources_w32:.c=.w32.o)
+objects_w32_g = $(sources_w32:.c=.g.w32.o)
 headers = $(wildcard *.h)
 
-all: $(binary)
+# Default target
+default: $(binary)
+
+all: $(binary) $(binary_g) $(binary_w32) $(binary_w32_g)
 
 $(binary): $(objects)
-	gcc $(CFLAGS) -o $@ $^ $(LIBS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+
+$(binary_g): $(objects_g)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+
+$(binary_w32): $(objects_w32)
+	$(CC_w32) $(CFLAGS) -o $@ $^ $(LIBS_w32)
+
+$(binary_w32_g): $(objects_w32_g)
+	$(CC_w32) $(CFLAGS) -o $@ $^ $(LIBS_w32)
 
 $(objects): $(headers)
 
+%.g.o: %.c
+	$(CC) -c $(CFLAGS_g) -o $@ $<
+
+%.w32.o: %.c
+	$(CC_w32) -c $(CFLAGS_w32) -o $@ $<
+
+%.g.w32.o: %.c
+	$(CC_w32) -c $(CFLAGS_w32_g) -o $@ $<
+
 clean:
-	rm -f *.o $(binary)
+	rm -f *.o $(binary) $(binary_g) $(binary_w32) $(binary_w32_g)
 
 backup: clean
 	cd .. && tar czf gzx-$(bkqual).tar.gz trunk

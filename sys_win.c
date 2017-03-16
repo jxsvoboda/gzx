@@ -58,12 +58,6 @@ unsigned long timer_val(timer *t) {
   return tstates;
 }
 
-
-unsigned usleep(unsigned int useconds) {
-  Sleep((useconds+999)/1000);
-  return 0;
-}
-
 unsigned long win_enumdrives(void) {
   return GetLogicalDrives();
 }

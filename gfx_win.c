@@ -13,6 +13,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <string.h>
+#include "global.h"
 #include "mgfx.h"
 
 #include <ddraw.h>
@@ -519,12 +520,6 @@ static LONG APIENTRY myproc(HWND hwnd, UINT msg, UINT wparam, LONG lparam) {
       return r;
   }
   return 0;
-}
-
-void mgfx_problem(void) {
-  mgfx_close();
-  fprintf(stderr, "Problem!\n");
-  exit(1);
 }
 
 extern FILE *logfi;

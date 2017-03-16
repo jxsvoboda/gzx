@@ -285,12 +285,6 @@ static LONG APIENTRY myproc(HWND hwnd, UINT msg, UINT wparam, LONG lparam) {
   return 0;
 }
 
-void mgfx_problem(void) {
-  mgfx_close();
-  fprintf(stderr, "Problem!\n");
-  exit(1);
-}
-
 extern FILE *logfi;
 
 void mgfx_close(void) {
