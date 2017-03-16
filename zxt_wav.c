@@ -3,8 +3,9 @@
   Gerton Lunter's TAP fileformat support
 */
 
+#include "clock.h"
 #include "fileutil.h"
-#include "global.h"
+#include "gzx.h"
 #include "zx_tape.h"
 #include "zxt_fif.h"
 
@@ -188,7 +189,7 @@ static int wav_get_b_voice_info(tb_voice_info_t *info) {
   
   info->pause_after_len=ROM_PAUSE_LEN;
   info->samples=chnk.len/bytes_smp;
-  info->smp_len=3500000/smp_sec;
+  info->smp_len=Z80_CLOCK/smp_sec;
   
   return 0;
 }

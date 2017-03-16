@@ -7,6 +7,7 @@
 
 #include <windows.h>
 #include <mmsystem.h>
+#include "clock.h"
 #include "sys_win.h"
 
 #ifndef _TIMEVAL_DEFINED
@@ -53,7 +54,7 @@ unsigned long timer_val(timer *t) {
   sec=tv.tv_sec-t->sec;
 
   /* calculate tstates modulo 2^32 */
-  tstates=sec*(unsigned long)3500000 + ((usec*35)/10);
+  tstates=sec*(unsigned long)Z80_CLOCK + ((usec*35)/10);
   
   return tstates;
 }

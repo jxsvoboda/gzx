@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include "clock.h"
 #include "sys_all.h"
 
 static DIR *sd;
@@ -31,7 +32,7 @@ unsigned long timer_val(timer *t) {
   sec=tv.tv_sec-t->sec;
 
   /* calculate tstates modulo 2^32 */
-  tstates=sec*(unsigned long)3500000 + ((usec*35)/10);
+  tstates=sec*(unsigned long)Z80_CLOCK + ((usec*35)/10);
   
   return tstates;
 }

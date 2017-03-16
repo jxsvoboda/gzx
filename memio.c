@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "ay.h"
-#include "global.h"
+#include "gzx.h"
 #include "iorec.h"
 #include "memio.h"
 #include "sys_all.h"

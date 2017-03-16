@@ -13,7 +13,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <string.h>
-#include "global.h"
+#include "gzx.h"
 #include "mgfx.h"
 
 #include <ddraw.h>

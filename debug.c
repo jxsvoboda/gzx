@@ -7,7 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "debug.h"
-#include "global.h"
+#include "gzx.h"
 #include "memio.h"
 #include "mgfx.h"
 #include "zx_scr.h"

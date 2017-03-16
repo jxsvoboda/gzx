@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <limits.h>
 
-#include "global.h"
+#include "gzx.h"
 #include "memio.h"
 #include "mgfx.h"
 #include "zx_tape.h"

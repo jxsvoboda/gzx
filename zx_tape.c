@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "global.h"
+#include "gzx.h"
 #include "intdef.h"
 #include "memio.h"
 #include "strutil.h"

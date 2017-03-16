@@ -1,9 +1,7 @@
-#ifndef GLOBAL_H
-#define GLOBAL_H
+#ifndef GZX_H
+#define GZX_H
 
 #include <stdio.h>
-
-#define Z80_CLOCK 3500000L
 
 void zx_reset(void);
 

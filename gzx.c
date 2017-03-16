@@ -19,7 +19,7 @@
 #include "intdef.h"
 #include "memio.h"
 #include "mgfx.h"
-#include "global.h"
+#include "gzx.h"
 #include "iorec.h"
 #include "z80.h"
 #include "zx_kbd.h"
