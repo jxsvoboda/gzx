@@ -1,5 +1,5 @@
-#ifndef _STRUTIL_H
-#define _STRUTIL_H
+#ifndef STRUTIL_H
+#define STRUTIL_H
 
 int strcmpci(char *a, char *b);
 

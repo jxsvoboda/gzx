@@ -1,5 +1,5 @@
-#ifndef _SNDW_H
-#define _SNDW_H
+#ifndef SNDW_H
+#define SNDW_H
 
 #include "intdef.h"
 

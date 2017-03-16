@@ -1,5 +1,5 @@
-#ifndef _MEMIO_H
-#define _MEMIO_H
+#ifndef MEMIO_H
+#define MEMIO_H
 
 #include "intdef.h"
 

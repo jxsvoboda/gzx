@@ -1,5 +1,5 @@
-#ifndef _IOREC_H
-#define _IOREC_H
+#ifndef IOREC_H
+#define IOREC_H
 
 #include "intdef.h"
 

@@ -1,5 +1,5 @@
-#ifndef _FILEUTIL_H
-#define _FILEUTIL_H
+#ifndef FILEUTIL_H
+#define FILEUTIL_H
 
 #include <stdio.h>
 #include "intdef.h"

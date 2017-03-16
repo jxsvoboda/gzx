@@ -1,5 +1,5 @@
-#ifndef _ZX_SOUND_H
-#define _ZX_SOUND_H
+#ifndef ZX_SOUND_H
+#define ZX_SOUND_H
 
 int zx_sound_init(void);
 void zx_sound_done(void);

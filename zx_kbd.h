@@ -1,5 +1,5 @@
-#ifndef _ZX_KBD_H
-#define _ZX_KBD_H
+#ifndef ZX_KBD_H
+#define ZX_KBD_H
 
 #include "intdef.h"
 

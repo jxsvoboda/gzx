@@ -1,5 +1,5 @@
-#ifndef _SYS_ALL_H
-#define _SYS_ALL_H
+#ifndef SYS_ALL_H
+#define SYS_ALL_H
 
 #define SYS_PATH_MAX 128
 

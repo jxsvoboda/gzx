@@ -1,5 +1,5 @@
-#ifndef _SNAP_H
-#define _SNAP_H
+#ifndef SNAP_H
+#define SNAP_H
 
 int zx_load_snap_z80(char *name);
 int zx_load_snap_sna(char *name);

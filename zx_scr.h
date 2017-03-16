@@ -1,5 +1,5 @@
-#ifndef _ZX_SCR_H
-#define _ZX_SCR_H
+#ifndef ZX_SCR_H
+#define ZX_SCR_H
 
 #define ZX_PIXEL_START	0x0000
 #define ZX_ATTR_START	0x1800

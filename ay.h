@@ -1,5 +1,5 @@
-#ifndef _AY_H
-#define _AY_H
+#ifndef AY_H
+#define AY_H
 
 #include "intdef.h"
 

@@ -1,5 +1,5 @@
-#ifndef _ZX_KEYS_H
-#define _ZX_KEYS_H
+#ifndef ZX_KEYS_H
+#define ZX_KEYS_H
 
 /* half-row v,c,x,z,CS */
 #define ZX_KEY_V	0x10

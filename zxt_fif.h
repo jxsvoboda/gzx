@@ -1,5 +1,5 @@
-#ifndef _ZXT_FIF_H
-#define _ZXT_FIF_H
+#ifndef ZXT_FIF_H
+#define ZXT_FIF_H
 
 #include "intdef.h"
 #include "zx_tape.h"

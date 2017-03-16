@@ -1,5 +1,5 @@
-#ifndef _Z80G_H
-#define _Z80G_H
+#ifndef Z80G_H
+#define Z80G_H
 
 #include "intdef.h"
 

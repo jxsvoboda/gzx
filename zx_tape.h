@@ -1,5 +1,5 @@
-#ifndef _ZX_TAPE_H
-#define _ZX_TAPE_H
+#ifndef ZX_TAPE_H
+#define ZX_TAPE_H
 
 #define ZX_LDBYTES_TRAP	0x056a
 #define ZX_SABYTES_TRAP	0x04d1

@@ -1,5 +1,5 @@
-#ifndef _CGFX_H
-#define _CGFX_H
+#ifndef CGFX_H
+#define CGFX_H
 
 #include "intdef.h"
 

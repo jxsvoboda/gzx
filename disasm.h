@@ -1,5 +1,5 @@
-#ifndef _DISASM_H
-#define _DISASM_H
+#ifndef DISASM_H
+#define DISASM_H
 
 extern unsigned disasm_org;
 extern char disasm_buf[];
