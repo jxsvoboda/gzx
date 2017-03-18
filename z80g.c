@@ -6,6 +6,7 @@
   this file is included into z80.c
 */
 
+#include "memio.h"
 #include "z80g.h"
 
 z80s gpus[NGP];		/* GPUs */

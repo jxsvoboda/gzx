@@ -23,8 +23,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "intdef.h"
-#include "memio.h"
 #include "z80.h"
+#include "z80dep.h"
 
 static void z80_printstatus(void);
 static int z80_readinstr(void);
@@ -45,6 +45,16 @@ static int stat_i;
 
 /* fast flag computation lookup table */
 static u8 ox_tab[256]; /* OR,XOR and more */
+
+static u16 z80_memget16(u16 addr) {
+  return (u16)z80_memget8(addr)+(((u16)z80_memget8(addr+1))<<8);
+}
+
+static void z80_memset16(u16 addr, u16 val) {
+  z80_memset8(addr, val & 0xff);
+  z80_memset8(addr+1, val >> 8);
+}
+
 
 /* returns the signed value of the byte: 0..127 ->0..127
                                          128..255 ->-128..-1 */
@@ -131,63 +141,63 @@ static void incr_R(u8 amount) {
 
 /* returns (HL)(8) */
 static u8 _iHL8(void) {
-  return zx_memget8(((u16)cpus.r[rH]<<8)|(u16)cpus.r[rL]);
+  return z80_memget8(((u16)cpus.r[rH]<<8)|(u16)cpus.r[rL]);
 }
 
 /* returns (BC) */
 static u8 _iBC8(void) {
-  return zx_memget8(((u16)cpus.r[rB]<<8)|(u16)cpus.r[rC]);
+  return z80_memget8(((u16)cpus.r[rB]<<8)|(u16)cpus.r[rC]);
 }
 
 /* returns (DE) */
 static u8 _iDE8(void) {
-  return zx_memget8(((u16)cpus.r[rD]<<8)|(u16)cpus.r[rE]);
+  return z80_memget8(((u16)cpus.r[rD]<<8)|(u16)cpus.r[rE]);
 }
 
 /* returns (IX+N) */
 static u8 _iIXN8(u16 N) {
-  return zx_memget8(cpus.IX+u8sval(N));
+  return z80_memget8(cpus.IX+u8sval(N));
 }
 
 /* returns (IY+N) */
 static u8 _iIYN8(u16 N) {
-  return zx_memget8(cpus.IY+u8sval(N));
+  return z80_memget8(cpus.IY+u8sval(N));
 }
 
 /* (IX+N) <- val*/
 static void s_iIXN8(u16 N, u8 val) {
-  zx_memset8(cpus.IX+u8sval(N),val);
+  z80_memset8(cpus.IX+u8sval(N),val);
 }
 
 /* (IY+N) <- val*/
 static void s_iIYN8(u16 N, u8 val) {
-  zx_memset8(cpus.IY+u8sval(N),val);
+  z80_memset8(cpus.IY+u8sval(N),val);
 }
 
 
 /* (HL) <- val */
 static void s_iHL8(u8 val) {
-  zx_memset8(((u16)cpus.r[rH]<<8)|(u16)cpus.r[rL],val);
+  z80_memset8(((u16)cpus.r[rH]<<8)|(u16)cpus.r[rL],val);
 }
 
 /* (BC) <- val */
 static void s_iBC8(u8 val) {
-  zx_memset8(((u16)cpus.r[rB]<<8)|(u16)cpus.r[rC],val);
+  z80_memset8(((u16)cpus.r[rB]<<8)|(u16)cpus.r[rC],val);
 }
 
 /* (DE) <- val */
 static void s_iDE8(u8 val) {
-  zx_memset8(((u16)cpus.r[rD]<<8)|(u16)cpus.r[rE],val);
+  z80_memset8(((u16)cpus.r[rD]<<8)|(u16)cpus.r[rE],val);
 }
 
 /* returns (SP)(16-bits) */
 static u16 _iSP16(void) {
-  return zx_memget16(cpus.SP);
+  return z80_memget16(cpus.SP);
 }
 
 /* (SP)(16-bits) <- val */
 static void s_iSP16(u16 val) {
-  zx_memset16(cpus.SP,val);
+  z80_memset16(cpus.SP,val);
 }
 
 static u16 getAF(void) {
@@ -246,7 +256,7 @@ static void setHL(u16 val) {
 static u8 z80_iget8(void) {
   u8 tmp;
 
-  tmp=zx_memget8(cpus.PC);
+  tmp=z80_memget8(cpus.PC);
   cpus.PC++;
   return tmp;
 }
@@ -254,7 +264,7 @@ static u8 z80_iget8(void) {
 static u16 z80_iget16(void) {
   u16 tmp;
 
-  tmp=zx_memget16(cpus.PC);
+  tmp=z80_memget16(cpus.PC);
   cpus.PC+=2;
   return tmp;
 }
@@ -275,8 +285,8 @@ static void z80_dump_regs(void)
 	}
 	fprintf(drf,"PC=%04X, A=%02X, F=%02X, BC=%04X, DE=%04X, HL=%04X, IX=%04X, IY=%04X\n",
 		cpus.PC, cpus.r[rA], cpus.F, getBC(), getDE(), getHL(), cpus.IX, cpus.IY);
-	fprintf(drf,"SP=%04X, (SP)=%04X\n", cpus.SP, zx_memget16(cpus.SP));
-	//fprintf(drf,"(5CA9)=%02X\n", zx_memget8(0x5CA9));
+	fprintf(drf,"SP=%04X, (SP)=%04X\n", cpus.SP, z80_memget16(cpus.SP));
+	//fprintf(drf,"(5CA9)=%02X\n", z80_memget8(0x5CA9));
 }
 
 void z80_fprintstatus(FILE *logfi) {
@@ -478,7 +488,7 @@ static u8 _dec8(u16 a) {
 /************************************************************************/
 
 static u8 _in8pf(u16 a) {
-  return zx_in8(a);		/* query ZX */
+  return z80_in8(a);		/* query ZX */
 }
 
 static u8 _in8(u16 a) {
@@ -536,20 +546,20 @@ static u8 _or8(u8 a, u8 b) {
 /************************************************************************/
 
 static void _out8(u16 addr, u8 val) {
-  zx_out8(addr,val);			/* pass it to ZX */
+  z80_out8(addr,val);			/* pass it to ZX */
 }
 
 /************************************************************************/
 
 static void _push16(u16 val) {
   cpus.SP-=2;
-  zx_memset16(cpus.SP,val);
+  z80_memset16(cpus.SP,val);
 }
 
 static u16 _pop16(void) {
   u16 res;
 
-  res=zx_memget16(cpus.SP);
+  res=z80_memget16(cpus.SP);
   cpus.SP+=2;
   return res;
 }
@@ -2205,7 +2215,7 @@ static void ei_ld_A_iNN(void) {
   u16 addr;
 
   addr=z80_iget16();
-  cpus.r[rA]=zx_memget8(addr);
+  cpus.r[rA]=z80_memget8(addr);
   z80_clock+=13;
 }
 
@@ -2431,7 +2441,7 @@ static void ei_ld_BC_iNN(void) {
   u16 addr;
 
   addr=z80_iget16();
-  setBC(zx_memget16(addr));
+  setBC(z80_memget16(addr));
   z80_clock+=20;
 }
 
@@ -2447,7 +2457,7 @@ static void ei_ld_DE_iNN(void) {
   u16 addr;
 
   addr=z80_iget16();
-  setDE(zx_memget16(addr));
+  setDE(z80_memget16(addr));
   z80_clock+=20;
 }
 
@@ -2463,7 +2473,7 @@ static void ei_ld_HL_iNN(void) {
   u16 addr;
 
   addr=z80_iget16();
-  setHL(zx_memget16(addr));
+  setHL(z80_memget16(addr));
   z80_clock+=20;
 }
 
@@ -2479,7 +2489,7 @@ static void ei_ld_SP_iNN(void) {
   u16 addr;
 
   addr=z80_iget16();
-  cpus.SP=zx_memget16(addr);
+  cpus.SP=z80_memget16(addr);
   z80_clock+=20;
 }
 
@@ -2513,7 +2523,7 @@ static void ei_ld_IX_iNN(void) {
   u16 addr;
 
   addr=z80_iget16();
-  cpus.IX=zx_memget16(addr);
+  cpus.IX=z80_memget16(addr);
   z80_clock+=16;
 }
 
@@ -2529,7 +2539,7 @@ static void ei_ld_IY_iNN(void) {
   u16 addr;
 
   addr=z80_iget16();
-  cpus.IY=zx_memget16(addr);
+  cpus.IY=z80_memget16(addr);
   z80_clock+=16;
 }
 
@@ -2571,7 +2581,7 @@ static void ei_ld_iNN_A(void) {
   u16 addr;
 
   addr=z80_iget16();
-  zx_memset8(addr,cpus.r[rA]);
+  z80_memset8(addr,cpus.r[rA]);
   z80_clock+=13;
 }
 
@@ -2579,7 +2589,7 @@ static void ei_ld_iNN_BC(void) {
   u16 addr;
 
   addr=z80_iget16();
-  zx_memset16(addr,getBC());
+  z80_memset16(addr,getBC());
   z80_clock+=20;
 }
 
@@ -2587,7 +2597,7 @@ static void ei_ld_iNN_DE(void) {
   u16 addr;
 
   addr=z80_iget16();
-  zx_memset16(addr,getDE());
+  z80_memset16(addr,getDE());
   z80_clock+=20;
 }
 
@@ -2595,7 +2605,7 @@ static void ei_ld_iNN_HL(void) {
   u16 addr;
 
   addr=z80_iget16();
-  zx_memset16(addr,getHL());
+  z80_memset16(addr,getHL());
   z80_clock+=16;
 }
 
@@ -2603,7 +2613,7 @@ static void ei_ld_iNN_SP(void) {
   u16 addr;
 
   addr=z80_iget16();
-  zx_memset16(addr,cpus.SP);
+  z80_memset16(addr,cpus.SP);
   z80_clock+=20;
 }
 
@@ -2611,7 +2621,7 @@ static void ei_ld_iNN_IX(void) {
   u16 addr;
 
   addr=z80_iget16();
-  zx_memset16(addr,cpus.IX);
+  z80_memset16(addr,cpus.IX);
   z80_clock+=16;
 }
 
@@ -2619,7 +2629,7 @@ static void ei_ld_iNN_IY(void) {
   u16 addr;
 
   addr=z80_iget16();
-  zx_memset16(addr,cpus.IY);
+  z80_memset16(addr,cpus.IY);
   z80_clock+=16;
 }
 
@@ -5107,7 +5117,7 @@ int z80_int(u8 data) {
       incr_R(2);
       _push16(cpus.PC);
       addr=((u16)cpus.I<<8) | (u16)data;
-      cpus.PC=zx_memget16(addr);
+      cpus.PC=z80_memget16(addr);
 //      printf("IM 2 INT: I=%02x D8=%02x tabi=%04x dst=%04x\n",cpus.I,data,addr,cpus.PC);
       z80_clock+=19;
       break;

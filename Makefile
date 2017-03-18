@@ -23,6 +23,7 @@ sources_generic = \
     gzx.c \
     memio.c \
     z80.c \
+    z80dep.c \
     snap.c \
     snap_ay.c \
     strutil.c \
