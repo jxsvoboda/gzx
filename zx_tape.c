@@ -428,7 +428,7 @@ void zx_tape_getsmp(u8 *smp) {
     
   if(tfr && tape_playing && !tape_paused) {
     if(pb_type<0) { /* no open block */
-      /* najdi prvni pouzitelny blok */
+      /* find the first usable block */
       do {
         pb_type=tfr->block_type();
         switch(pb_type) {
@@ -448,7 +448,7 @@ void zx_tape_getsmp(u8 *smp) {
       fflush(logfi);
     }
     
-    /* generuj novy sampl */
+    /* generate next sample */
     gsmp();
   }
   *smp=cur_level;

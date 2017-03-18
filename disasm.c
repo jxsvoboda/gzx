@@ -15,7 +15,7 @@ static char hexc[]={
   '8','9','A','B','C','D','E','F'
 };
 
-/* jmena operaci */
+/* instruction names */
 
 #define o_ADC	0
 #define o_ADD   1
@@ -90,18 +90,20 @@ static char hexc[]={
 #define o_ui   128
 
 #define o_x    128
-/* pokud se orne k cislu operace, znamena to, ze assembler to neumi
-   a musi se to prepsat jako DB. pouziva se pro nektere nedok. instrukce */
+/* when ORed with operation number, it means that the assembler does not
+ * understand this and it needs to be written out as DB.
+ * Used for some undocumented opcodes. 
+ */
 
-#define A_T	0	/* trivialni */
-#define A_DB	1       /* 8-bitovy primy */
-#define A_DW    2       /* 16-bitovy primy */
-#define A_A     3       /* adresa */
-#define A_I	4       /* indexace */
-#define A_RA    5       /* rel. adresa vuci PC */
-#define A_RS    6	/* adresa restartu */
-#define A_IB    7	/* indexace + 8-bitovy primy */
-#define A_XI    8       /* DDCB/FDCB indexace */
+#define A_T	0	/* trivial */
+#define A_DB	1       /* 8-bit direct */
+#define A_DW    2       /* 16-bit direct */
+#define A_A     3       /* address */
+#define A_I	4       /* indirect */
+#define A_RA    5       /* PC-relative address */
+#define A_RS    6	/* restart address */
+#define A_IB    7	/* indirect with 8-bit displacement */
+#define A_XI    8       /* DDCB/FDCB indirect */
 
 static char *op_n[]= {
   "ADC", "ADD", "AND", "BIT", "CALL","CCF", "CP",  "CPD",
@@ -115,7 +117,7 @@ static char *op_n[]= {
   "SLL", "SRL", "SUB", "XOR"
 };
 
-/* format operandu */
+/* operand format strings */
 static char *a_n[] = {
   "",  "A", "B", "C",
   "D", "E", "H", "L",
@@ -328,7 +330,7 @@ static void (*da_arg[])(void)={
   da_xi
 };
 
-/* vypise levou, promennou a pravou cast argumentu */
+/* print left, variable and right part of argument */
 static void p_arg(int i) {
   char *p,*an;
 
@@ -353,7 +355,7 @@ static int dec_instr(void) {
   o_ibegin = disasm_org;
   ddfd=0;
 
-  /* nacti DD/FD prefixy */
+  /* read DD/FD prefixes */
   c=da_getc();
   if(c<0) return -1;
   op=c;
@@ -369,16 +371,16 @@ static int dec_instr(void) {
     default:   edcb=0; break;
   }
 
-  /* pripadne nacti opcode */
+  /* try reading opcode if we don't have it yet */
   if(edcb) op=da_getc();
 
-  /* pri DDCB/FDCB jsme nacetli index, opcode je az za nim */
+  /* For DDCB/FDCB that was actually the displacement, opcode is the following byte */
   if(ddfd && (edcb==2)) {
     idxop=op;
     op=da_getc();
   }
 
-  /* popis instrukce ze spravne tabulky */
+  /* Read instruction description from the correct table */
   desc=d_tab[ddfd][edcb]+4*op;
 
   return 0;
@@ -395,7 +397,7 @@ int disasm_instr(void) {
 
   if(dec_instr()<0) return -1;
 
-  /* prebytecny prefix? */
+  /* Stray prefix? */
   if(desc[0]==o_sp) {
     switch(ddfd) {
       case 1: da_puts("DEFB $DD"); break;
@@ -408,7 +410,7 @@ int disasm_instr(void) {
     return 0;
   }
 
-  if(desc[0]&o_x) { /* nedokumentovana instrukce */
+  if(desc[0]&o_x) { /* Undocumented instruction */
     da_puts("DEFB ");
     switch(ddfd) {
       case 1: da_puts("$DD,"); break;
@@ -425,27 +427,27 @@ int disasm_instr(void) {
       da_putc(',');
     }
     da_prnb(op);
-    /* sem mohou pribyt zpracovani nekterych typu adresace */
+    /* Here we could add code to decode some addressing types */
     if(desc[0]==o_ui) {
-      /* pokud neni popis k dispozici */
+      /* If there is no description available */
       da_putc(0);
       return 0;
     }
-    da_puts("\t; "); /* zbytek radky do komentare */
+    da_puts("\t; "); /* Comment the rest of the line */
   }
 
-  /* vypis jmeno operace */
+  /* Print opcode name */
   ops=op_n[desc[0]&(~o_x)];
   da_puts(ops);
 
-  if(desc[2]) { /* ma argumenty? */
-    /* dopln mezerami */
+  if(desc[2]) { /* Does it have operands? */
+    /* Pad with spaces */
     l=strlen(ops);
     while(l++<5) da_putc(' ');
 
-    /* vypis argumenty */
+    /* Print the operands */
     p_arg(0);
-    if(desc[3]) { /* ma druhy argument? */
+    if(desc[3]) { /* Second opcode? */
       da_putc(',');
       p_arg(1);
     }

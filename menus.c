@@ -500,7 +500,7 @@ int file_sel(char **fname, char *caption) {
 
   fsel_set_fnline();
 
-  mgfx_selln(3); /* kreslime sude i liche radky */
+  mgfx_selln(3); /* Enable rendering odd and even lines */
 
   while(!end_fsel) {
     fsel_draw();
@@ -675,7 +675,7 @@ void main_menu(void) {
   mpos=0;
   menu_cx0=scr_xs/16 - 10;
   
-  mgfx_selln(3); /* kreslime sude i liche radky */
+  mgfx_selln(3); /* Enable rendering odd and even lines */
 
   while(!end_menu) {
     menu_draw(mpos);
@@ -773,7 +773,7 @@ void tape_menu(void) {
   mpos=0;
   menu_cx0=scr_xs/16 - 10;
   
-  mgfx_selln(3); /* kreslime sude i liche radky */
+  mgfx_selln(3); /* Enable rendering odd and even lines */
   
   while(!end_menu) {
     tmenu_draw(mpos);

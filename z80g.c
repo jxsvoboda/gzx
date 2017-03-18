@@ -1,15 +1,15 @@
 /*
   GZX - George's ZX Spectrum Emulator
   Z80 GPU
-  "graficky koprocesor a pamet"
+  Implements graphical co-planes (a la Spec256)
   
-  this file is included into z80.c    
+  this file is included into z80.c
 */
 
 #include "z80g.h"
 
-z80s gpus[NGP];
-z80s tmps;		/* docasne ulozeni hlav. procesoru */
+z80s gpus[NGP];		/* GPUs */
+z80s tmps;		/* temporary place to store the CPU */
 
 u8 *gfxrom[NGP];
 u8 *gfxram[NGP];

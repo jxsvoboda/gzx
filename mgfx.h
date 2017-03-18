@@ -35,7 +35,7 @@ extern _U8 *vscr1;
 extern int clip_x0,clip_y0,clip_x1,clip_y1;
 extern int scr_xs,scr_ys;
 extern int dbl_ln;
-extern int write_l0, write_l1; /* jen ke cteni, zapisuj pomoci mgfx_selln */
+extern int write_l0, write_l1; /* read only, write using mgfx_selln */
 
 extern int thpos,tvpos;
 

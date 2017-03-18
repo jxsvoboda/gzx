@@ -22,7 +22,7 @@ static int drw_clr;
 int write_l0=1;
 int write_l1=0;
 
-int dbl_ln; /* pouziva se dvojite radkovani? */
+int dbl_ln; /* Double lines enabled? */
 
 #define SWAP(a,b,tmp) { (tmp)=(a); (a)=(b); (b)=(tmp); }
 #define MAX(a,b) ((a)>(b)?(a):(b))

@@ -3,7 +3,7 @@
 
 #include "intdef.h"
 
-/* pocet bitovych rovin GPU */
+/* Number of graphical planes */
 #define NGP 8
 
 extern z80s gpus[NGP];

@@ -239,7 +239,7 @@ static int ktabsrc[] = {
   0xDD,		      WKEY_RBR,
   0xBA,		      WKEY_SCOLON,
   0xDE,		      WKEY_FOOT, 
-  0xDC,		      WKEY_BSLASH, /* je to dobre ? */
+  0xDC,		      WKEY_BSLASH, /* Is this correct? */
 
   -1,			-1
 };
@@ -422,7 +422,7 @@ static int mwin_init_gdi(void) {
     return -1;
   }
 
-  /* urci velikost okna z velikosti vnitrku */
+  /* Determine window size from application area size */
   wrect.left = 0;
   wrect.top = 0;
   wrect.right = sxs;
@@ -432,7 +432,7 @@ static int mwin_init_gdi(void) {
   wxs = wrect.right-wrect.left;
   wys = wrect.bottom-wrect.top;
   
-  /* vytvori okno */
+  /* Create window */
   hwnd=CreateWindow(WINDOW_CLASS_NAME,WINDOW_CAPTION,
     WINDOW_STYLE,
     CW_USEDEFAULT,CW_USEDEFAULT,
@@ -545,7 +545,7 @@ int mgfx_init(void) {
   sxs=dbl_ln ? (scr_xs<<1) : scr_xs;
   sys=dbl_ln ? (scr_ys<<1) : scr_ys;
   
-  /* vytvor okno, nastav gr. rezim, vytvor surface */
+  /* Create window, set graph. mode, create surface */
   if(mwin_init(0)<0) return -1;
   
   bmi=malloc(sizeof(BITMAPINFOHEADER)+256*sizeof(RGBQUAD));

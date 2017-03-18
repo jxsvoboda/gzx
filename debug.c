@@ -147,10 +147,10 @@ static void instr_next(void) {
 }
 
 /*
-  Jak najdeme predchozi instrukci:
-    Jdeme o BKTRACE bytu zpet a doufame,
-    ze se do dosazeni aktualni pozice sesynchronizujeme.
-    Zapamatujeme si pozici posledni instrukce pred akt. pozici.
+  How to find the preceding instruction:
+    Go BKTRACE bytes backward and hope that going forward from there
+    we will sync. before reaching the current position
+    We then save the position of the preceding instruction
 */
 
 #define BKTRACE 8

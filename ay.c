@@ -114,10 +114,10 @@ int ay_get_sample(void) {
 	
       if(env_pn[i]>2) env_pn[i]=(env_pn[i]&1) ? 1:2;
 
-      /* k.0/stoupa/klesa/k.1 */
+      /* const.0/rising/falling/const.1 */
       eblk=env_shape_tab [eshape] [env_pn[i]];
 	
-      /* konkretni volume */
+      /* specific volume */
       env_smp[i] = env_v_tab [eblk] [env_pp[i]];
     }
   }

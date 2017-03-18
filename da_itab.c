@@ -1,8 +1,8 @@
 /*
   Z80 disassembler
 
-  tabulka instrukci
-  include do disasm.c
+  opcode table
+  include into disasm.c
 */
 
 unsigned char d_op[1024]={

@@ -1,13 +1,7 @@
-Dulezite!!
+Important!!
 ----------
-- resit synchronizaci (casovani dle audia?)
+- improve A/V synchronization (sync based on audio?)
 
-- zjistit zda se neda zabranit blokovani programu behem manipulace s oknem
-  (presun, otevreni syst. menu, otvirani tooltipu na syst. tlacitka)
-
-Hotovo
-------
-- otestovat zda zapsane snapshoty lze nahrat v jinem emulatoru
->Z80 i SNA funguji v Z80v2 a X128
-
-- vylepsit,zjednodusit snd_win (pouzivat waveOutPause,...)
+- determine if it's possible to prevent blocking the application
+  while the window while some action (window being moved, system window open,
+  tooltip on system button opening) is in progress

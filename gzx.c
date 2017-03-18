@@ -9,8 +9,6 @@
 #define SNAP_CRASH "/mnt/dos/spcrash.z80"
 #undef LOG
 
-//#define USE_GPU
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -57,11 +55,11 @@ static int fl_frames=0;
 int quit=0;
 int slow_load=1;
 
-/* sudy(0) ci lichy(1) pulsnimek */
+/* even(0) or odd(1) field */
 int field_n=0;
 
-/* pracovni adresar v okamziku spusteni */
-/* ... zaklad pro hledani ROM souboru */
+/* Start up working directory */
+/* ... used as base for finding the ROM files */
 char *start_dir;
 
 int key_lalt_held;
@@ -333,9 +331,9 @@ void zx_debug_mstep(void) {
 
       mgfx_updscr();
 	
-      /* odted se kresli jiny pulsnimek */
+      /* Next field */
       field_n=!field_n;
-      mgfx_selln(1<<(field_n)); /* kresli sude/liche */
+      mgfx_selln(1<<(field_n)); /* Enable rendering odd/even lines */
       frmno=0;
     }
     frmno++;
@@ -470,9 +468,9 @@ int main(int argc, char **argv) {
 
 	mgfx_updscr();
 	
-	/* odted se kresli jiny pulsnimek */
+	/* Next field */
 	field_n=!field_n;
-	mgfx_selln(1<<(field_n)); /* kresli sude/liche */
+	mgfx_selln(1<<(field_n)); /* Enable rendering odd/even lines */
 	frmno=0;
       }
       frmno++;
@@ -533,7 +531,7 @@ int main(int argc, char **argv) {
 #endif
   }
   
-  /* uzavreni grafiky je atexit */
+  /* Graphics is closed automatically atexit() */
   
 #ifdef XMAP
   xmap_save();

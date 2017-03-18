@@ -31,7 +31,7 @@ static int gettimeofday(struct timeval *tv, struct timezone *tz) {
   t=t%1000;
   tv->tv_usec=t*1000;
 
-  return 0; /* ani nevim, co by mela vracet */
+  return 0;
 }
 
 void timer_reset(timer *t) {

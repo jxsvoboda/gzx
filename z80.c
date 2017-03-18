@@ -2,54 +2,22 @@
   GZX - George's ZX Spectrum Emulator
   Z80 CPU emulation
   
-  ackoli je naprosta vetsina vlajek implementovana,
-  (krome i/o blokovych instrukci a vlajek 5,3 u BIT (HL))
-  dosti her nefunguje... proc? asi nejake stenice.
+  Flag computations for most instructions should work
+  except block I/O instructions and undocumented 5,3 flags
+  for BIT (HL)
   
-  objevene nefungujici hry:
-    belegost (chcipne)
-    tapper (chcipne)
+  some games known not to work:
+    belegost (dies)
+    tapper (dies)
     
   !spemu		not implemented right in spectemu
   
-  udelat:
-    drive
-    - vlajky i/o blokovych instrukci
-    pozdeji
+  to do:
+    sooner
+    - flags for I/O block instructions
+    later
     - BIT (HL) - vlajky 3,5
-    - casovani undoc instrukci
-  
-  opraveno:
-    (IX+N) (IY+N) N=-128..127, nikoliv 0..255
-    dvojkovy doplnek NEG
-    emulace CP/LD/IN/OT..I/D/IR/DR po jednotlivych krocich
-    pri zvetsovani R registru se nemeni bit 7
-    LD A,I a LD A,R kopiruji do P/V vlajky IFF2, nikoli paritu
-    vsechny RETI/RETN kopiruji IFF2 do IFF1
-    _cp8 kopiruje vlajky 5,3 z mensitele, ne z vysledku
-    u IM 2 chybel push(PC) !@#
-    timingy CPIR/DR,LDIR/DR,OTIR/DR,INIR/DR,CALL cond,JP cond
-    SLL doplnuje do bitu 0 carry, nikoliv jednicku!
-    typy argumentu adc_v16,sbc_v16,sub_v16
-    dec8: sub_v8(a,1) misto sub_v8(a,a-1)
-    
-  udelano:
-    - DD/FD (normal/stray) modifiers full support!
-      (execution of instructions thus broken into parts)
-      .. timing changes!
-    - vsechny unsuported opcody implementovany (alespon priblizne spravne)
-    - int_lock zabrani preruseni po EI ci DI nebo uvnitr instrukce
-    - spravne casovani T a R pro INT a NMI
-    - "nedokumentovane"(ale pouzivane) I/O 16-bitove adresy
-    - _in8 nuluje H flag
-    - implementovany VSECHNY vlajky (vcetne nedokumentovanych) pro:
-          > 8-bitova aritmetika & logika
-	  > 16-bitova aritmetika
-	  > BIT (krome (HL))
-	  > ostatni neblokove operace
-	  > pametove blokove operace (LD..,CP..)
-      (pokud tam nemam chyby)
-    
+    - timing of undocumented instructions
 */
 
 #include <stdio.h>
@@ -75,8 +43,8 @@ static void (**ei_tab)(void);
 unsigned stat_tab[7][256];
 static int stat_i;
 
-/* tabulky pro urychleni vypoctu vlajek */
-static u8 ox_tab[256]; /* OR,XOR a dalsi */
+/* fast flag computation lookup table */
+static u8 ox_tab[256]; /* OR,XOR and more */
 
 /* returns the signed value of the byte: 0..127 ->0..127
                                          128..255 ->-128..-1 */
@@ -456,7 +424,7 @@ static u8 _bit8(u8 a, u8 b) {
 
   res=b & (1<<a);
  // printf("%04x: bit %d,0x%02x [%d]\n",cpus.PC,a,b,res);
-  cpus.F=(cpus.F&fC)|ox_tab[res]; /* CF se nemeni */
+  cpus.F=(cpus.F&fC)|ox_tab[res]; /* CF does not change */
 /*  setflags(res&0x80,
 	   res==0,
 	   1,
@@ -464,7 +432,7 @@ static u8 _bit8(u8 a, u8 b) {
 	   0,
 	   -1);*/
 	
-  /* nedokumentovane vlajky jsou ruzne pro ruzne opcody. viz BIT opcody. */
+  /* undoc flags are different for different opcodes. see BIT opcodes. */
   return res;
 }
 
@@ -483,7 +451,7 @@ static u8 _cp8(u16 a, u16 b) {
   res=a-b;
   setflags((res>>7)&1,
 	   (res&0xff)==0,
-	   (a&0x0f)-(b&0x0f) < 0, /* doufam */
+	   (a&0x0f)-(b&0x0f) < 0, /* I hope */
 	   sub_v8(a,b),
 	   1,
 	   res>0xff);
@@ -499,7 +467,7 @@ static u8 _dec8(u16 a) {
   res=(a-1)&0xff;
   setflags(res>>7,
 	   res==0,
-	   (a&0x0f)-1<0, /* doufam */
+	   (a&0x0f)-1<0, /* I hope */
 	   sub_v8(a,1),
 	   1,    /* !spemu */
 	   -1);
@@ -725,7 +693,7 @@ static u8 _sbc8(u16 a, u16 b) {
   res=a-b-c;
   setflags((res>>7)&1,
 	   (res&0xff)==0,
-	   (a&0x0f)-(b&0x0f)-c < 0, /* doufam */
+	   (a&0x0f)-(b&0x0f)-c < 0, /* I hope */
 	   sbc_v8(a,b,c),
 	   1,
 	   res>0xff);
@@ -769,7 +737,7 @@ static u8 _sub8(u16 a, u16 b) {
   res=a-b;
   setflags((res>>7)&1,
 	   (res&0xff)==0,
-	   (a&0x0f)-(b&0x0f) < 0, /* doufam */
+	   (a&0x0f)-(b&0x0f) < 0, /* I hope */
 	   sub_v8(a,b),
 	   1,
 	   res>0xff);
@@ -1909,11 +1877,11 @@ static void ei_ind(void) {
   
   setflags(res>>7,
            res==0,
-	   (cpus.r[rB]&0x0f)-1<0, /* doufam */
+	   (cpus.r[rB]&0x0f)-1<0, /* I hope */
 	   res==127,
 	   1,
 	   -1);
-  /* jeste nevim, jak funguji undoc flags */
+  /* dunno how undoc flags work here */
   
   cpus.r[rB]=res;
   z80_clock+=16;
@@ -1930,7 +1898,7 @@ static void ei_indr(void) {
   if(cpus.r[rB]==0) {
 //    printf("B==0. indr terminated.\n");
     setflags(0,1,0,0,1,-1);
-    /* jeste nevim, jak funguji undoc flags */
+    /* dunno how undoc flags work here */
     z80_clock+=16;
   } else {
     z80_clock+=21;
@@ -1952,7 +1920,7 @@ static void ei_ini(void) {
 	   res==127,
 	   1,
 	   -1);
-  /* jeste nevim, jak funguji undoc flags */
+  /* dunno how undoc flags work here */
   
   cpus.r[rB]=res;
   z80_clock+=16;
@@ -1969,7 +1937,7 @@ static void ei_inir(void) {
   if(cpus.r[rB]==0) {
 //    printf("B==0. inir terminated.\n");
     setflags(0,1,0,0,1,-1);
-    /* jeste nevim, jak funguji undoc flags */
+    /* dunno how undoc flags work here */
     z80_clock+=16;
   } else {
     z80_clock+=21;
@@ -2802,10 +2770,10 @@ static void ei_neg(void) {               /* A <- neg(A) .. two's complement */
   
   setflags((res>>7)&1,
 	   (res&0xff)==0,
-	   (res&0x0f)==0,        /* nejsem si jisty, overit !!!!! */
+	   (res&0x0f)==0,        /* not sure about this, verify!!!! */
 	   (res&0xff)==0x80,     /* 127 -> -128 */
 	   1,
-	   res>0xff);		 /* nejsem si jisty, overit !!!!! */
+	   res>0xff);		 /* not sure about this, verify!!!! */
 
   cpus.r[rA] = res & 0xff;
   setundocflags8(cpus.r[rA]);
@@ -2981,7 +2949,7 @@ static void ei_outi(void) {
   
   setflags(res>>7,
            res==0,
-	   (cpus.r[rB]&0x0f)-1<0, /* doufam */
+	   (cpus.r[rB]&0x0f)-1<0, /* I hope */
 	   res==127,
 	   1,
 	   -1);
@@ -4695,7 +4663,7 @@ static void Ui_cp_IYl(void) {
 
 static void Ui_ednop(void) { /* different from ei_nop! */
   printf("EDNOP!\n");
-  z80_clock+=8; /* dle Seana jako 2 NOPy */
+  z80_clock+=8; /* according to Sean it's like 2 NOPs */
   uoc++;
 }
 
@@ -4706,10 +4674,10 @@ static void Ui_neg(void) {               /* A <- neg(A) .. two's complement */
   cpus.r[rA] = res & 0xff;
   setflags((res>>7)&1,
 	   (res&0xff)==0,
-	   (res&0x0f)==0,        /* nejsem si jisty, overit !!!!! */
+	   (res&0x0f)==0,        /* not sure about this, verify !!!!! */
 	   -2,
 	   1,
-	   res>0xff);		 /* nejsem si jisty, overit !!!!! */
+	   res>0xff);		 /* not sure about this, verify !!!!! */
 
   cpus.r[rA] = res & 0xff;
   z80_clock+=8; /* timing taken from ei_neg */

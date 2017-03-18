@@ -1,8 +1,6 @@
 /*
   GZX - George's ZX Spectrum Emulator
   snapshot loading/saving
-  
-  !!!! otestovat zda zapsane SNA a Z80 lze nahrat v jinych emulatorech !!!!
 */
 
 #include <stdio.h>
@@ -18,8 +16,7 @@
 #include "snap_ay.h"
 
 /*
-  prevede cislovani stranek v 48k (8,4,5) na nase
-  cislovani (0,1,2)
+  Translate 48k page numbers (8,4,5) to our numbering system (0,1,2)
 */
 static int map48k(int page_n) {
   switch(page_n) {
@@ -31,16 +28,16 @@ static int map48k(int page_n) {
 }
 
 /*
-  Musime dostat CPU do stavu, kteremu rozumi
-  ostatni emulatory
+  We need to get the CPU to a state representable in others' snapshot
+  formats.
 */
 static void prepare_cpu(void) {
-  if(cpus.modifier) /* DD/FD prefix - presun se zpet */
+  if(cpus.modifier) /* DD/FD prefix - go back */
     cpus.PC--;
-  /* cpus.halted .. nejde nic delat, proste to neumi */
-  /* cpus.int_lock .. zatim na to kasleme,
-     chtelo by to prejit k prvni instrukci bez int_lock
-     ... to je ale muze byt teoreticky za dlouho */
+  /* cpus.halted .. too bad, there's just nothing we can do */
+  /* cpus.int_lock .. XXX we should advance to the first instruction
+   * that does not enable int_lock. But that could theoretically take
+   * a long time. So just forget it. */
 }
 
 /* G.A.Lunter's highly emulator-specific snapshot format .Z80 */
@@ -341,7 +338,7 @@ static int zx_save_snap_z80(char *name) {
   fputu8(f,cpus.IFF2);
   
   /* Z80 does not implement or save this */
-/*  cpus.int_lock=0; na tyto pozor!!
+/*  cpus.int_lock=0; better watch out for these!!
   cpus.modifier=0;
   cpus.halted=0;*/
   
@@ -458,7 +455,7 @@ int zx_load_snap_sna(char *name) {
   inter=fgetu8(f);
   
   cpus.IFF2=inter ? 1:0;
-  cpus.IFF1=cpus.IFF2;		/* nevim, jestli je tam nekde ulozeny */
+  cpus.IFF1=cpus.IFF2;		/* don't know if this is stored anywhere */
   
   cpus.R=fgetu8(f);
   
@@ -486,9 +483,9 @@ int zx_load_snap_sna(char *name) {
     fseek(f,27,SEEK_SET);  
     fread(zxram,1,48*1024,f);
   
-    /* pop PC (fujtajbl!)*/
+    /* pop PC (yuck!)*/
     cpus.PC=zx_memget16(cpus.SP);
-    zx_memset16(cpus.SP,0);	/* pry to obcas pomuze */
+    zx_memset16(cpus.SP,0);	/* this is supposed to help sometimes */
     cpus.SP+=2;
   } else { /* 128k SNA */
     zx_select_memmodel(ZXM_128K);
@@ -498,7 +495,7 @@ int zx_load_snap_sna(char *name) {
     cpus.PC=fgetu16le(f);
     pageout=fgetu8(f);
     zx_mem_page_select(pageout);
-    fgetu8(f); /* ??? Spectrum 128k prece TR-DOS nema! */
+    fgetu8(f); /* ??? I thought 128k didn't have TR-DOS? */
     
     curpaged=pageout & 0x07;
     
@@ -539,7 +536,7 @@ static int zx_save_snap_sna(char *name) {
   prepare_cpu();
 
   if(mem_model == ZXM_48K) {
-    /* des a hruza */
+    /* ah! the horror! */
     cpus.SP-=2;
     zx_memset16(cpus.SP,cpus.PC);
   }
@@ -564,8 +561,8 @@ static int zx_save_snap_sna(char *name) {
   fputu16le(f,cpus.IY);
   fputu16le(f,cpus.IX);
   
-  /* podle dokumentace tam ma byt IFF2, jenze CPU hledi na IFF1,
-     zatimco IFF2 zajima jen NMI obsluhu! */
+  /* The docs say IFF2 goes here. But, IFF1 is what's important.
+   * Nobody cares aobut IFF2 except the NMI handler! */
   inter=cpus.IFF1 ? 0x04 : 0x00;
   
   fputu8(f,inter);
@@ -578,12 +575,12 @@ static int zx_save_snap_sna(char *name) {
   
   fputu8(f,cpus.int_mode);
   
-  /* myslim ze spravne to ma byt posledni vystup na prislusny port */
+  /* XXX I think this should really be the last byte written to the ULA port */
   fputu8(f,border);
   
   /* filepos: 27 bytes */
   				   
-  /* na tyto pozor! */
+  /* better watch out for these! */
 /*  cpus.int_lock;
   cpus.modifier;
   cpus.halted; */
@@ -621,12 +618,11 @@ static int zx_save_snap_sna(char *name) {
   }
   
   if(mem_model == ZXM_48K) {
-    /* uklidime tu spoust... */
-    zx_memset16(cpus.SP,0); /* jestli to rozbije snapshot,
-      at se ucinky projevi hned! */
+    /* XXX The idea here is that if the snapshot is broken due to 
+     * the stack being clobbered, we'd better find out immediately. */
+    zx_memset16(cpus.SP,0);
     cpus.SP+=2;
   }
-
 
   fclose(f);
  

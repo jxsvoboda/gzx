@@ -1,9 +1,9 @@
 /* 
   GZX - George's ZX Spectrum Emulator
-  pcm playback through windows waveOut
+  PCM playback through windows waveOut
 
-  Momentalne se zda byt ok: rozumna latence, nezasekava se.
-  Sla by latence jeste snizit? Je to rozumne?
+  Currently this seems fine: reasonable latency, no drops.
+  Could we make the latency even smaller? Is it a good idea?
 */
 
 #include <stdio.h>
@@ -15,15 +15,15 @@
 #include "sndw.h"
 
 /*
-  Latence <= N_BUF * 40 ms
-  Aktualne: 120 ms
+  Latency <= N_BUF * 40 ms
+  Currently: 120 ms
 */
 
 //#define N_BUF 3
 #define N_BUF 5
 
-static int sbufn=0;   /* index prvniho bloku, ktery je submitnuty */
-static int ebufn=0;   /* index prvniho bloku, ktery je prazdny */
+static int sbufn=0;   /* index of the first submitted buffer */
+static int ebufn=0;   /* index of the first empty buffer */
 static int ns,ne;
 
 static int running=0;
@@ -36,7 +36,7 @@ static u8 *sndbuf[N_BUF];
 static WAVEHDR wavehdr[N_BUF];
 
 /*
-  kruhova fronta
+  ring buffer
 
   playing   empty     playing
   ........|.........|.......
@@ -69,7 +69,7 @@ int sndw_init(int bufs) {
 
   waveOutPause(hwaveout);
 
-  /* alokuj buffery */
+  /* allocate buffers */
 
   for(i=0;i<N_BUF;i++) {
     sndbuf[i]=malloc(buf_size);
@@ -172,7 +172,7 @@ void sndw_write(u8 *buf) {
 
   /* start/restart playback */
   if(!running) {
-    /* jen pokud je fronta plna */
+    /* only if the queue is full */
     if(ne==0) {
       fprintf(stdout,"starting playback\n");
       running=1;
@@ -180,4 +180,3 @@ void sndw_write(u8 *buf) {
     }
   }
 }
-
