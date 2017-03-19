@@ -47,11 +47,19 @@ sources = \
     snd_sdl.c \
     sys_unix.c
 
+sources_g = \
+    $(sources) \
+    z80g.c
+
 sources_w32 = \
     $(sources_generic) \
     gfx_win.c \
     snd_win.c \
     sys_win.c
+
+sources_w32_g = \
+    $(sources_w32) \
+    z80g.c
 
 binary = gzx
 binary_g = gzx-g
@@ -59,9 +67,9 @@ binary_w32 = gzx.exe
 binary_w32_g = gzx-g.exe
 
 objects = $(sources:.c=.o)
-objects_g = $(sources:.c=.g.o)
+objects_g = $(sources_g:.c=.g.o)
 objects_w32 = $(sources_w32:.c=.w32.o)
-objects_w32_g = $(sources_w32:.c=.g.w32.o)
+objects_w32_g = $(sources_w32_g:.c=.g.w32.o)
 headers = $(wildcard *.h)
 
 # Default target

@@ -213,7 +213,9 @@ void zx_scr_save(void) {
 static unsigned long snd_t,tapp_t;
 
 void zx_reset(void) {
+#ifdef USE_GPU
   gpu_reset();
+#endif
   z80_reset();
   ay_reset();
   

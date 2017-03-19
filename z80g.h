@@ -2,6 +2,7 @@
 #define Z80G_H
 
 #include "intdef.h"
+#include "z80.h"
 
 /* Number of graphical planes */
 #define NGP 8

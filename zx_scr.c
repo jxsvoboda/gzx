@@ -27,7 +27,9 @@ static int zxpal[3*16]={ /* taken from X128 */
       0,239,  0,	  0,255,255,	255,255,  0,	255,255,255
 };
 
+#ifdef USE_GPU
 static int gfxpal[3*256];
+#endif
 
 static u16 vxswapb(u16 ofs) {
   return (ofs & 0xf81f) | ((ofs & 0x00e0)<<3) | ((ofs & 0x0700)>>3);
@@ -41,7 +43,9 @@ static unsigned scan_x0,scan_x1i,scan_y0,scan_y1i;
 
 unsigned long disp_clock,disp_cbase;
 
+#ifdef USE_GPU
 static void g_scr_disp_fast(void);
+#endif
 
 static void n_scr_disp_fast(void);
 static void n_scr_disp(void);
@@ -108,6 +112,7 @@ static void n_scr_disp_fast(void) {
 
 u8 *background;
 
+#ifdef USE_GPU
 static void g_scr_disp_fast(void) {
   int x,y,i,j;
   unsigned buf;
@@ -154,6 +159,7 @@ static void g_scr_disp_fast(void) {
     }
   }
 }
+#endif
 
 
 
@@ -219,13 +225,17 @@ static void n_scr_disp(void) {
 }
 
 void zx_scr_mode(int mode) {
+#ifdef USE_GPU
   if(mode) {
     zx_scr_disp_fast=g_scr_disp_fast;
     mgfx_setpal(0,256,gfxpal);
   } else {
+#endif
     zx_scr_disp_fast=n_scr_disp_fast;
     mgfx_setpal(0,16,zxpal);
+#ifdef USE_GPU
   }
+#endif
 }
 
 int zx_scr_init(void) {

@@ -2,8 +2,6 @@
   GZX - George's ZX Spectrum Emulator
   Z80 GPU
   Implements graphical co-planes (a la Spec256)
-  
-  this file is included into z80.c
 */
 
 #include "memio.h"

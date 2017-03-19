@@ -300,7 +300,6 @@ int gfxrom_load(char *fname, unsigned bank) {
   fclose(f);
   return 0;
 }
-#endif
 
 int gfxram_load(char *fname) {
   FILE *f;
@@ -326,3 +325,5 @@ int gfxram_load(char *fname) {
   fclose(f);
   return 0;
 }
+
+#endif

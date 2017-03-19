@@ -5168,5 +5168,3 @@ int z80_reset(void) {
 
   return 0;
 }
-
-#include "z80g.c"

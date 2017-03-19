@@ -1,6 +1,7 @@
 #ifndef Z80_H
 #define Z80_H
 
+#include <stdio.h>
 #include "intdef.h"
 
 /* flags */
