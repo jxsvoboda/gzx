@@ -55,6 +55,10 @@ static void z80_memset16(u16 addr, u16 val) {
   z80_memset8(addr+1, val >> 8);
 }
 
+static inline void z80_clock_inc(u8 inc)
+{
+	z80_clock += inc;
+}
 
 /* returns the signed value of the byte: 0..127 ->0..127
                                          128..255 ->-128..-1 */
@@ -777,7 +781,7 @@ static void ei_adc_A_r(void) {
   res=_adc8(cpus.r[rA],cpus.r[opcode & 0x07]);
   cpus.r[rA]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_adc_A_N(void) {
@@ -788,7 +792,7 @@ static void ei_adc_A_N(void) {
   res=_adc8(cpus.r[rA],op);
   cpus.r[rA]=res;
 
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_adc_A_iHL(void) {
@@ -797,7 +801,7 @@ static void ei_adc_A_iHL(void) {
   res=_adc8(cpus.r[rA],_iHL8());
   cpus.r[rA]=res;
 
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_adc_A_iIXN(void) {
@@ -808,7 +812,7 @@ static void ei_adc_A_iIXN(void) {
   res=_adc8(cpus.r[rA],_iIXN8(op));
   cpus.r[rA]=res;
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_adc_A_iIYN(void) {
@@ -819,7 +823,7 @@ static void ei_adc_A_iIYN(void) {
   res=_adc8(cpus.r[rA],_iIYN8(op));
   cpus.r[rA]=res;
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_adc_HL_BC(void) {
@@ -828,7 +832,7 @@ static void ei_adc_HL_BC(void) {
   res=_adc16(getHL(),getBC());
   setHL(res);
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_adc_HL_DE(void) {
@@ -837,7 +841,7 @@ static void ei_adc_HL_DE(void) {
   res=_adc16(getHL(),getDE());
   setHL(res);
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_adc_HL_HL(void) {
@@ -846,7 +850,7 @@ static void ei_adc_HL_HL(void) {
   res=_adc16(getHL(),getHL());
   setHL(res);
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_adc_HL_SP(void) {
@@ -855,7 +859,7 @@ static void ei_adc_HL_SP(void) {
   res=_adc16(getHL(),cpus.SP);
   setHL(res);
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 /************************************************************************/
@@ -866,7 +870,7 @@ static void ei_add_A_r(void) {
   res=_add8(cpus.r[rA],cpus.r[opcode & 0x07]);
   cpus.r[rA]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_add_A_N(void) {
@@ -877,7 +881,7 @@ static void ei_add_A_N(void) {
   res=_add8(cpus.r[rA],op);
   cpus.r[rA]=res;
 
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_add_A_iHL(void) {
@@ -886,7 +890,7 @@ static void ei_add_A_iHL(void) {
   res=_add8(cpus.r[rA],_iHL8());
   cpus.r[rA]=res;
 
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_add_A_iIXN(void) {
@@ -897,7 +901,7 @@ static void ei_add_A_iIXN(void) {
   res=_add8(cpus.r[rA],_iIXN8(op));
   cpus.r[rA]=res;
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_add_A_iIYN(void) {
@@ -908,7 +912,7 @@ static void ei_add_A_iIYN(void) {
   res=_add8(cpus.r[rA],_iIYN8(op));
   cpus.r[rA]=res;
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_add_HL_BC(void) {
@@ -917,7 +921,7 @@ static void ei_add_HL_BC(void) {
   res=_add16(getHL(),getBC());
   setHL(res);
 
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_add_HL_DE(void) {
@@ -926,7 +930,7 @@ static void ei_add_HL_DE(void) {
   res=_add16(getHL(),getDE());
   setHL(res);
 
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_add_HL_HL(void) {
@@ -935,7 +939,7 @@ static void ei_add_HL_HL(void) {
   res=_add16(getHL(),getHL());
   setHL(res);
 
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_add_HL_SP(void) {
@@ -944,7 +948,7 @@ static void ei_add_HL_SP(void) {
   res=_add16(getHL(),cpus.SP);
   setHL(res);
 
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_add_IX_BC(void) {
@@ -953,7 +957,7 @@ static void ei_add_IX_BC(void) {
   res=_add16(cpus.IX,getBC());
   cpus.IX=res;
 
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_add_IX_DE(void) {
@@ -962,7 +966,7 @@ static void ei_add_IX_DE(void) {
   res=_add16(cpus.IX,getDE());
   cpus.IX=res;
 
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_add_IX_IX(void) {
@@ -971,7 +975,7 @@ static void ei_add_IX_IX(void) {
   res=_add16(cpus.IX,cpus.IX);
   cpus.IX=res;
 
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_add_IX_SP(void) {
@@ -980,7 +984,7 @@ static void ei_add_IX_SP(void) {
   res=_add16(cpus.IX,cpus.SP);
   cpus.IX=res;
 
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_add_IY_BC(void) {
@@ -989,7 +993,7 @@ static void ei_add_IY_BC(void) {
   res=_add16(cpus.IY,getBC());
   cpus.IY=res;
 
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_add_IY_DE(void) {
@@ -998,7 +1002,7 @@ static void ei_add_IY_DE(void) {
   res=_add16(cpus.IY,getDE());
   cpus.IY=res;
 
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_add_IY_IY(void) {
@@ -1007,7 +1011,7 @@ static void ei_add_IY_IY(void) {
   res=_add16(cpus.IY,cpus.IY);
   cpus.IY=res;
 
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_add_IY_SP(void) {
@@ -1016,7 +1020,7 @@ static void ei_add_IY_SP(void) {
   res=_add16(cpus.IY,cpus.SP);
   cpus.IY=res;
 
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 /************************************************************************/
@@ -1027,7 +1031,7 @@ static void ei_and_r(void) {
   res=_and8(cpus.r[rA],cpus.r[opcode & 0x07]);
   cpus.r[rA]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_and_N(void) {
@@ -1038,7 +1042,7 @@ static void ei_and_N(void) {
   res=_and8(cpus.r[rA],op);
   cpus.r[rA]=res;
 
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_and_iHL(void) {
@@ -1047,7 +1051,7 @@ static void ei_and_iHL(void) {
   res=_and8(cpus.r[rA],_iHL8());
   cpus.r[rA]=res;
 
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_and_iIXN(void) {
@@ -1058,7 +1062,7 @@ static void ei_and_iIXN(void) {
   res=_and8(cpus.r[rA],_iIXN8(op));
   cpus.r[rA]=res;
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_and_iIYN(void) {
@@ -1069,7 +1073,7 @@ static void ei_and_iIYN(void) {
   res=_and8(cpus.r[rA],_iIYN8(op));
   cpus.r[rA]=res;
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 /************************************************************************/
@@ -1077,7 +1081,7 @@ static void ei_and_iIYN(void) {
 static void ei_bit_b_r(void) {
   _bit8((opcode>>3)&0x07,cpus.r[opcode & 0x07]);
 
-  z80_clock+=8;
+  z80_clock_inc(8);
 }
 
 static void ei_bit_b_iHL(void) {
@@ -1085,7 +1089,7 @@ static void ei_bit_b_iHL(void) {
   /* undoc flags are set in a VERY weird way here.
      I didn't implement this yet. */
 
-  z80_clock+=12;
+  z80_clock_inc(12);
 }
 
 /* DDCB ! */
@@ -1093,7 +1097,7 @@ static void ei_bit_b_iIXN(void) {
   _bit8((opcode>>3)&0x07,_iIXN8(cbop));
   setundocflags8((cpus.IX+u8sval(cbop))>>8); /* weird, huh? */
 
-  z80_clock+=16;
+  z80_clock_inc(16);
 }
 
 /* FDCB ! */
@@ -1102,7 +1106,7 @@ static void ei_bit_b_iIYN(void) {
   _bit8((opcode>>3)&0x07,_iIYN8(cbop));
   setundocflags8((cpus.IY+u8sval(cbop))>>8); /* weird, huh? */
 
-  z80_clock+=16;
+  z80_clock_inc(16);
 }
 
 /************************************************************************/
@@ -1112,7 +1116,7 @@ static void ei_call_NN(void) {
 
   addr=z80_iget16();
   _call16(addr);
-  z80_clock+=17;
+  z80_clock_inc(17);
 }
 
 static void ei_call_C_NN(void) {
@@ -1121,8 +1125,8 @@ static void ei_call_C_NN(void) {
   addr=z80_iget16();
   if(cpus.F & fC) {
     _call16(addr);
-    z80_clock+=17;
-  } else z80_clock+=10;
+    z80_clock_inc(17);
+  } else z80_clock_inc(10);
 }
 
 static void ei_call_NC_NN(void) {
@@ -1131,8 +1135,8 @@ static void ei_call_NC_NN(void) {
   addr=z80_iget16();
   if(!(cpus.F & fC)) {
     _call16(addr);
-    z80_clock+=17;
-  } else z80_clock+=10;
+    z80_clock_inc(17);
+  } else z80_clock_inc(10);
 }
 
 static void ei_call_M_NN(void) {
@@ -1141,8 +1145,8 @@ static void ei_call_M_NN(void) {
   addr=z80_iget16();
   if(cpus.F & fS) {
     _call16(addr);
-    z80_clock+=17;
-  } else z80_clock+=10;
+    z80_clock_inc(17);
+  } else z80_clock_inc(10);
 }
 
 static void ei_call_P_NN(void) {
@@ -1151,8 +1155,8 @@ static void ei_call_P_NN(void) {
   addr=z80_iget16();
   if(!(cpus.F & fS)) {
     _call16(addr);
-    z80_clock+=17;
-  } else z80_clock+=10;
+    z80_clock_inc(17);
+  } else z80_clock_inc(10);
 }
 
 static void ei_call_Z_NN(void) {
@@ -1161,8 +1165,8 @@ static void ei_call_Z_NN(void) {
   addr=z80_iget16();
   if(cpus.F & fZ) {
     _call16(addr);
-    z80_clock+=17;
-  } else z80_clock+=10;
+    z80_clock_inc(17);
+  } else z80_clock_inc(10);
 }
 
 static void ei_call_NZ_NN(void) {
@@ -1171,8 +1175,8 @@ static void ei_call_NZ_NN(void) {
   addr=z80_iget16();
   if(!(cpus.F & fZ)) {
     _call16(addr);
-    z80_clock+=17;
-  } else z80_clock+=10;
+    z80_clock_inc(17);
+  } else z80_clock_inc(10);
 }
 
 static void ei_call_PE_NN(void) {
@@ -1181,8 +1185,8 @@ static void ei_call_PE_NN(void) {
   addr=z80_iget16();
   if(cpus.F & fPV) {
     _call16(addr);
-    z80_clock+=17;
-  } else z80_clock+=10;
+    z80_clock_inc(17);
+  } else z80_clock_inc(10);
 }
 
 static void ei_call_PO_NN(void) {
@@ -1191,8 +1195,8 @@ static void ei_call_PO_NN(void) {
   addr=z80_iget16();
   if(!(cpus.F & fPV)) {
     _call16(addr);
-    z80_clock+=17;
-  } else z80_clock+=10;
+    z80_clock_inc(17);
+  } else z80_clock_inc(10);
 }
 
 /************************************************************************/
@@ -1202,14 +1206,14 @@ static void ei_ccf(void) { /* complement carry flag */
   
   nHC=(cpus.F&fC)?fHC:0;
   cpus.F= ((cpus.F ^ fC) & ~(fU1|fHC|fU2|fN)) | nHC | (cpus.r[rA]&(fU1|fU2));
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 /************************************************************************/
 
 static void ei_cp_r(void) {
   _cp8(cpus.r[rA],cpus.r[opcode & 0x07]);
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_cp_N(void) {
@@ -1218,12 +1222,12 @@ static void ei_cp_N(void) {
   op=z80_iget8();
 
   _cp8(cpus.r[rA],op);
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_cp_iHL(void) {
   _cp8(cpus.r[rA],_iHL8());
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_cp_iIXN(void) {
@@ -1232,7 +1236,7 @@ static void ei_cp_iIXN(void) {
   op=z80_iget8();
 
   _cp8(cpus.r[rA],_iIXN8(op));
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_cp_iIYN(void) {
@@ -1241,7 +1245,7 @@ static void ei_cp_iIYN(void) {
   op=z80_iget8();
 
   _cp8(cpus.r[rA],_iIYN8(op));
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_cpd(void) {
@@ -1265,7 +1269,7 @@ static void ei_cpd(void) {
   if(newBC!=0) ufr--;  /* if we turned H flag on, decrease by 1 */
   setundocflags8(((ufr&0x02)<<4)|(ufr&0x08));
 
-  z80_clock+=16;
+  z80_clock_inc(16);
 }
 
 static void ei_cpdr(void) {
@@ -1290,9 +1294,9 @@ static void ei_cpdr(void) {
   setundocflags8(((ufr&0x02)<<4)|(ufr&0x08));
 
   if(newBC==0 || (cpus.F & fZ)) {
-    z80_clock+=16;
+    z80_clock_inc(16);
   } else {
-    z80_clock+=21;
+    z80_clock_inc(21);
     cpus.PC-=2;
   }
 }
@@ -1318,7 +1322,7 @@ static void ei_cpi(void) {
   if(newBC!=0) ufr--;  /* if we turned H flag on, decrease by 1 */
   setundocflags8(((ufr&0x02)<<4)|(ufr&0x08));
 
-  z80_clock+=16;
+  z80_clock_inc(16);
 }
 
 static void ei_cpir(void) {
@@ -1343,9 +1347,9 @@ static void ei_cpir(void) {
   setundocflags8(((ufr&0x02)<<4)|(ufr&0x08));
 
   if(newBC==0 || (cpus.F & fZ)) {
-    z80_clock+=16;
+    z80_clock_inc(16);
   } else {
-    z80_clock+=21;
+    z80_clock_inc(21);
     cpus.PC-=2;
   }
 }
@@ -1362,7 +1366,7 @@ static void ei_cpl(void) { /* A <- cpl(A) ... one's complement */
 	   1,
 	   -1);
   setundocflags8(cpus.r[rA]);
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 
@@ -1398,7 +1402,7 @@ static void ei_daa(void) {
   
   cpus.r[rA] = res & 0xff;
   
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 /************************************************************************/
@@ -1409,7 +1413,7 @@ static void ei_dec_A(void) {
   res=_dec8(cpus.r[rA]);
   cpus.r[rA]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_dec_B(void) {
@@ -1418,7 +1422,7 @@ static void ei_dec_B(void) {
   res=_dec8(cpus.r[rB]);
   cpus.r[rB]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_dec_C(void) {
@@ -1427,7 +1431,7 @@ static void ei_dec_C(void) {
   res=_dec8(cpus.r[rC]);
   cpus.r[rC]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_dec_D(void) {
@@ -1436,7 +1440,7 @@ static void ei_dec_D(void) {
   res=_dec8(cpus.r[rD]);
   cpus.r[rD]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_dec_E(void) {
@@ -1445,7 +1449,7 @@ static void ei_dec_E(void) {
   res=_dec8(cpus.r[rE]);
   cpus.r[rE]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_dec_H(void) {
@@ -1454,7 +1458,7 @@ static void ei_dec_H(void) {
   res=_dec8(cpus.r[rH]);
   cpus.r[rH]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_dec_L(void) {
@@ -1463,7 +1467,7 @@ static void ei_dec_L(void) {
   res=_dec8(cpus.r[rL]);
   cpus.r[rL]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_dec_iHL(void) {
@@ -1472,7 +1476,7 @@ static void ei_dec_iHL(void) {
   res=_dec8(_iHL8());
   s_iHL8(res);
 
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_dec_iIXN(void) {
@@ -1483,7 +1487,7 @@ static void ei_dec_iIXN(void) {
   res=_dec8(_iIXN8(op));
   s_iIXN8(op,res);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 static void ei_dec_iIYN(void) {
@@ -1494,43 +1498,43 @@ static void ei_dec_iIYN(void) {
   res=_dec8(_iIYN8(op));
   s_iIYN8(op,res);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 static void ei_dec_BC(void) {
 
   setBC(getBC()-1);
-  z80_clock+=6;
+  z80_clock_inc(6);
 }
 
 static void ei_dec_DE(void) {
 
   setDE(getDE()-1);
-  z80_clock+=6;
+  z80_clock_inc(6);
 }
 
 static void ei_dec_HL(void) {
 
   setHL(getHL()-1);
-  z80_clock+=6;
+  z80_clock_inc(6);
 }
 
 static void ei_dec_SP(void) {
 
   cpus.SP--;
-  z80_clock+=6;
+  z80_clock_inc(6);
 }
 
 static void ei_dec_IX(void) {
 
   cpus.IX--;
-  z80_clock+=6;
+  z80_clock_inc(6);
 }
 
 static void ei_dec_IY(void) {
 
   cpus.IY--;
-  z80_clock+=6;
+  z80_clock_inc(6);
 }
 
 /************************************************************************/
@@ -1539,7 +1543,7 @@ static void ei_di(void) {
 //  printf("DI\n");
   cpus.IFF1=cpus.IFF2=0;
   cpus.int_lock=1;
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 /************************************************************************/
@@ -1551,8 +1555,8 @@ static void ei_djnz(void) {
   cpus.r[rB]--;
   if(cpus.r[rB]!=0) {
     _jr8(ofs);
-    z80_clock+=13;
-  } else z80_clock+=8;
+    z80_clock_inc(13);
+  } else z80_clock_inc(8);
 }
 
 /************************************************************************/
@@ -1561,7 +1565,7 @@ static void ei_ei(void) {
 //  printf("EI\n");
   cpus.IFF1=cpus.IFF2=1;
   cpus.int_lock=1;
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 /************************************************************************/
@@ -1573,7 +1577,7 @@ static void ei_ex_iSP_HL(void) {
   s_iSP16(getHL());
   setHL(tmp);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 static void ei_ex_iSP_IX(void) {
@@ -1583,7 +1587,7 @@ static void ei_ex_iSP_IX(void) {
   s_iSP16(cpus.IX);
   cpus.IX=tmp;
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 static void ei_ex_iSP_IY(void) {
@@ -1593,7 +1597,7 @@ static void ei_ex_iSP_IY(void) {
   s_iSP16(cpus.IY);
   cpus.IY=tmp;
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 static void ei_ex_AF_xAF(void) {
@@ -1602,14 +1606,14 @@ static void ei_ex_AF_xAF(void) {
   tmp=cpus.r[rA]; cpus.r[rA]=cpus.r_[rA]; cpus.r_[rA]=tmp;
   tmp=cpus.F; cpus.F=cpus.F_; cpus.F_=tmp;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_ex_DE_HL(void) {
   u16 tmp;
 
   tmp=getDE(); setDE(getHL()); setHL(tmp);
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_exx(void) {
@@ -1622,7 +1626,7 @@ static void ei_exx(void) {
   tmp=cpus.r[rH]; cpus.r[rH]=cpus.r_[rH]; cpus.r_[rH]=tmp;
   tmp=cpus.r[rL]; cpus.r[rL]=cpus.r_[rL]; cpus.r_[rL]=tmp;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 
@@ -1633,7 +1637,7 @@ static void ei_halt(void) {
 //  printf("halt!\n");
   cpus.halted=1;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 
@@ -1641,17 +1645,17 @@ static void ei_halt(void) {
 
 static void ei_im_0(void) {
   cpus.int_mode=0;
-  z80_clock+=8;
+  z80_clock_inc(8);
 }
 
 static void ei_im_1(void) {
   cpus.int_mode=1;
-  z80_clock+=8;
+  z80_clock_inc(8);
 }
 
 static void ei_im_2(void) {
   cpus.int_mode=2;
-  z80_clock+=8;
+  z80_clock_inc(8);
 }
 
 /************************************************************************/
@@ -1667,7 +1671,7 @@ static void ei_in_A_iN(void) {
   res=_in8pf(((u16)cpus.r[rA]<<8)|(u16)op);
   cpus.r[rA]=res;
 
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void Ui_in_iC(void) {
@@ -1676,7 +1680,7 @@ static void Ui_in_iC(void) {
   _in8(getBC());
 
   uoc++;
-  z80_clock+=12;
+  z80_clock_inc(12);
 }
 
 static void ei_in_A_iC(void) {
@@ -1685,7 +1689,7 @@ static void ei_in_A_iC(void) {
   res=_in8(getBC());
   cpus.r[rA]=res;
 
-  z80_clock+=12;
+  z80_clock_inc(12);
 }
 
 static void ei_in_B_iC(void) {
@@ -1694,7 +1698,7 @@ static void ei_in_B_iC(void) {
   res=_in8(getBC());
   cpus.r[rB]=res;
 
-  z80_clock+=12;
+  z80_clock_inc(12);
 }
 
 static void ei_in_C_iC(void) {
@@ -1703,7 +1707,7 @@ static void ei_in_C_iC(void) {
   res=_in8(getBC());
   cpus.r[rC]=res;
 
-  z80_clock+=12;
+  z80_clock_inc(12);
 }
 
 static void ei_in_D_iC(void) {
@@ -1712,7 +1716,7 @@ static void ei_in_D_iC(void) {
   res=_in8(getBC());
   cpus.r[rD]=res;
 
-  z80_clock+=12;
+  z80_clock_inc(12);
 }
 
 static void ei_in_E_iC(void) {
@@ -1721,7 +1725,7 @@ static void ei_in_E_iC(void) {
   res=_in8(getBC());
   cpus.r[rE]=res;
 
-  z80_clock+=12;
+  z80_clock_inc(12);
 }
 
 static void ei_in_H_iC(void) {
@@ -1730,7 +1734,7 @@ static void ei_in_H_iC(void) {
   res=_in8(getBC());
   cpus.r[rH]=res;
 
-  z80_clock+=12;
+  z80_clock_inc(12);
 }
 
 static void ei_in_L_iC(void) {
@@ -1739,7 +1743,7 @@ static void ei_in_L_iC(void) {
   res=_in8(getBC());
   cpus.r[rL]=res;
 
-  z80_clock+=12;
+  z80_clock_inc(12);
 }
 
 /************************************************************************/
@@ -1750,7 +1754,7 @@ static void ei_inc_A(void) {
   res=_inc8(cpus.r[rA]);
   cpus.r[rA]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_inc_B(void) {
@@ -1759,7 +1763,7 @@ static void ei_inc_B(void) {
   res=_inc8(cpus.r[rB]);
   cpus.r[rB]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_inc_C(void) {
@@ -1768,7 +1772,7 @@ static void ei_inc_C(void) {
   res=_inc8(cpus.r[rC]);
   cpus.r[rC]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_inc_D(void) {
@@ -1777,7 +1781,7 @@ static void ei_inc_D(void) {
   res=_inc8(cpus.r[rD]);
   cpus.r[rD]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_inc_E(void) {
@@ -1786,7 +1790,7 @@ static void ei_inc_E(void) {
   res=_inc8(cpus.r[rE]);
   cpus.r[rE]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_inc_H(void) {
@@ -1795,7 +1799,7 @@ static void ei_inc_H(void) {
   res=_inc8(cpus.r[rH]);
   cpus.r[rH]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_inc_L(void) {
@@ -1804,7 +1808,7 @@ static void ei_inc_L(void) {
   res=_inc8(cpus.r[rL]);
   cpus.r[rL]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_inc_iHL(void) {
@@ -1813,7 +1817,7 @@ static void ei_inc_iHL(void) {
   res=_inc8(_iHL8());
   s_iHL8(res);
 
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_inc_iIXN(void) {
@@ -1824,7 +1828,7 @@ static void ei_inc_iIXN(void) {
   res=_inc8(_iIXN8(op));
   s_iIXN8(op,res);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 static void ei_inc_iIYN(void) {
@@ -1835,43 +1839,43 @@ static void ei_inc_iIYN(void) {
   res=_inc8(_iIYN8(op));
   s_iIYN8(op,res);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 static void ei_inc_BC(void) {
 
   setBC(getBC()+1);
-  z80_clock+=6;
+  z80_clock_inc(6);
 }
 
 static void ei_inc_DE(void) {
 
   setDE(getDE()+1);
-  z80_clock+=6;
+  z80_clock_inc(6);
 }
 
 static void ei_inc_HL(void) {
 
   setHL(getHL()+1);
-  z80_clock+=6;
+  z80_clock_inc(6);
 }
 
 static void ei_inc_SP(void) {
 
   cpus.SP++;
-  z80_clock+=6;
+  z80_clock_inc(6);
 }
 
 static void ei_inc_IX(void) {
 
   cpus.IX++;
-  z80_clock+=6;
+  z80_clock_inc(6);
 }
 
 static void ei_inc_IY(void) {
 
   cpus.IY++;
-  z80_clock+=6;
+  z80_clock_inc(6);
 }
 
 
@@ -1894,7 +1898,7 @@ static void ei_ind(void) {
   /* dunno how undoc flags work here */
   
   cpus.r[rB]=res;
-  z80_clock+=16;
+  z80_clock_inc(16);
 }
 
 static void ei_indr(void) {
@@ -1909,9 +1913,9 @@ static void ei_indr(void) {
 //    printf("B==0. indr terminated.\n");
     setflags(0,1,0,0,1,-1);
     /* dunno how undoc flags work here */
-    z80_clock+=16;
+    z80_clock_inc(16);
   } else {
-    z80_clock+=21;
+    z80_clock_inc(21);
     cpus.PC-=2;
   }
 }
@@ -1933,7 +1937,7 @@ static void ei_ini(void) {
   /* dunno how undoc flags work here */
   
   cpus.r[rB]=res;
-  z80_clock+=16;
+  z80_clock_inc(16);
 }
 
 static void ei_inir(void) {
@@ -1948,9 +1952,9 @@ static void ei_inir(void) {
 //    printf("B==0. inir terminated.\n");
     setflags(0,1,0,0,1,-1);
     /* dunno how undoc flags work here */
-    z80_clock+=16;
+    z80_clock_inc(16);
   } else {
-    z80_clock+=21;
+    z80_clock_inc(21);
     cpus.PC-=2;
   }
 }
@@ -1963,7 +1967,7 @@ static void ei_jp_NN(void) {
   addr=z80_iget16();
  // printf("jp 0x%04x\n",addr);
   _jp16(addr);
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 static void ei_jp_HL(void) {
@@ -1973,7 +1977,7 @@ static void ei_jp_HL(void) {
 //  printf("%04x:jp HL [0x%04x]\n",cpus.PC,addr);
 //  z80_printstatus();
   _jp16(addr);
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_jp_IX(void) {
@@ -1981,7 +1985,7 @@ static void ei_jp_IX(void) {
 
   addr=cpus.IX;
   _jp16(addr);
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_jp_IY(void) {
@@ -1989,7 +1993,7 @@ static void ei_jp_IY(void) {
 
   addr=cpus.IY;
   _jp16(addr);
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_jp_C_NN(void) {
@@ -1999,7 +2003,7 @@ static void ei_jp_C_NN(void) {
   if(cpus.F & fC) {
     _jp16(addr);
   }
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 static void ei_jp_NC_NN(void) {
@@ -2009,7 +2013,7 @@ static void ei_jp_NC_NN(void) {
   if(!(cpus.F & fC)) {
     _jp16(addr);
   }
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 static void ei_jp_M_NN(void) {
@@ -2019,7 +2023,7 @@ static void ei_jp_M_NN(void) {
   if(cpus.F & fS) {
     _jp16(addr);
   }
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 static void ei_jp_P_NN(void) {
@@ -2029,7 +2033,7 @@ static void ei_jp_P_NN(void) {
   if(!(cpus.F & fS)) {
     _jp16(addr);
   }
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 static void ei_jp_Z_NN(void) {
@@ -2039,7 +2043,7 @@ static void ei_jp_Z_NN(void) {
   if(cpus.F & fZ) {
     _jp16(addr);
   }
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 static void ei_jp_NZ_NN(void) {
@@ -2049,7 +2053,7 @@ static void ei_jp_NZ_NN(void) {
   if(!(cpus.F & fZ)) {
     _jp16(addr);
   }
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 static void ei_jp_PE_NN(void) {
@@ -2059,7 +2063,7 @@ static void ei_jp_PE_NN(void) {
   if(cpus.F & fPV) {
     _jp16(addr);
   }
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 static void ei_jp_PO_NN(void) {
@@ -2069,7 +2073,7 @@ static void ei_jp_PO_NN(void) {
   if(!(cpus.F & fPV)) {
     _jp16(addr);
   }
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 /************************************************************************/
@@ -2079,7 +2083,7 @@ static void ei_jr_N(void) {
 
   ofs=z80_iget8();
   _jr8(ofs);
-  z80_clock+=12;
+  z80_clock_inc(12);
 }
 
 static void ei_jr_C_N(void) {
@@ -2088,8 +2092,8 @@ static void ei_jr_C_N(void) {
   ofs=z80_iget8();
   if(cpus.F & fC) {
     _jr8(ofs);
-    z80_clock+=12;
-  } else z80_clock+=7;
+    z80_clock_inc(12);
+  } else z80_clock_inc(7);
 }
 
 static void ei_jr_NC_N(void) {
@@ -2098,8 +2102,8 @@ static void ei_jr_NC_N(void) {
   ofs=z80_iget8();
   if(!(cpus.F & fC)) {
     _jr8(ofs);
-    z80_clock+=12;
-  } else z80_clock+=7;
+    z80_clock_inc(12);
+  } else z80_clock_inc(7);
 }
 
 static void ei_jr_Z_N(void) {
@@ -2108,8 +2112,8 @@ static void ei_jr_Z_N(void) {
   ofs=z80_iget8();
   if(cpus.F & fZ) {
     _jr8(ofs);
-    z80_clock+=12;
-  } else z80_clock+=7;
+    z80_clock_inc(12);
+  } else z80_clock_inc(7);
 }
 
 static void ei_jr_NZ_N(void) {
@@ -2118,8 +2122,8 @@ static void ei_jr_NZ_N(void) {
   ofs=z80_iget8();
   if(!(cpus.F & fZ)) {
     _jr8(ofs);
-    z80_clock+=12;
-  } else z80_clock+=7;
+    z80_clock_inc(12);
+  } else z80_clock_inc(7);
 }
 
 /************************************************************************/
@@ -2127,13 +2131,13 @@ static void ei_jr_NZ_N(void) {
 static void ei_ld_I_A(void) {
 
   cpus.I=cpus.r[rA];
-  z80_clock+=9;
+  z80_clock_inc(9);
 }
 
 static void ei_ld_R_A(void) {
 
   cpus.R=cpus.r[rA];
-  z80_clock+=9;
+  z80_clock_inc(9);
 }
 
 static void ei_ld_A_I(void) {
@@ -2146,7 +2150,7 @@ static void ei_ld_A_I(void) {
 	   0,
 	   -1);
   setundocflags8(cpus.r[rA]);
-  z80_clock+=9;
+  z80_clock_inc(9);
 }
 
 static void ei_ld_A_R(void) {
@@ -2160,13 +2164,13 @@ static void ei_ld_A_R(void) {
 	   0,
 	   -1);
   setundocflags8(cpus.r[rA]);
-  z80_clock+=9;
+  z80_clock_inc(9);
 }
 
 static void ei_ld_A_r(void) {
 
   cpus.r[rA]=cpus.r[opcode & 0x07];
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_ld_A_N(void) {
@@ -2174,25 +2178,25 @@ static void ei_ld_A_N(void) {
 
   op=z80_iget8();
   cpus.r[rA]=op;
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_ld_A_iBC(void) {
 
   cpus.r[rA]=_iBC8();
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_ld_A_iDE(void) {
 
   cpus.r[rA]=_iDE8();
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_ld_A_iHL(void) {
 
   cpus.r[rA]=_iHL8();
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_ld_A_iIXN(void) {
@@ -2200,7 +2204,7 @@ static void ei_ld_A_iIXN(void) {
 
   op=z80_iget8();
   cpus.r[rA]=_iIXN8(op);
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_ld_A_iIYN(void) {
@@ -2208,7 +2212,7 @@ static void ei_ld_A_iIYN(void) {
 
   op=z80_iget8();
   cpus.r[rA]=_iIYN8(op);
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_ld_A_iNN(void) {
@@ -2216,13 +2220,13 @@ static void ei_ld_A_iNN(void) {
 
   addr=z80_iget16();
   cpus.r[rA]=z80_memget8(addr);
-  z80_clock+=13;
+  z80_clock_inc(13);
 }
 
 static void ei_ld_B_r(void) {
 
   cpus.r[rB]=cpus.r[opcode & 0x07];
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_ld_B_N(void) {
@@ -2230,13 +2234,13 @@ static void ei_ld_B_N(void) {
 
   op=z80_iget8();
   cpus.r[rB]=op;
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_ld_B_iHL(void) {
 
   cpus.r[rB]=_iHL8();
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_ld_B_iIXN(void) {
@@ -2244,7 +2248,7 @@ static void ei_ld_B_iIXN(void) {
 
   op=z80_iget8();
   cpus.r[rB]=_iIXN8(op);
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_ld_B_iIYN(void) {
@@ -2252,13 +2256,13 @@ static void ei_ld_B_iIYN(void) {
 
   op=z80_iget8();
   cpus.r[rB]=_iIYN8(op);
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_ld_C_r(void) {
 
   cpus.r[rC]=cpus.r[opcode & 0x07];
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_ld_C_N(void) {
@@ -2266,13 +2270,13 @@ static void ei_ld_C_N(void) {
 
   op=z80_iget8();
   cpus.r[rC]=op;
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_ld_C_iHL(void) {
 
   cpus.r[rC]=_iHL8();
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_ld_C_iIXN(void) {
@@ -2280,7 +2284,7 @@ static void ei_ld_C_iIXN(void) {
 
   op=z80_iget8();
   cpus.r[rC]=_iIXN8(op);
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_ld_C_iIYN(void) {
@@ -2288,13 +2292,13 @@ static void ei_ld_C_iIYN(void) {
 
   op=z80_iget8();
   cpus.r[rC]=_iIYN8(op);
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_ld_D_r(void) {
 
   cpus.r[rD]=cpus.r[opcode & 0x07];
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_ld_D_N(void) {
@@ -2302,13 +2306,13 @@ static void ei_ld_D_N(void) {
 
   op=z80_iget8();
   cpus.r[rD]=op;
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_ld_D_iHL(void) {
 
   cpus.r[rD]=_iHL8();
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_ld_D_iIXN(void) {
@@ -2316,7 +2320,7 @@ static void ei_ld_D_iIXN(void) {
 
   op=z80_iget8();
   cpus.r[rD]=_iIXN8(op);
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_ld_D_iIYN(void) {
@@ -2324,13 +2328,13 @@ static void ei_ld_D_iIYN(void) {
 
   op=z80_iget8();
   cpus.r[rD]=_iIYN8(op);
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_ld_E_r(void) {
 
   cpus.r[rE]=cpus.r[opcode & 0x07];
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_ld_E_N(void) {
@@ -2338,13 +2342,13 @@ static void ei_ld_E_N(void) {
 
   op=z80_iget8();
   cpus.r[rE]=op;
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_ld_E_iHL(void) {
 
   cpus.r[rE]=_iHL8();
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_ld_E_iIXN(void) {
@@ -2352,7 +2356,7 @@ static void ei_ld_E_iIXN(void) {
 
   op=z80_iget8();
   cpus.r[rE]=_iIXN8(op);
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_ld_E_iIYN(void) {
@@ -2360,13 +2364,13 @@ static void ei_ld_E_iIYN(void) {
 
   op=z80_iget8();
   cpus.r[rE]=_iIYN8(op);
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_ld_H_r(void) {
 
   cpus.r[rH]=cpus.r[opcode & 0x07];
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_ld_H_N(void) {
@@ -2374,13 +2378,13 @@ static void ei_ld_H_N(void) {
 
   op=z80_iget8();
   cpus.r[rH]=op;
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_ld_H_iHL(void) {
 
   cpus.r[rH]=_iHL8();
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_ld_H_iIXN(void) {
@@ -2388,7 +2392,7 @@ static void ei_ld_H_iIXN(void) {
 
   op=z80_iget8();
   cpus.r[rH]=_iIXN8(op);
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_ld_H_iIYN(void) {
@@ -2396,13 +2400,13 @@ static void ei_ld_H_iIYN(void) {
 
   op=z80_iget8();
   cpus.r[rH]=_iIYN8(op);
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_ld_L_r(void) {
 
   cpus.r[rL]=cpus.r[opcode & 0x07];
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_ld_L_N(void) {
@@ -2410,13 +2414,13 @@ static void ei_ld_L_N(void) {
 
   op=z80_iget8();
   cpus.r[rL]=op;
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_ld_L_iHL(void) {
 
   cpus.r[rL]=_iHL8();
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_ld_L_iIXN(void) {
@@ -2424,7 +2428,7 @@ static void ei_ld_L_iIXN(void) {
 
   op=z80_iget8();
   cpus.r[rL]=_iIXN8(op);
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_ld_L_iIYN(void) {
@@ -2434,7 +2438,7 @@ static void ei_ld_L_iIYN(void) {
 
   cpus.r[rL]=_iIYN8(op);
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_ld_BC_iNN(void) {
@@ -2442,7 +2446,7 @@ static void ei_ld_BC_iNN(void) {
 
   addr=z80_iget16();
   setBC(z80_memget16(addr));
-  z80_clock+=20;
+  z80_clock_inc(20);
 }
 
 static void ei_ld_BC_NN(void) {
@@ -2450,7 +2454,7 @@ static void ei_ld_BC_NN(void) {
 
   data=z80_iget16();
   setBC(data);
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 static void ei_ld_DE_iNN(void) {
@@ -2458,7 +2462,7 @@ static void ei_ld_DE_iNN(void) {
 
   addr=z80_iget16();
   setDE(z80_memget16(addr));
-  z80_clock+=20;
+  z80_clock_inc(20);
 }
 
 static void ei_ld_DE_NN(void) {
@@ -2466,7 +2470,7 @@ static void ei_ld_DE_NN(void) {
 
   data=z80_iget16();
   setDE(data);
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 static void ei_ld_HL_iNN(void) {
@@ -2474,7 +2478,7 @@ static void ei_ld_HL_iNN(void) {
 
   addr=z80_iget16();
   setHL(z80_memget16(addr));
-  z80_clock+=20;
+  z80_clock_inc(20);
 }
 
 static void ei_ld_HL_NN(void) {
@@ -2482,7 +2486,7 @@ static void ei_ld_HL_NN(void) {
 
   data=z80_iget16();
   setHL(data);
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 static void ei_ld_SP_iNN(void) {
@@ -2490,7 +2494,7 @@ static void ei_ld_SP_iNN(void) {
 
   addr=z80_iget16();
   cpus.SP=z80_memget16(addr);
-  z80_clock+=20;
+  z80_clock_inc(20);
 }
 
 static void ei_ld_SP_NN(void) {
@@ -2498,25 +2502,25 @@ static void ei_ld_SP_NN(void) {
 
   data=z80_iget16();
   cpus.SP=data;
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 static void ei_ld_SP_HL(void) {
 
   cpus.SP=getHL();
-  z80_clock+=6;
+  z80_clock_inc(6);
 }
 
 static void ei_ld_SP_IX(void) {
 
   cpus.SP=cpus.IX;
-  z80_clock+=6;
+  z80_clock_inc(6);
 }
 
 static void ei_ld_SP_IY(void) {
 
   cpus.SP=cpus.IY;
-  z80_clock+=6;
+  z80_clock_inc(6);
 }
 
 static void ei_ld_IX_iNN(void) {
@@ -2524,7 +2528,7 @@ static void ei_ld_IX_iNN(void) {
 
   addr=z80_iget16();
   cpus.IX=z80_memget16(addr);
-  z80_clock+=16;
+  z80_clock_inc(16);
 }
 
 static void ei_ld_IX_NN(void) {
@@ -2532,7 +2536,7 @@ static void ei_ld_IX_NN(void) {
 
   data=z80_iget16();
   cpus.IX=data;
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 static void ei_ld_IY_iNN(void) {
@@ -2540,7 +2544,7 @@ static void ei_ld_IY_iNN(void) {
 
   addr=z80_iget16();
   cpus.IY=z80_memget16(addr);
-  z80_clock+=16;
+  z80_clock_inc(16);
 }
 
 static void ei_ld_IY_NN(void) {
@@ -2548,13 +2552,13 @@ static void ei_ld_IY_NN(void) {
 
   data=z80_iget16();
   cpus.IY=data;
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 static void ei_ld_iHL_r(void) {
 
   s_iHL8(cpus.r[opcode & 0x07]);
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_ld_iHL_N(void) {
@@ -2562,19 +2566,19 @@ static void ei_ld_iHL_N(void) {
 
   op=z80_iget8();
   s_iHL8(op);
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 static void ei_ld_iBC_A(void) {
 
   s_iBC8(cpus.r[rA]);
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_ld_iDE_A(void) {
 
   s_iDE8(cpus.r[rA]);
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_ld_iNN_A(void) {
@@ -2582,7 +2586,7 @@ static void ei_ld_iNN_A(void) {
 
   addr=z80_iget16();
   z80_memset8(addr,cpus.r[rA]);
-  z80_clock+=13;
+  z80_clock_inc(13);
 }
 
 static void ei_ld_iNN_BC(void) {
@@ -2590,7 +2594,7 @@ static void ei_ld_iNN_BC(void) {
 
   addr=z80_iget16();
   z80_memset16(addr,getBC());
-  z80_clock+=20;
+  z80_clock_inc(20);
 }
 
 static void ei_ld_iNN_DE(void) {
@@ -2598,7 +2602,7 @@ static void ei_ld_iNN_DE(void) {
 
   addr=z80_iget16();
   z80_memset16(addr,getDE());
-  z80_clock+=20;
+  z80_clock_inc(20);
 }
 
 static void ei_ld_iNN_HL(void) {
@@ -2606,7 +2610,7 @@ static void ei_ld_iNN_HL(void) {
 
   addr=z80_iget16();
   z80_memset16(addr,getHL());
-  z80_clock+=16;
+  z80_clock_inc(16);
 }
 
 static void ei_ld_iNN_SP(void) {
@@ -2614,7 +2618,7 @@ static void ei_ld_iNN_SP(void) {
 
   addr=z80_iget16();
   z80_memset16(addr,cpus.SP);
-  z80_clock+=20;
+  z80_clock_inc(20);
 }
 
 static void ei_ld_iNN_IX(void) {
@@ -2622,7 +2626,7 @@ static void ei_ld_iNN_IX(void) {
 
   addr=z80_iget16();
   z80_memset16(addr,cpus.IX);
-  z80_clock+=16;
+  z80_clock_inc(16);
 }
 
 static void ei_ld_iNN_IY(void) {
@@ -2630,7 +2634,7 @@ static void ei_ld_iNN_IY(void) {
 
   addr=z80_iget16();
   z80_memset16(addr,cpus.IY);
-  z80_clock+=16;
+  z80_clock_inc(16);
 }
 
 static void ei_ld_iIXN_r(void) {
@@ -2638,7 +2642,7 @@ static void ei_ld_iIXN_r(void) {
 
   op=z80_iget8();
   s_iIXN8(op,cpus.r[opcode & 0x07]);
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_ld_iIXN_N(void) {
@@ -2647,7 +2651,7 @@ static void ei_ld_iIXN_N(void) {
   op=z80_iget8();
   data=z80_iget8();
   s_iIXN8(op,data);
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_ld_iIYN_r(void) {
@@ -2655,7 +2659,7 @@ static void ei_ld_iIYN_r(void) {
 
   op=z80_iget8();
   s_iIYN8(op,cpus.r[opcode & 0x07]);
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_ld_iIYN_N(void) {
@@ -2666,7 +2670,7 @@ static void ei_ld_iIYN_N(void) {
 
   s_iIYN8(op,data);
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 
@@ -2691,7 +2695,7 @@ static void ei_ldd(void) {
   ufr=res+cpus.r[rA];
   setundocflags8(((ufr&0x02)<<4) | (ufr&0x08));
 
-  z80_clock+=16;
+  z80_clock_inc(16);
 }
 
 static void ei_lddr(void) {
@@ -2714,9 +2718,9 @@ static void ei_lddr(void) {
   setundocflags8(((ufr&0x02)<<4) | (ufr&0x08));
 
   if(newBC==0) {
-    z80_clock+=16;
+    z80_clock_inc(16);
   } else {
-    z80_clock+=21;
+    z80_clock_inc(21);
     cpus.PC-=2;
   }
 }
@@ -2741,7 +2745,7 @@ static void ei_ldi(void) {
   ufr=res+cpus.r[rA];
   setundocflags8(((ufr&0x02)<<4) | (ufr&0x08));
 
-  z80_clock+=16;
+  z80_clock_inc(16);
 }
 
 static void ei_ldir(void) {
@@ -2763,9 +2767,9 @@ static void ei_ldir(void) {
   setundocflags8(((ufr&0x02)<<4) | (ufr&0x08));
 
   if(newBC==0) {
-    z80_clock+=16;
+    z80_clock_inc(16);
   } else {
-    z80_clock+=21;
+    z80_clock_inc(21);
     cpus.PC-=2;
   }
 }
@@ -2787,14 +2791,14 @@ static void ei_neg(void) {               /* A <- neg(A) .. two's complement */
 
   cpus.r[rA] = res & 0xff;
   setundocflags8(cpus.r[rA]);
-  z80_clock+=8;
+  z80_clock_inc(8);
 }
 
 
 /************************************************************************/
 
 static void ei_nop(void) {
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 /************************************************************************/
@@ -2805,7 +2809,7 @@ static void ei_or_r(void) {
   res=_or8(cpus.r[rA],cpus.r[opcode & 0x07]);
   cpus.r[rA]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_or_N(void) {
@@ -2816,7 +2820,7 @@ static void ei_or_N(void) {
   res=_or8(cpus.r[rA],op);
   cpus.r[rA]=res;
 
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_or_iHL(void) {
@@ -2825,7 +2829,7 @@ static void ei_or_iHL(void) {
   res=_or8(cpus.r[rA],_iHL8());
   cpus.r[rA]=res;
 
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_or_iIXN(void) {
@@ -2836,7 +2840,7 @@ static void ei_or_iIXN(void) {
   res=_or8(cpus.r[rA],_iIXN8(op));
   cpus.r[rA]=res;
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_or_iIYN(void) {
@@ -2847,7 +2851,7 @@ static void ei_or_iIYN(void) {
   res=_or8(cpus.r[rA],_iIYN8(op));
   cpus.r[rA]=res;
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 /************************************************************************/
@@ -2859,7 +2863,7 @@ static void ei_out_iN_A(void) {
 
   _out8(((u16)cpus.r[rA]<<8)|(u16)op,cpus.r[rA]);
 
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void Ui_out_iC_0(void) {
@@ -2868,49 +2872,49 @@ static void Ui_out_iC_0(void) {
   _out8(getBC(),0);
 
   uoc++;
-  z80_clock+=12;
+  z80_clock_inc(12);
 }
 
 static void ei_out_iC_A(void) {
 
   _out8(getBC(),cpus.r[rA]);
-  z80_clock+=12;
+  z80_clock_inc(12);
 }
 
 static void ei_out_iC_B(void) {
 
   _out8(getBC(),cpus.r[rB]);
-  z80_clock+=12;
+  z80_clock_inc(12);
 }
 
 static void ei_out_iC_C(void) {
 
   _out8(getBC(),cpus.r[rC]);
-  z80_clock+=12;
+  z80_clock_inc(12);
 }
 
 static void ei_out_iC_D(void) {
 
   _out8(getBC(),cpus.r[rD]);
-  z80_clock+=12;
+  z80_clock_inc(12);
 }
 
 static void ei_out_iC_E(void) {
 
   _out8(getBC(),cpus.r[rE]);
-  z80_clock+=12;
+  z80_clock_inc(12);
 }
 
 static void ei_out_iC_H(void) {
 
   _out8(getBC(),cpus.r[rH]);
-  z80_clock+=12;
+  z80_clock_inc(12);
 }
 
 static void ei_out_iC_L(void) {
 
   _out8(getBC(),cpus.r[rL]);
-  z80_clock+=12;
+  z80_clock_inc(12);
 }
 
 /************************************************************************/
@@ -2931,7 +2935,7 @@ static void ei_outd(void) {
   /* undoc flags not affected */
 	   
   cpus.r[rB]=res;
-  z80_clock+=16;
+  z80_clock_inc(16);
 }
 
 static void ei_otdr(void) {
@@ -2943,9 +2947,9 @@ static void ei_otdr(void) {
 //    printf("B==0. otdr terminated.\n");
     setflags(0,1,0,0,1,-1);
     /* undoc flags not affected */
-    z80_clock+=1;
+    z80_clock_inc(1);
   } else {
-    z80_clock+=21;
+    z80_clock_inc(21);
     cpus.PC-=2;
   }
 }
@@ -2966,7 +2970,7 @@ static void ei_outi(void) {
   /* undoc flags not affected */
   
   cpus.r[rB]=res;
-  z80_clock+=16;
+  z80_clock_inc(16);
 }
 
 static void ei_otir(void) {
@@ -2979,9 +2983,9 @@ static void ei_otir(void) {
 //    printf("B==0. otir terminated.\n");
     setflags(0,1,0,0,1,-1);
     /* undoc flags not affected */
-    z80_clock+=1;
+    z80_clock_inc(1);
   } else {
-    z80_clock+=21;
+    z80_clock_inc(21);
     cpus.PC-=2;
   }
 }
@@ -2991,62 +2995,62 @@ static void ei_otir(void) {
 
 static void ei_pop_AF(void) {
   setAF(_pop16());
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 static void ei_pop_BC(void) {
   setBC(_pop16());
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 static void ei_pop_DE(void) {
   setDE(_pop16());
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 static void ei_pop_HL(void) {
   setHL(_pop16());
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 static void ei_pop_IX(void) {
   cpus.IX=_pop16();
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 static void ei_pop_IY(void) {
   cpus.IY=_pop16();
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 static void ei_push_AF(void) {
   _push16(getAF());
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_push_BC(void) {
   _push16(getBC());
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_push_DE(void) {
   _push16(getDE());
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_push_HL(void) {
   _push16(getHL());
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_push_IX(void) {
   _push16(cpus.IX);
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_push_IY(void) {
   _push16(cpus.IY);
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 /************************************************************************/
@@ -3057,7 +3061,7 @@ static void ei_res_b_r(void) {
   res=_res8((opcode>>3)&0x07,cpus.r[opcode & 0x07]);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=8;
+  z80_clock_inc(8);
 }
 
 static void ei_res_b_iHL(void) {
@@ -3066,7 +3070,7 @@ static void ei_res_b_iHL(void) {
   res=_res8((opcode>>3)&0x07,_iHL8());
   s_iHL8(res);
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 /* DDCB ! */
@@ -3076,7 +3080,7 @@ static void ei_res_b_iIXN(void) {
   res=_res8((opcode>>3)&0x07,_iIXN8(cbop));
   s_iIXN8(cbop,res);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 /* FDCB ! */
@@ -3086,71 +3090,71 @@ static void ei_res_b_iIYN(void) {
   res=_res8((opcode>>3)&0x07,_iIYN8(cbop));
   s_iIYN8(cbop,res);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 /************************************************************************/
 
 static void ei_ret(void) {
   cpus.PC=_pop16();
-  z80_clock+=10;
+  z80_clock_inc(10);
 }
 
 static void ei_ret_C(void) {
   if(cpus.F & fC) {
     cpus.PC=_pop16();
-    z80_clock+=11;
-  } else z80_clock+=5;
+    z80_clock_inc(11);
+  } else z80_clock_inc(5);
 }
 
 static void ei_ret_NC(void) {
   if(!(cpus.F & fC)) {
     cpus.PC=_pop16();
-    z80_clock+=11;
-  } else z80_clock+=5;
+    z80_clock_inc(11);
+  } else z80_clock_inc(5);
 }
 
 static void ei_ret_M(void) {
   if(cpus.F & fS) {
     cpus.PC=_pop16();
-    z80_clock+=11;
-  } else z80_clock+=5;
+    z80_clock_inc(11);
+  } else z80_clock_inc(5);
 }
 
 static void ei_ret_P(void) {
   if(!(cpus.F & fS)) {
     cpus.PC=_pop16();
-    z80_clock+=11;
-  } else z80_clock+=5;
+    z80_clock_inc(11);
+  } else z80_clock_inc(5);
 }
 
 
 static void ei_ret_Z(void) {
   if(cpus.F & fZ) {
     cpus.PC=_pop16();
-    z80_clock+=11;
-  } else z80_clock+=5;
+    z80_clock_inc(11);
+  } else z80_clock_inc(5);
 }
 
 static void ei_ret_NZ(void) {
   if(!(cpus.F & fZ)) {
     cpus.PC=_pop16();
-    z80_clock+=11;
-  } else z80_clock+=5;
+    z80_clock_inc(11);
+  } else z80_clock_inc(5);
 }
 
 static void ei_ret_PE(void) {
   if(cpus.F & fPV) {
     cpus.PC=_pop16();
-    z80_clock+=11;
-  } else z80_clock+=5;
+    z80_clock_inc(11);
+  } else z80_clock_inc(5);
 }
 
 static void ei_ret_PO(void) {
   if(!(cpus.F & fPV)) {
     cpus.PC=_pop16();
-    z80_clock+=11;
-  } else z80_clock+=5;
+    z80_clock_inc(11);
+  } else z80_clock_inc(5);
 }
 
 /************************************************************************/
@@ -3158,14 +3162,14 @@ static void ei_ret_PO(void) {
 static void ei_reti(void) {
   cpus.IFF1=cpus.IFF2;
   cpus.PC=_pop16();
-  z80_clock+=14;
+  z80_clock_inc(14);
 }
 
 
 static void ei_retn(void) {
   cpus.IFF1=cpus.IFF2;
   cpus.PC=_pop16();
-  z80_clock+=14;
+  z80_clock_inc(14);
 }
 
 /************************************************************************/
@@ -3176,7 +3180,7 @@ static void ei_rla(void) {
   res=_rla8(cpus.r[rA]);
   cpus.r[rA]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_rl_r(void) {
@@ -3185,7 +3189,7 @@ static void ei_rl_r(void) {
   res=_rl8(cpus.r[opcode & 0x07]);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=8;
+  z80_clock_inc(8);
 }
 
 static void ei_rl_iHL(void) {
@@ -3194,7 +3198,7 @@ static void ei_rl_iHL(void) {
   res=_rl8(_iHL8());
   s_iHL8(res);
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 /* DDCB */
@@ -3204,7 +3208,7 @@ static void ei_rl_iIXN(void) {
   res=_rl8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 /* FDCB */
@@ -3214,7 +3218,7 @@ static void ei_rl_iIYN(void) {
   res=_rl8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 static void ei_rlca(void) {
@@ -3223,7 +3227,7 @@ static void ei_rlca(void) {
   res=_rlca8(cpus.r[rA]);
   cpus.r[rA]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_rlc_r(void) {
@@ -3232,7 +3236,7 @@ static void ei_rlc_r(void) {
   res=_rlc8(cpus.r[opcode & 0x07]);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=8;
+  z80_clock_inc(8);
 }
 
 static void ei_rlc_iHL(void) {
@@ -3241,7 +3245,7 @@ static void ei_rlc_iHL(void) {
   res=_rlc8(_iHL8());
   s_iHL8(res);
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 /* DDCB */
@@ -3251,7 +3255,7 @@ static void ei_rlc_iIXN(void) {
   res=_rlc8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 /* FDCB */
@@ -3261,7 +3265,7 @@ static void ei_rlc_iIYN(void) {
   res=_rlc8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 static void ei_rld(void) {
@@ -3276,7 +3280,7 @@ static void ei_rld(void) {
   
   cpus.F=(cpus.F&fC)|ox_tab[cpus.r[rA]];
 
-  z80_clock+=18;
+  z80_clock_inc(18);
 }
 
 static void ei_rra(void) {
@@ -3285,7 +3289,7 @@ static void ei_rra(void) {
   res=_rra8(cpus.r[rA]);
   cpus.r[rA]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_rr_r(void) {
@@ -3294,7 +3298,7 @@ static void ei_rr_r(void) {
   res=_rr8(cpus.r[opcode & 0x07]);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=8;
+  z80_clock_inc(8);
 }
 
 static void ei_rr_iHL(void) {
@@ -3303,7 +3307,7 @@ static void ei_rr_iHL(void) {
   res=_rr8(_iHL8());
   s_iHL8(res);
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 /* DDCB */
@@ -3313,7 +3317,7 @@ static void ei_rr_iIXN(void) {
   res=_rr8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 /* FDCB */
@@ -3323,7 +3327,7 @@ static void ei_rr_iIYN(void) {
   res=_rr8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 static void ei_rrca(void) {
@@ -3332,7 +3336,7 @@ static void ei_rrca(void) {
   res=_rrca8(cpus.r[rA]);
   cpus.r[rA]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_rrc_r(void) {
@@ -3341,7 +3345,7 @@ static void ei_rrc_r(void) {
   res=_rrc8(cpus.r[opcode & 0x07]);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=8;
+  z80_clock_inc(8);
 }
 
 static void ei_rrc_iHL(void) {
@@ -3350,7 +3354,7 @@ static void ei_rrc_iHL(void) {
   res=_rrc8(_iHL8());
   s_iHL8(res);
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 /* DDCB */
@@ -3360,7 +3364,7 @@ static void ei_rrc_iIXN(void) {
   res=_rrc8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 /* FDCB */
@@ -3370,7 +3374,7 @@ static void ei_rrc_iIYN(void) {
   res=_rrc8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 static void ei_rrd(void) {
@@ -3385,50 +3389,50 @@ static void ei_rrd(void) {
   
   cpus.F=(cpus.F&fC)|ox_tab[cpus.r[rA]];
 
-  z80_clock+=18;
+  z80_clock_inc(18);
 }
 
 /************************************************************************/
 
 static void ei_rst_0(void) {
   _call16(0x0000);
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_rst_8(void) {
   z80_printstatus();
   _call16(0x0008);
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_rst_10(void) {
   _call16(0x0010);
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_rst_18(void) {
   _call16(0x0018);
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_rst_20(void) {
   _call16(0x0020);
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_rst_28(void) {
   _call16(0x0028);
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_rst_30(void) {
   _call16(0x0030);
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 static void ei_rst_38(void) {
   _call16(0x0038);
-  z80_clock+=11;
+  z80_clock_inc(11);
 }
 
 /************************************************************************/
@@ -3439,7 +3443,7 @@ static void ei_sbc_A_r(void) {
   res=_sbc8(cpus.r[rA],cpus.r[opcode & 0x07]);
   cpus.r[rA]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_sbc_A_N(void) {
@@ -3450,7 +3454,7 @@ static void ei_sbc_A_N(void) {
   res=_sbc8(cpus.r[rA],op);
   cpus.r[rA]=res;
 
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_sbc_A_iHL(void) {
@@ -3459,7 +3463,7 @@ static void ei_sbc_A_iHL(void) {
   res=_sbc8(cpus.r[rA],_iHL8());
   cpus.r[rA]=res;
 
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_sbc_A_iIXN(void) {
@@ -3470,7 +3474,7 @@ static void ei_sbc_A_iIXN(void) {
   res=_sbc8(cpus.r[rA],_iIXN8(op));
   cpus.r[rA]=res;
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_sbc_A_iIYN(void) {
@@ -3481,7 +3485,7 @@ static void ei_sbc_A_iIYN(void) {
   res=_sbc8(cpus.r[rA],_iIYN8(op));
   cpus.r[rA]=res;
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_sbc_HL_BC(void) {
@@ -3490,7 +3494,7 @@ static void ei_sbc_HL_BC(void) {
   res=_sbc16(getHL(),getBC());
   setHL(res);
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_sbc_HL_DE(void) {
@@ -3499,7 +3503,7 @@ static void ei_sbc_HL_DE(void) {
   res=_sbc16(getHL(),getDE());
   setHL(res);
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_sbc_HL_HL(void) {
@@ -3508,7 +3512,7 @@ static void ei_sbc_HL_HL(void) {
   res=_sbc16(getHL(),getHL());
   setHL(res);
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_sbc_HL_SP(void) {
@@ -3517,7 +3521,7 @@ static void ei_sbc_HL_SP(void) {
   res=_sbc16(getHL(),cpus.SP);
   setHL(res);
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 
@@ -3526,7 +3530,7 @@ static void ei_sbc_HL_SP(void) {
 static void ei_scf(void) {
   setflags(-1,-1,0,-1,0,1);
   setundocflags8(cpus.r[rA]);
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 /************************************************************************/
@@ -3537,7 +3541,7 @@ static void ei_set_b_r(void) {
   res=_set8((opcode>>3)&0x07,cpus.r[opcode & 0x07]);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=8;
+  z80_clock_inc(8);
 }
 
 static void ei_set_b_iHL(void) {
@@ -3546,7 +3550,7 @@ static void ei_set_b_iHL(void) {
   res=_set8((opcode>>3)&0x07,_iHL8());
   s_iHL8(res);
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 /* DDCB ! */
@@ -3556,7 +3560,7 @@ static void ei_set_b_iIXN(void) {
   res=_set8((opcode>>3)&0x07,_iIXN8(cbop));
   s_iIXN8(cbop,res);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 /* FDCB ! */
@@ -3566,7 +3570,7 @@ static void ei_set_b_iIYN(void) {
   res=_set8((opcode>>3)&0x07,_iIYN8(cbop));
   s_iIYN8(cbop,res);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 /************************************************************************/
@@ -3577,7 +3581,7 @@ static void ei_sla_r(void) {
   res=_sla8(cpus.r[opcode & 0x07]);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=8;
+  z80_clock_inc(8);
 }
 
 static void ei_sla_iHL(void) {
@@ -3586,7 +3590,7 @@ static void ei_sla_iHL(void) {
   res=_sla8(_iHL8());
   s_iHL8(res);
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 /* DDCB */
@@ -3596,7 +3600,7 @@ static void ei_sla_iIXN(void) {
   res=_sla8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 /* FDCB */
@@ -3606,7 +3610,7 @@ static void ei_sla_iIYN(void) {
   res=_sla8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 static void ei_sra_r(void) {
@@ -3615,7 +3619,7 @@ static void ei_sra_r(void) {
   res=_sra8(cpus.r[opcode & 0x07]);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=8;
+  z80_clock_inc(8);
 }
 
 static void ei_sra_iHL(void) {
@@ -3624,7 +3628,7 @@ static void ei_sra_iHL(void) {
   res=_sra8(_iHL8());
   s_iHL8(res);
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 /* DDCB */
@@ -3634,7 +3638,7 @@ static void ei_sra_iIXN(void) {
   res=_sra8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 /* FDCB */
@@ -3644,7 +3648,7 @@ static void ei_sra_iIYN(void) {
   res=_sra8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 /************************************************************************/
@@ -3656,7 +3660,7 @@ static void Ui_sll_r(void) {
   cpus.r[opcode & 0x07]=res;
 
   uoc++;
-  z80_clock+=8;
+  z80_clock_inc(8);
 }
 
 static void Ui_sll_iHL(void) {
@@ -3666,7 +3670,7 @@ static void Ui_sll_iHL(void) {
   s_iHL8(res);
 
   uoc++;
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 /* DDCB */
@@ -3677,7 +3681,7 @@ static void Ui_sll_iIXN(void) {
   s_iIXN8(cbop,res);
 
   uoc++;
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 /* FDCB */
@@ -3688,7 +3692,7 @@ static void Ui_sll_iIYN(void) {
   s_iIYN8(cbop,res);
 
   uoc++;
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 static void ei_srl_r(void) {
@@ -3697,7 +3701,7 @@ static void ei_srl_r(void) {
   res=_srl8(cpus.r[opcode & 0x07]);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=8;
+  z80_clock_inc(8);
 }
 
 static void ei_srl_iHL(void) {
@@ -3706,7 +3710,7 @@ static void ei_srl_iHL(void) {
   res=_srl8(_iHL8());
   s_iHL8(res);
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 /* DDCB */
@@ -3716,7 +3720,7 @@ static void ei_srl_iIXN(void) {
   res=_srl8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 /* FDCB */
@@ -3726,7 +3730,7 @@ static void ei_srl_iIYN(void) {
   res=_srl8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
 
-  z80_clock+=19;
+  z80_clock_inc(19);
 }
 
 /************************************************************************/
@@ -3737,7 +3741,7 @@ static void ei_sub_r(void) {
   res=_sub8(cpus.r[rA],cpus.r[opcode & 0x07]);
   cpus.r[rA]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_sub_N(void) {
@@ -3748,7 +3752,7 @@ static void ei_sub_N(void) {
   res=_sub8(cpus.r[rA],op);
   cpus.r[rA]=res;
 
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_sub_iHL(void) {
@@ -3757,7 +3761,7 @@ static void ei_sub_iHL(void) {
   res=_sub8(cpus.r[rA],_iHL8());
   cpus.r[rA]=res;
 
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_sub_iIXN(void) {
@@ -3768,7 +3772,7 @@ static void ei_sub_iIXN(void) {
   res=_sub8(cpus.r[rA],_iIXN8(op));
   cpus.r[rA]=res;
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_sub_iIYN(void) {
@@ -3779,7 +3783,7 @@ static void ei_sub_iIYN(void) {
   res=_sub8(cpus.r[rA],_iIYN8(op));
   cpus.r[rA]=res;
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 
@@ -3791,7 +3795,7 @@ static void ei_xor_r(void) {
   res=_xor8(cpus.r[rA],cpus.r[opcode & 0x07]);
   cpus.r[rA]=res;
 
-  z80_clock+=4;
+  z80_clock_inc(4);
 }
 
 static void ei_xor_N(void) {
@@ -3802,7 +3806,7 @@ static void ei_xor_N(void) {
   res=_xor8(cpus.r[rA],op);
   cpus.r[rA]=res;
 
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_xor_iHL(void) {
@@ -3811,7 +3815,7 @@ static void ei_xor_iHL(void) {
   res=_xor8(cpus.r[rA],_iHL8());
   cpus.r[rA]=res;
 
-  z80_clock+=7;
+  z80_clock_inc(7);
 }
 
 static void ei_xor_iIXN(void) {
@@ -3822,7 +3826,7 @@ static void ei_xor_iIXN(void) {
   res=_xor8(cpus.r[rA],_iIXN8(op));
   cpus.r[rA]=res;
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 static void ei_xor_iIYN(void) {
@@ -3833,7 +3837,7 @@ static void ei_xor_iIYN(void) {
   res=_xor8(cpus.r[rA],_iIYN8(op));
   cpus.r[rA]=res;
 
-  z80_clock+=15;
+  z80_clock_inc(15);
 }
 
 /************************ undocumented opcodes ****************************/
@@ -3845,7 +3849,7 @@ static void Ui_inc_IXh(void) {
   res=_inc8(getIXh());
   setIXh(res);
 
-  z80_clock+=4; /* timing&flags taken from inc_A */
+  z80_clock_inc(4); /* timing&flags taken from inc_A */
   uoc++;
 }
 
@@ -3855,7 +3859,7 @@ static void Ui_dec_IXh(void) {
   res=_dec8(getIXh());
   setIXh(res);
 
-  z80_clock+=4; /* timing&flags taken from dec_A */
+  z80_clock_inc(4); /* timing&flags taken from dec_A */
   uoc++;
 }
 
@@ -3865,7 +3869,7 @@ static void Ui_ld_IXh_N(void) {
   res=z80_iget8();
   setIXh(res);
 
-  z80_clock+=7; /* timing&flags taken from ld_A_N */
+  z80_clock_inc(7); /* timing&flags taken from ld_A_N */
   uoc++;
 }
 
@@ -3875,7 +3879,7 @@ static void Ui_inc_IXl(void) {
   res=_inc8(getIXl());
   setIXl(res);
 
-  z80_clock+=4; /* timing&flags taken from inc_A */
+  z80_clock_inc(4); /* timing&flags taken from inc_A */
   uoc++;
 }
 
@@ -3885,7 +3889,7 @@ static void Ui_dec_IXl(void) {
   res=_dec8(getIXl());
   setIXl(res);
 
-  z80_clock+=4; /* timing&flags taken from dec_A */
+  z80_clock_inc(4); /* timing&flags taken from dec_A */
   uoc++;
 }
 
@@ -3895,7 +3899,7 @@ static void Ui_ld_IXl_N(void) {
   res=z80_iget8();
   setIXl(res);
 
-  z80_clock+=7; /* timing&flags taken from ld_A_N */
+  z80_clock_inc(7); /* timing&flags taken from ld_A_N */
   uoc++;
 }
 
@@ -3903,7 +3907,7 @@ static void Ui_ld_B_IXh(void) {
 
   cpus.r[rB]=getIXh();
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -3911,7 +3915,7 @@ static void Ui_ld_B_IXl(void) {
 
   cpus.r[rB]=getIXl();
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -3919,7 +3923,7 @@ static void Ui_ld_C_IXh(void) {
 
   cpus.r[rC]=getIXh();
 
-  z80_clock+=4; /* timing&flags taken from ld_C_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_C_r */
   uoc++;
 }
 
@@ -3927,7 +3931,7 @@ static void Ui_ld_C_IXl(void) {
 
   cpus.r[rC]=getIXl();
 
-  z80_clock+=4; /* timing&flags taken from ld_C_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_C_r */
   uoc++;
 }
 
@@ -3935,7 +3939,7 @@ static void Ui_ld_D_IXh(void) {
 
   cpus.r[rD]=getIXh();
 
-  z80_clock+=4; /* timing&flags taken from ld_D_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_D_r */
   uoc++;
 }
 
@@ -3943,7 +3947,7 @@ static void Ui_ld_D_IXl(void) {
 
   cpus.r[rD]=getIXl();
 
-  z80_clock+=4; /* timing&flags taken from ld_D_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_D_r */
   uoc++;
 }
 
@@ -3951,7 +3955,7 @@ static void Ui_ld_E_IXh(void) {
 
   cpus.r[rE]=getIXh();
 
-  z80_clock+=4; /* timing&flags taken from ld_E_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_E_r */
   uoc++;
 }
 
@@ -3959,7 +3963,7 @@ static void Ui_ld_E_IXl(void) {
 
   cpus.r[rE]=getIXl();
 
-  z80_clock+=4; /* timing&flags taken from ld_E_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_E_r */
   uoc++;
 }
 
@@ -3967,7 +3971,7 @@ static void Ui_ld_IXh_B(void) {
 
   setIXh(cpus.r[rB]);
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -3975,7 +3979,7 @@ static void Ui_ld_IXh_C(void) {
 
   setIXh(cpus.r[rC]);
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -3983,7 +3987,7 @@ static void Ui_ld_IXh_D(void) {
 
   setIXh(cpus.r[rD]);
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -3991,7 +3995,7 @@ static void Ui_ld_IXh_E(void) {
 
   setIXh(cpus.r[rE]);
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -3999,7 +4003,7 @@ static void Ui_ld_IXh_IXh(void) {
 
   /* does nothing */
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4007,7 +4011,7 @@ static void Ui_ld_IXh_IXl(void) {
 
   setIXh(getIXl());
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4015,7 +4019,7 @@ static void Ui_ld_IXh_A(void) {
 
   setIXh(cpus.r[rA]);
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4023,7 +4027,7 @@ static void Ui_ld_IXl_B(void) {
 
   setIXl(cpus.r[rB]);
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4031,7 +4035,7 @@ static void Ui_ld_IXl_C(void) {
 
   setIXl(cpus.r[rC]);
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4039,7 +4043,7 @@ static void Ui_ld_IXl_D(void) {
 
   setIXl(cpus.r[rD]);
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4047,7 +4051,7 @@ static void Ui_ld_IXl_E(void) {
 
   setIXl(cpus.r[rE]);
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4055,7 +4059,7 @@ static void Ui_ld_IXl_IXh(void) {
 
   setIXl(getIXh());
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4063,7 +4067,7 @@ static void Ui_ld_IXl_IXl(void) {
 
   /* does nothing */
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4071,7 +4075,7 @@ static void Ui_ld_IXl_A(void) {
 
   setIXl(cpus.r[rA]);
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4079,7 +4083,7 @@ static void Ui_ld_A_IXh(void) {
 
   cpus.r[rA]=getIXh();
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4087,7 +4091,7 @@ static void Ui_ld_A_IXl(void) {
 
   cpus.r[rA]=getIXl();
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4099,7 +4103,7 @@ static void Ui_add_A_IXh(void) {
   res=_add8(cpus.r[rA],getIXh());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from add_A_r */
+  z80_clock_inc(4); /* timing&flags taken from add_A_r */
   uoc++;
 }
 
@@ -4109,7 +4113,7 @@ static void Ui_add_A_IXl(void) {
   res=_add8(cpus.r[rA],getIXl());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from add_A_r */
+  z80_clock_inc(4); /* timing&flags taken from add_A_r */
   uoc++;
 }
 
@@ -4119,7 +4123,7 @@ static void Ui_adc_A_IXh(void) {
   res=_adc8(cpus.r[rA],getIXh());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from adc_A_r */
+  z80_clock_inc(4); /* timing&flags taken from adc_A_r */
   uoc++;
 }
 
@@ -4129,7 +4133,7 @@ static void Ui_adc_A_IXl(void) {
   res=_adc8(cpus.r[rA],getIXl());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from adc_A_r */
+  z80_clock_inc(4); /* timing&flags taken from adc_A_r */
   uoc++;
 }
 
@@ -4139,7 +4143,7 @@ static void Ui_sub_IXh(void) {
   res=_sub8(cpus.r[rA],getIXh());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from sub_r */
+  z80_clock_inc(4); /* timing&flags taken from sub_r */
   uoc++;
 }
 
@@ -4149,7 +4153,7 @@ static void Ui_sub_IXl(void) {
   res=_sub8(cpus.r[rA],getIXl());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from sub_r */
+  z80_clock_inc(4); /* timing&flags taken from sub_r */
   uoc++;
 }
 
@@ -4159,7 +4163,7 @@ static void Ui_sbc_IXh(void) {
   res=_sbc8(cpus.r[rA],getIXh());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from sbc_r */
+  z80_clock_inc(4); /* timing&flags taken from sbc_r */
   uoc++;
 }
 
@@ -4169,7 +4173,7 @@ static void Ui_sbc_IXl(void) {
   res=_sbc8(cpus.r[rA],getIXl());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from sbc_r */
+  z80_clock_inc(4); /* timing&flags taken from sbc_r */
   uoc++;
 }
 
@@ -4179,7 +4183,7 @@ static void Ui_and_IXh(void) {
   res=_and8(cpus.r[rA],getIXh());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from and_r */
+  z80_clock_inc(4); /* timing&flags taken from and_r */
   uoc++;
 }
 
@@ -4189,7 +4193,7 @@ static void Ui_and_IXl(void) {
   res=_and8(cpus.r[rA],getIXl());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from and_r */
+  z80_clock_inc(4); /* timing&flags taken from and_r */
   uoc++;
 }
 
@@ -4199,7 +4203,7 @@ static void Ui_xor_IXh(void) {
   res=_xor8(cpus.r[rA],getIXh());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from xor_r */
+  z80_clock_inc(4); /* timing&flags taken from xor_r */
   uoc++;
 }
 
@@ -4209,7 +4213,7 @@ static void Ui_xor_IXl(void) {
   res=_xor8(cpus.r[rA],getIXl());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from xor_r */
+  z80_clock_inc(4); /* timing&flags taken from xor_r */
   uoc++;
 }
 
@@ -4219,7 +4223,7 @@ static void Ui_or_IXh(void) {
   res=_or8(cpus.r[rA],getIXh());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from or_r */
+  z80_clock_inc(4); /* timing&flags taken from or_r */
   uoc++;
 }
 
@@ -4229,7 +4233,7 @@ static void Ui_or_IXl(void) {
   res=_or8(cpus.r[rA],getIXl());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from or_r */
+  z80_clock_inc(4); /* timing&flags taken from or_r */
   uoc++;
 }
 
@@ -4239,7 +4243,7 @@ static void Ui_cp_IXh(void) {
   res=_cp8(cpus.r[rA],getIXh());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from cp_r */
+  z80_clock_inc(4); /* timing&flags taken from cp_r */
   uoc++;
 }
 
@@ -4249,7 +4253,7 @@ static void Ui_cp_IXl(void) {
   res=_cp8(cpus.r[rA],getIXl());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from cp_r */
+  z80_clock_inc(4); /* timing&flags taken from cp_r */
   uoc++;
 }
 
@@ -4261,7 +4265,7 @@ static void Ui_inc_IYh(void) {
   res=_inc8(getIYh());
   setIYh(res);
 
-  z80_clock+=4; /* timing&flags taken from inc_A */
+  z80_clock_inc(4); /* timing&flags taken from inc_A */
   uoc++;
 }
 
@@ -4271,7 +4275,7 @@ static void Ui_dec_IYh(void) {
   res=_dec8(getIYh());
   setIYh(res);
 
-  z80_clock+=4; /* timing&flags taken from dec_A */
+  z80_clock_inc(4); /* timing&flags taken from dec_A */
   uoc++;
 }
 
@@ -4281,7 +4285,7 @@ static void Ui_ld_IYh_N(void) {
   res=z80_iget8();
   setIYh(res);
 
-  z80_clock+=7; /* timing&flags taken from ld_A_N */
+  z80_clock_inc(7); /* timing&flags taken from ld_A_N */
   uoc++;
 }
 
@@ -4291,7 +4295,7 @@ static void Ui_inc_IYl(void) {
   res=_inc8(getIYl());
   setIYl(res);
 
-  z80_clock+=4; /* timing&flags taken from inc_A */
+  z80_clock_inc(4); /* timing&flags taken from inc_A */
   uoc++;
 }
 
@@ -4301,7 +4305,7 @@ static void Ui_dec_IYl(void) {
   res=_dec8(getIYl());
   setIYl(res);
 
-  z80_clock+=4; /* timing&flags taken from dec_A */
+  z80_clock_inc(4); /* timing&flags taken from dec_A */
   uoc++;
 }
 
@@ -4311,7 +4315,7 @@ static void Ui_ld_IYl_N(void) {
   res=z80_iget8();
   setIYl(res);
 
-  z80_clock+=7; /* timing&flags taken from ld_A_N */
+  z80_clock_inc(7); /* timing&flags taken from ld_A_N */
   uoc++;
 }
 
@@ -4319,7 +4323,7 @@ static void Ui_ld_B_IYh(void) {
 
   cpus.r[rB]=getIYh();
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4327,7 +4331,7 @@ static void Ui_ld_B_IYl(void) {
 
   cpus.r[rB]=getIYl();
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4335,7 +4339,7 @@ static void Ui_ld_C_IYh(void) {
 
   cpus.r[rC]=getIYh();
 
-  z80_clock+=4; /* timing&flags taken from ld_C_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_C_r */
   uoc++;
 }
 
@@ -4343,7 +4347,7 @@ static void Ui_ld_C_IYl(void) {
 
   cpus.r[rC]=getIYl();
 
-  z80_clock+=4; /* timing&flags taken from ld_C_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_C_r */
   uoc++;
 }
 
@@ -4351,7 +4355,7 @@ static void Ui_ld_D_IYh(void) {
 
   cpus.r[rD]=getIYh();
 
-  z80_clock+=4; /* timing&flags taken from ld_D_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_D_r */
   uoc++;
 }
 
@@ -4359,7 +4363,7 @@ static void Ui_ld_D_IYl(void) {
 
   cpus.r[rD]=getIYl();
 
-  z80_clock+=4; /* timing&flags taken from ld_D_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_D_r */
   uoc++;
 }
 
@@ -4367,7 +4371,7 @@ static void Ui_ld_E_IYh(void) {
 
   cpus.r[rE]=getIYh();
 
-  z80_clock+=4; /* timing&flags taken from ld_E_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_E_r */
   uoc++;
 }
 
@@ -4375,7 +4379,7 @@ static void Ui_ld_E_IYl(void) {
 
   cpus.r[rE]=getIYl();
 
-  z80_clock+=4; /* timing&flags taken from ld_E_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_E_r */
   uoc++;
 }
 
@@ -4383,7 +4387,7 @@ static void Ui_ld_IYh_B(void) {
 
   setIYh(cpus.r[rB]);
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4391,7 +4395,7 @@ static void Ui_ld_IYh_C(void) {
 
   setIYh(cpus.r[rC]);
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4399,7 +4403,7 @@ static void Ui_ld_IYh_D(void) {
 
   setIYh(cpus.r[rD]);
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4407,7 +4411,7 @@ static void Ui_ld_IYh_E(void) {
 
   setIYh(cpus.r[rE]);
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4415,7 +4419,7 @@ static void Ui_ld_IYh_IYh(void) {
 
   /* does nothing */
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4423,7 +4427,7 @@ static void Ui_ld_IYh_IYl(void) {
 
   setIYh(getIYl());
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4431,7 +4435,7 @@ static void Ui_ld_IYh_A(void) {
 
   setIYh(cpus.r[rA]);
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4439,7 +4443,7 @@ static void Ui_ld_IYl_B(void) {
 
   setIYl(cpus.r[rB]);
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4447,7 +4451,7 @@ static void Ui_ld_IYl_C(void) {
 
   setIYl(cpus.r[rC]);
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4455,7 +4459,7 @@ static void Ui_ld_IYl_D(void) {
 
   setIYl(cpus.r[rD]);
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4463,7 +4467,7 @@ static void Ui_ld_IYl_E(void) {
 
   setIYl(cpus.r[rE]);
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4471,7 +4475,7 @@ static void Ui_ld_IYl_IYh(void) {
 
   setIYl(getIYh());
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4479,7 +4483,7 @@ static void Ui_ld_IYl_IYl(void) {
 
   /* does nothing */
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4487,7 +4491,7 @@ static void Ui_ld_IYl_A(void) {
 
   setIYl(cpus.r[rA]);
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4495,7 +4499,7 @@ static void Ui_ld_A_IYh(void) {
 
   cpus.r[rA]=getIYh();
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4503,7 +4507,7 @@ static void Ui_ld_A_IYl(void) {
 
   cpus.r[rA]=getIYl();
 
-  z80_clock+=4; /* timing&flags taken from ld_B_r */
+  z80_clock_inc(4); /* timing&flags taken from ld_B_r */
   uoc++;
 }
 
@@ -4515,7 +4519,7 @@ static void Ui_add_A_IYh(void) {
   res=_add8(cpus.r[rA],getIYh());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from add_A_r */
+  z80_clock_inc(4); /* timing&flags taken from add_A_r */
   uoc++;
 }
 
@@ -4525,7 +4529,7 @@ static void Ui_add_A_IYl(void) {
   res=_add8(cpus.r[rA],getIYl());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from add_A_r */
+  z80_clock_inc(4); /* timing&flags taken from add_A_r */
   uoc++;
 }
 
@@ -4535,7 +4539,7 @@ static void Ui_adc_A_IYh(void) {
   res=_adc8(cpus.r[rA],getIYh());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from adc_A_r */
+  z80_clock_inc(4); /* timing&flags taken from adc_A_r */
   uoc++;
 }
 
@@ -4545,7 +4549,7 @@ static void Ui_adc_A_IYl(void) {
   res=_adc8(cpus.r[rA],getIYl());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from adc_A_r */
+  z80_clock_inc(4); /* timing&flags taken from adc_A_r */
   uoc++;
 }
 
@@ -4555,7 +4559,7 @@ static void Ui_sub_IYh(void) {
   res=_sub8(cpus.r[rA],getIYh());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from sub_r */
+  z80_clock_inc(4); /* timing&flags taken from sub_r */
   uoc++;
 }
 
@@ -4565,7 +4569,7 @@ static void Ui_sub_IYl(void) {
   res=_sub8(cpus.r[rA],getIYl());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from sub_r */
+  z80_clock_inc(4); /* timing&flags taken from sub_r */
   uoc++;
 }
 
@@ -4575,7 +4579,7 @@ static void Ui_sbc_IYh(void) {
   res=_sbc8(cpus.r[rA],getIYh());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from sbc_r */
+  z80_clock_inc(4); /* timing&flags taken from sbc_r */
   uoc++;
 }
 
@@ -4585,7 +4589,7 @@ static void Ui_sbc_IYl(void) {
   res=_sbc8(cpus.r[rA],getIYl());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from sbc_r */
+  z80_clock_inc(4); /* timing&flags taken from sbc_r */
   uoc++;
 }
 
@@ -4595,7 +4599,7 @@ static void Ui_and_IYh(void) {
   res=_and8(cpus.r[rA],getIYh());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from and_r */
+  z80_clock_inc(4); /* timing&flags taken from and_r */
   uoc++;
 }
 
@@ -4605,7 +4609,7 @@ static void Ui_and_IYl(void) {
   res=_and8(cpus.r[rA],getIYl());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from and_r */
+  z80_clock_inc(4); /* timing&flags taken from and_r */
   uoc++;
 }
 
@@ -4615,7 +4619,7 @@ static void Ui_xor_IYh(void) {
   res=_xor8(cpus.r[rA],getIYh());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from xor_r */
+  z80_clock_inc(4); /* timing&flags taken from xor_r */
   uoc++;
 }
 
@@ -4625,7 +4629,7 @@ static void Ui_xor_IYl(void) {
   res=_xor8(cpus.r[rA],getIYl());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from xor_r */
+  z80_clock_inc(4); /* timing&flags taken from xor_r */
   uoc++;
 }
 
@@ -4635,7 +4639,7 @@ static void Ui_or_IYh(void) {
   res=_or8(cpus.r[rA],getIYh());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from or_r */
+  z80_clock_inc(4); /* timing&flags taken from or_r */
   uoc++;
 }
 
@@ -4645,7 +4649,7 @@ static void Ui_or_IYl(void) {
   res=_or8(cpus.r[rA],getIYl());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from or_r */
+  z80_clock_inc(4); /* timing&flags taken from or_r */
   uoc++;
 }
 
@@ -4655,7 +4659,7 @@ static void Ui_cp_IYh(void) {
   res=_cp8(cpus.r[rA],getIYh());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from cp_r */
+  z80_clock_inc(4); /* timing&flags taken from cp_r */
   uoc++;
 }
 
@@ -4665,7 +4669,7 @@ static void Ui_cp_IYl(void) {
   res=_cp8(cpus.r[rA],getIYl());
   cpus.r[rA]=res;
 
-  z80_clock+=4; /* timing&flags taken from cp_r */
+  z80_clock_inc(4); /* timing&flags taken from cp_r */
   uoc++;
 }
 
@@ -4673,7 +4677,7 @@ static void Ui_cp_IYl(void) {
 
 static void Ui_ednop(void) { /* different from ei_nop! */
   printf("EDNOP!\n");
-  z80_clock+=8; /* according to Sean it's like 2 NOPs */
+  z80_clock_inc(8); /* according to Sean it's like 2 NOPs */
   uoc++;
 }
 
@@ -4690,42 +4694,42 @@ static void Ui_neg(void) {               /* A <- neg(A) .. two's complement */
 	   res>0xff);		 /* not sure about this, verify !!!!! */
 
   cpus.r[rA] = res & 0xff;
-  z80_clock+=8; /* timing taken from ei_neg */
+  z80_clock_inc(8); /* timing taken from ei_neg */
   uoc++;
 }
 
 static void Ui_im_0(void) { /* probably ..*/
   printf("IM 0\n");
   cpus.int_mode=0;
-  z80_clock+=8; /* timing taken from ei_im_0 */
+  z80_clock_inc(8); /* timing taken from ei_im_0 */
   uoc++;
 }
 
 static void Ui_im_1(void) { /* probably ..*/
   printf("IM 1\n");
   cpus.int_mode=1;
-  z80_clock+=8; /* timing taken from ei_im_1 */
+  z80_clock_inc(8); /* timing taken from ei_im_1 */
   uoc++;
 }
 
 static void Ui_im_2(void) { /* probably ..*/
   printf("IM 2\n");
   cpus.int_mode=2;
-  z80_clock+=8; /* timing taken from ei_im_2 */
+  z80_clock_inc(8); /* timing taken from ei_im_2 */
   uoc++;
 }
 
 static void Ui_reti(void) { /* undoc RETI behaves like RETN actually.. */
   cpus.IFF1=cpus.IFF2;
   cpus.PC=_pop16();
-  z80_clock+=14; /* timing taken from ei_reti */
+  z80_clock_inc(14); /* timing taken from ei_reti */
   uoc++;
 }
 
 static void Ui_retn(void) {
   cpus.IFF1=cpus.IFF2;
   cpus.PC=_pop16();
-  z80_clock+=14;  /* timing taken from ei_retn */
+  z80_clock_inc(14);  /* timing taken from ei_retn */
   uoc++;
 }
 
@@ -4738,7 +4742,7 @@ static void Ui_ld_r_rlc_iIXN(void) {
   s_iIXN8(cbop,res);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=19; /* timing&flags taken from ei_rlc_iIXN */
+  z80_clock_inc(19); /* timing&flags taken from ei_rlc_iIXN */
   uoc++;
 }
 
@@ -4749,7 +4753,7 @@ static void Ui_ld_r_rrc_iIXN(void) {
   s_iIXN8(cbop,res);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=19; /* timing&flags taken from ei_rrc_iIXN */
+  z80_clock_inc(19); /* timing&flags taken from ei_rrc_iIXN */
   uoc++;
 }
 
@@ -4760,7 +4764,7 @@ static void Ui_ld_r_rl_iIXN(void) {
   s_iIXN8(cbop,res);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=19; /* timing&flags taken from ei_rl_iIXN */
+  z80_clock_inc(19); /* timing&flags taken from ei_rl_iIXN */
   uoc++;
 }
 
@@ -4771,7 +4775,7 @@ static void Ui_ld_r_rr_iIXN(void) {
   s_iIXN8(cbop,res);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=19; /* timing&flags taken from ei_rr_iIXN */
+  z80_clock_inc(19); /* timing&flags taken from ei_rr_iIXN */
   uoc++;
 }
 
@@ -4782,7 +4786,7 @@ static void Ui_ld_r_sla_iIXN(void) {
   s_iIXN8(cbop,res);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=19; /* timing&flags taken from ei_sla_iIXN */
+  z80_clock_inc(19); /* timing&flags taken from ei_sla_iIXN */
   uoc++;
 }
 
@@ -4793,7 +4797,7 @@ static void Ui_ld_r_sra_iIXN(void) {
   s_iIXN8(cbop,res);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=19; /* timing&flags taken from ei_sra_iIXN */
+  z80_clock_inc(19); /* timing&flags taken from ei_sra_iIXN */
   uoc++;
 }
 
@@ -4804,7 +4808,7 @@ static void Ui_ld_r_sll_iIXN(void) {
   s_iIXN8(cbop,res);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=19; /* timing&flags taken from ei_sll_iIXN */
+  z80_clock_inc(19); /* timing&flags taken from ei_sll_iIXN */
   uoc++;
 }
 
@@ -4815,7 +4819,7 @@ static void Ui_ld_r_srl_iIXN(void) {
   s_iIXN8(cbop,res);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=19; /* timing&flags taken from ei_srl_iIXN */
+  z80_clock_inc(19); /* timing&flags taken from ei_srl_iIXN */
   uoc++;
 }
 
@@ -4827,7 +4831,7 @@ static void Ui_bit_b_iIXN(void) {
   
   setundocflags8((cpus.IX+u8sval(cbop))>>8); /* weird, huh? */
 
-  z80_clock+=16; /* timing&flags taken from ei_bit_b_iIXN */
+  z80_clock_inc(16); /* timing&flags taken from ei_bit_b_iIXN */
   uoc++;
 }
 
@@ -4838,7 +4842,7 @@ static void Ui_ld_r_res_b_iIXN(void) {
   s_iIXN8(cbop,res);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=19; /* timing&flags taken from ei_res_b_iIXN */
+  z80_clock_inc(19); /* timing&flags taken from ei_res_b_iIXN */
   uoc++;
 }
 
@@ -4849,7 +4853,7 @@ static void Ui_ld_r_set_b_iIXN(void) {
   s_iIXN8(cbop,res);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=19; /* timing&flags taken from ei_set_b_iIXN */
+  z80_clock_inc(19); /* timing&flags taken from ei_set_b_iIXN */
   uoc++;
 }
 
@@ -4862,7 +4866,7 @@ static void Ui_ld_r_rlc_iIYN(void) {
   s_iIYN8(cbop,res);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=19; /* timing&flags taken from ei_rlc_iIYN */
+  z80_clock_inc(19); /* timing&flags taken from ei_rlc_iIYN */
   uoc++;
 }
 
@@ -4873,7 +4877,7 @@ static void Ui_ld_r_rrc_iIYN(void) {
   s_iIYN8(cbop,res);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=19; /* timing&flags taken from ei_rrc_iIYN */
+  z80_clock_inc(19); /* timing&flags taken from ei_rrc_iIYN */
   uoc++;
 }
 
@@ -4884,7 +4888,7 @@ static void Ui_ld_r_rl_iIYN(void) {
   s_iIYN8(cbop,res);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=19; /* timing&flags taken from ei_rl_iIYN */
+  z80_clock_inc(19); /* timing&flags taken from ei_rl_iIYN */
   uoc++;
 }
 
@@ -4895,7 +4899,7 @@ static void Ui_ld_r_rr_iIYN(void) {
   s_iIYN8(cbop,res);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=19; /* timing&flags taken from ei_rr_iIYN */
+  z80_clock_inc(19); /* timing&flags taken from ei_rr_iIYN */
   uoc++;
 }
 
@@ -4906,7 +4910,7 @@ static void Ui_ld_r_sla_iIYN(void) {
   s_iIYN8(cbop,res);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=19; /* timing&flags taken from ei_sla_iIYN */
+  z80_clock_inc(19); /* timing&flags taken from ei_sla_iIYN */
   uoc++;
 }
 
@@ -4917,7 +4921,7 @@ static void Ui_ld_r_sra_iIYN(void) {
   s_iIYN8(cbop,res);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=19; /* timing&flags taken from ei_sra_iIYN */
+  z80_clock_inc(19); /* timing&flags taken from ei_sra_iIYN */
   uoc++;
 }
 
@@ -4928,7 +4932,7 @@ static void Ui_ld_r_sll_iIYN(void) {
   s_iIYN8(cbop,res);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=19; /* timing&flags taken from ei_sll_iIYN */
+  z80_clock_inc(19); /* timing&flags taken from ei_sll_iIYN */
   uoc++;
 }
 
@@ -4939,7 +4943,7 @@ static void Ui_ld_r_srl_iIYN(void) {
   s_iIYN8(cbop,res);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=19; /* timing&flags taken from ei_srl_iIYN */
+  z80_clock_inc(19); /* timing&flags taken from ei_srl_iIYN */
   uoc++;
 }
 
@@ -4950,7 +4954,7 @@ static void Ui_bit_b_iIYN(void) {
   _bit8((opcode>>3)&0x07,_iIYN8(cbop));
   setundocflags8((cpus.IY+u8sval(cbop))>>8); /* weird, huh? */
 
-  z80_clock+=16; /* timing&flags taken from ei_bit_b_iIYN */
+  z80_clock_inc(16); /* timing&flags taken from ei_bit_b_iIYN */
   uoc++;
 }
 
@@ -4961,7 +4965,7 @@ static void Ui_ld_r_res_b_iIYN(void) {
   s_iIYN8(cbop,res);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=19; /* timing&flags taken from ei_res_b_iIYN */
+  z80_clock_inc(19); /* timing&flags taken from ei_res_b_iIYN */
   uoc++;
 }
 
@@ -4972,7 +4976,7 @@ static void Ui_ld_r_set_b_iIYN(void) {
   s_iIYN8(cbop,res);
   cpus.r[opcode & 0x07]=res;
 
-  z80_clock+=19; /* timing&flags taken from ei_set_b_iIYN */
+  z80_clock_inc(19); /* timing&flags taken from ei_set_b_iIYN */
   uoc++;
 }
 
@@ -4990,13 +4994,13 @@ static void (**(ei_opm  [3]))(void) = { ei_op,   ei_ddop,   ei_fdop   };
 static void (**(ei_cbopm[3]))(void) = { ei_cbop, ei_ddcbop, ei_fdcbop };
 
 static void Mi_dd(void) {
-  z80_clock+=4;  /* according to Sean: 4T(as NOP), 1R */
+  z80_clock_inc(4);  /* according to Sean: 4T(as NOP), 1R */
   cpus.int_lock=1; /* no interrupts! */
   cpus.modifier=1; /* DD */
 }
 
 static void Mi_fd(void) {
-  z80_clock+=4;  /* according to Sean: 4T(as NOP), 1R */
+  z80_clock_inc(4);  /* according to Sean: 4T(as NOP), 1R */
   cpus.int_lock=1; /* no interrupts! */
   cpus.modifier=2; /* FD */
 }
@@ -5058,7 +5062,7 @@ void z80_execinstr(void) {
     z80_fprintstatus(logfi);*/
   
   if(cpus.halted) { /* NOP */
-    z80_clock+=4;
+    z80_clock_inc(4);
     incr_R(1);
   } else {
     //printf("read instr..\n");
@@ -5105,13 +5109,13 @@ int z80_int(u8 data) {
       incr_R(2);
       _push16(cpus.PC);
       cpus.PC=0x0038;
-      z80_clock+=13;
+      z80_clock_inc(13);
       break;
     case 1:
       incr_R(2);
       _push16(cpus.PC);
       cpus.PC=0x0038;
-      z80_clock+=13;
+      z80_clock_inc(13);
       break;
     case 2:
       incr_R(2);
@@ -5119,7 +5123,7 @@ int z80_int(u8 data) {
       addr=((u16)cpus.I<<8) | (u16)data;
       cpus.PC=z80_memget16(addr);
 //      printf("IM 2 INT: I=%02x D8=%02x tabi=%04x dst=%04x\n",cpus.I,data,addr,cpus.PC);
-      z80_clock+=19;
+      z80_clock_inc(19);
       break;
   }
   
@@ -5138,7 +5142,7 @@ int z80_nmi(void) {
   cpus.PC=0x0066;
   
   incr_R(2);
-  z80_clock+=11;
+  z80_clock_inc(11);
   
   return 0;
 }
