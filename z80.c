@@ -132,10 +132,23 @@ static void setflags(int s, int z, int hc, int pv, int n, int c) {
   if(c>=0) cpus.F = (cpus.F & (fC^0xff)) | (c?fC:0);
 }
 
+#ifndef NO_Z80UNDOC
+
 static void setundocflags8(u8 res) {
   cpus.F &= fD;		/* leave only documented flags */
   cpus.F |= (res & fU);     /* set undocumented flags */
 }
+
+#else
+
+#define setundocflags8(res) ((void)(res))
+
+static void ei_undoc(void)
+{
+	z80_clock_inc(4);
+}
+
+#endif
 
 static void incr_R(u8 amount) {
   cpus.R = (cpus.R & 0x80) | ((cpus.R+amount)&0x7f);
@@ -304,6 +317,8 @@ void z80_fprintstatus(FILE *logfi) {
 
 /******************* undocumented operand access ************************/
 
+#ifndef NO_Z80UNDOC
+
 static void setIXh(u8 val) {
   cpus.IX = (cpus.IX & 0x00ff) | ((u16)val<<8);
 }
@@ -336,6 +351,7 @@ static u8 getIYl(void) {
   return cpus.IY&0xff;
 }
 
+#endif
 
 /************************************************************************/
 static void _push16(u16 val);
@@ -677,6 +693,8 @@ static u8 _sra8(u8 a) {
   return a;
 }
 
+#ifndef NO_Z80UNDOC
+
 static u8 _sll8(u8 a) {
   u8 nC,oC;
 
@@ -686,6 +704,8 @@ static u8 _sll8(u8 a) {
   cpus.F=ox_tab[a]|nC;
   return a;
 }
+
+#endif
 
 static u8 _srl8(u16 a) {
   u16 nC;
@@ -3653,6 +3673,8 @@ static void ei_sra_iIYN(void) {
 
 /************************************************************************/
 
+#ifndef NO_Z80UNDOC
+
 static void Ui_sll_r(void) {
   u8 res;
 
@@ -3694,6 +3716,15 @@ static void Ui_sll_iIYN(void) {
   uoc++;
   z80_clock_inc(19);
 }
+
+#else
+
+#define Ui_sll_r ei_undoc
+#define Ui_sll_iHL ei_undoc
+#define Ui_sll_iIXN ei_undoc
+#define Ui_sll_iIYN ei_undoc
+
+#endif
 
 static void ei_srl_r(void) {
   u8 res;
@@ -3842,6 +3873,8 @@ static void ei_xor_iIYN(void) {
 
 /************************ undocumented opcodes ****************************/
 /**** DD .. ***************************************************************/
+
+#ifndef NO_Z80UNDOC
 
 static void Ui_inc_IXh(void) {
   u8 res;
@@ -4979,6 +5012,132 @@ static void Ui_ld_r_set_b_iIYN(void) {
   z80_clock_inc(19); /* timing&flags taken from ei_set_b_iIYN */
   uoc++;
 }
+
+#else
+
+#define Ui_inc_IXh ei_undoc
+#define Ui_dec_IXh ei_undoc
+#define Ui_ld_IXh_N ei_undoc
+#define Ui_inc_IXl ei_undoc
+#define Ui_dec_IXl ei_undoc
+#define Ui_ld_IXl_N ei_undoc
+#define Ui_ld_B_IXh ei_undoc
+#define Ui_ld_B_IXl ei_undoc
+#define Ui_ld_C_IXh ei_undoc
+#define Ui_ld_C_IXl ei_undoc
+#define Ui_ld_D_IXh ei_undoc
+#define Ui_ld_D_IXl ei_undoc
+#define Ui_ld_E_IXh ei_undoc
+#define Ui_ld_E_IXl ei_undoc
+#define Ui_ld_IXh_B ei_undoc
+#define Ui_ld_IXh_C ei_undoc
+#define Ui_ld_IXh_D ei_undoc
+#define Ui_ld_IXh_E ei_undoc
+#define Ui_ld_IXh_IXh ei_undoc
+#define Ui_ld_IXh_IXl ei_undoc
+#define Ui_ld_IXh_A ei_undoc
+#define Ui_ld_IXl_B ei_undoc
+#define Ui_ld_IXl_C ei_undoc
+#define Ui_ld_IXl_D ei_undoc
+#define Ui_ld_IXl_E ei_undoc
+#define Ui_ld_IXl_IXh ei_undoc
+#define Ui_ld_IXl_IXl ei_undoc
+#define Ui_ld_IXl_A ei_undoc
+#define Ui_ld_A_IXh ei_undoc
+#define Ui_ld_A_IXl ei_undoc
+#define Ui_add_A_IXh ei_undoc
+#define Ui_add_A_IXl ei_undoc
+#define Ui_adc_A_IXh ei_undoc
+#define Ui_adc_A_IXl ei_undoc
+#define Ui_sub_IXh ei_undoc
+#define Ui_sub_IXl ei_undoc
+#define Ui_sbc_IXh ei_undoc
+#define Ui_sbc_IXl ei_undoc
+#define Ui_and_IXh ei_undoc
+#define Ui_and_IXl ei_undoc
+#define Ui_xor_IXh ei_undoc
+#define Ui_xor_IXl ei_undoc
+#define Ui_or_IXh ei_undoc
+#define Ui_or_IXl ei_undoc
+#define Ui_cp_IXh ei_undoc
+#define Ui_cp_IXl ei_undoc
+#define Ui_inc_IYh ei_undoc
+#define Ui_dec_IYh ei_undoc
+#define Ui_ld_IYh_N ei_undoc
+#define Ui_inc_IYl ei_undoc
+#define Ui_dec_IYl ei_undoc
+#define Ui_ld_IYl_N ei_undoc
+#define Ui_ld_B_IYh ei_undoc
+#define Ui_ld_B_IYl ei_undoc
+#define Ui_ld_C_IYh ei_undoc
+#define Ui_ld_C_IYl ei_undoc
+#define Ui_ld_D_IYh ei_undoc
+#define Ui_ld_D_IYl ei_undoc
+#define Ui_ld_E_IYh ei_undoc
+#define Ui_ld_E_IYl ei_undoc
+#define Ui_ld_IYh_B ei_undoc
+#define Ui_ld_IYh_C ei_undoc
+#define Ui_ld_IYh_D ei_undoc
+#define Ui_ld_IYh_E ei_undoc
+#define Ui_ld_IYh_IYh ei_undoc
+#define Ui_ld_IYh_IYl ei_undoc
+#define Ui_ld_IYh_A ei_undoc
+#define Ui_ld_IYl_B ei_undoc
+#define Ui_ld_IYl_C ei_undoc
+#define Ui_ld_IYl_D ei_undoc
+#define Ui_ld_IYl_E ei_undoc
+#define Ui_ld_IYl_IYh ei_undoc
+#define Ui_ld_IYl_IYl ei_undoc
+#define Ui_ld_IYl_A ei_undoc
+#define Ui_ld_A_IYh ei_undoc
+#define Ui_ld_A_IYl ei_undoc
+#define Ui_add_A_IYh ei_undoc
+#define Ui_add_A_IYl ei_undoc
+#define Ui_adc_A_IYh ei_undoc
+#define Ui_adc_A_IYl ei_undoc
+#define Ui_sub_IYh ei_undoc
+#define Ui_sub_IYl ei_undoc
+#define Ui_sbc_IYh ei_undoc
+#define Ui_sbc_IYl ei_undoc
+#define Ui_and_IYh ei_undoc
+#define Ui_and_IYl ei_undoc
+#define Ui_xor_IYh ei_undoc
+#define Ui_xor_IYl ei_undoc
+#define Ui_or_IYh ei_undoc
+#define Ui_or_IYl ei_undoc
+#define Ui_cp_IYh ei_undoc
+#define Ui_cp_IYl ei_undoc
+#define Ui_ednop ei_undoc
+#define Ui_neg ei_undoc
+#define Ui_im_0 ei_undoc
+#define Ui_im_1 ei_undoc
+#define Ui_im_2 ei_undoc
+#define Ui_reti ei_undoc
+#define Ui_retn ei_undoc
+#define Ui_ld_r_rlc_iIXN ei_undoc
+#define Ui_ld_r_rrc_iIXN ei_undoc
+#define Ui_ld_r_rl_iIXN ei_undoc
+#define Ui_ld_r_rr_iIXN ei_undoc
+#define Ui_ld_r_sla_iIXN ei_undoc
+#define Ui_ld_r_sra_iIXN ei_undoc
+#define Ui_ld_r_sll_iIXN ei_undoc
+#define Ui_ld_r_srl_iIXN ei_undoc
+#define Ui_bit_b_iIXN ei_undoc
+#define Ui_ld_r_res_b_iIXN ei_undoc
+#define Ui_ld_r_set_b_iIXN ei_undoc
+#define Ui_ld_r_rlc_iIYN ei_undoc
+#define Ui_ld_r_rrc_iIYN ei_undoc
+#define Ui_ld_r_rl_iIYN ei_undoc
+#define Ui_ld_r_rr_iIYN ei_undoc
+#define Ui_ld_r_sla_iIYN ei_undoc
+#define Ui_ld_r_sra_iIYN ei_undoc
+#define Ui_ld_r_sll_iIYN ei_undoc
+#define Ui_ld_r_srl_iIYN ei_undoc
+#define Ui_bit_b_iIYN ei_undoc
+#define Ui_ld_r_res_b_iIYN ei_undoc
+#define Ui_ld_r_set_b_iIYN ei_undoc
+
+#endif
 
 
 /************************************************************************/
