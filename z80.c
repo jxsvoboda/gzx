@@ -58,7 +58,9 @@ static void z80_memset16(u16 addr, u16 val) {
 
 static inline void z80_clock_inc(u8 inc)
 {
+#ifndef NO_Z80CLOCK
 	z80_clock += inc;
+#endif
 }
 
 /* returns the signed value of the byte: 0..127 ->0..127
@@ -5261,6 +5263,9 @@ void z80_execinstr(void) {
     /* turn off old modifier prefix (unless set just now) */
     if(opcode!=0xdd && opcode!=0xfd) cpus.modifier=0;
   }
+#ifdef NO_Z80CLOCK
+	z80_clock += 12;
+#endif
 }
 
 int z80_int(u8 data) {
