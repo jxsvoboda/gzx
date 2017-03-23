@@ -4,7 +4,7 @@
   this file is included into z80.c
 */
 
-void (*ei_op[256])(void) = {
+void (*const ei_op[256])(void) PROGMEM = {
   ei_nop,	ei_ld_BC_NN,	ei_ld_iBC_A,	ei_inc_BC, 	/* 0x00 */
   ei_inc_B,	ei_dec_B,	ei_ld_B_N,	ei_rlca, 	/* 0x04 */
   ei_ex_AF_xAF,	ei_add_HL_BC,	ei_ld_A_iBC,	ei_dec_BC, 	/* 0x08 */
@@ -72,7 +72,7 @@ void (*ei_op[256])(void) = {
 
 };
 
-void (*ei_ddop[256])(void) = {
+void (*const ei_ddop[256])(void) PROGMEM = {
   Si_stray,	Si_stray,	Si_stray,	Si_stray, 	/* 0x00 */
   Si_stray,	Si_stray,	Si_stray,	Si_stray, 	/* 0x04 */
   Si_stray,	ei_add_IX_BC,	Si_stray,	Si_stray, 	/* 0x08 */
@@ -140,7 +140,7 @@ void (*ei_ddop[256])(void) = {
 
 };
 
-void (*ei_edop[256])(void) = {
+void (*const ei_edop[256])(void) PROGMEM = {
   Ui_ednop,	Ui_ednop,	Ui_ednop,	Ui_ednop, 	/* 0x00 */
   Ui_ednop,	Ui_ednop,	Ui_ednop,	Ui_ednop, 	/* 0x04 */
   Ui_ednop,	Ui_ednop,	Ui_ednop,	Ui_ednop, 	/* 0x08 */
@@ -208,7 +208,7 @@ void (*ei_edop[256])(void) = {
 
 };
 
-void (*ei_fdop[256])(void) = {
+void (*const ei_fdop[256])(void) PROGMEM = {
   Si_stray,	Si_stray,	Si_stray,	Si_stray, 	/* 0x00 */
   Si_stray,	Si_stray,	Si_stray,	Si_stray, 	/* 0x04 */
   Si_stray,	ei_add_IY_BC,	Si_stray,	Si_stray, 	/* 0x08 */
@@ -277,7 +277,7 @@ void (*ei_fdop[256])(void) = {
 };
 
 
-void (*ei_cbop[256])(void) = {
+void (*const ei_cbop[256])(void) PROGMEM = {
   ei_rlc_r,	ei_rlc_r,	ei_rlc_r,	ei_rlc_r, 	/* 0x00 */
   ei_rlc_r,	ei_rlc_r,	ei_rlc_iHL,	ei_rlc_r, 	/* 0x04 */
   ei_rrc_r,	ei_rrc_r,	ei_rrc_r,	ei_rrc_r, 	/* 0x08 */
@@ -345,7 +345,7 @@ void (*ei_cbop[256])(void) = {
 
 };
 
-void (*ei_ddcbop[256])(void) = {
+void (*const ei_ddcbop[256])(void) PROGMEM = {
   Ui_ld_r_rlc_iIXN,	Ui_ld_r_rlc_iIXN,	Ui_ld_r_rlc_iIXN,	Ui_ld_r_rlc_iIXN, 	/* 0x00 */
   Ui_ld_r_rlc_iIXN,	Ui_ld_r_rlc_iIXN,	ei_rlc_iIXN,		Ui_ld_r_rlc_iIXN, 	/* 0x04 */
   Ui_ld_r_rrc_iIXN,	Ui_ld_r_rrc_iIXN,	Ui_ld_r_rrc_iIXN,	Ui_ld_r_rrc_iIXN, 	/* 0x08 */
@@ -413,7 +413,7 @@ void (*ei_ddcbop[256])(void) = {
 
 };
 
-void (*ei_fdcbop[256])(void) = {
+void (*const ei_fdcbop[256])(void) PROGMEM = {
   Ui_ld_r_rlc_iIYN,	Ui_ld_r_rlc_iIYN,	Ui_ld_r_rlc_iIYN,	Ui_ld_r_rlc_iIYN, 	/* 0x00 */
   Ui_ld_r_rlc_iIYN,	Ui_ld_r_rlc_iIYN,	ei_rlc_iIYN,		Ui_ld_r_rlc_iIYN, 	/* 0x04 */
   Ui_ld_r_rrc_iIYN,	Ui_ld_r_rrc_iIYN,	Ui_ld_r_rrc_iIYN,	Ui_ld_r_rrc_iIYN, 	/* 0x08 */
@@ -480,4 +480,3 @@ void (*ei_fdcbop[256])(void) = {
   Ui_ld_r_set_b_iIYN,	Ui_ld_r_set_b_iIYN,	ei_set_b_iIYN,		Ui_ld_r_set_b_iIYN  	/* 0xFC */
 
 };
-

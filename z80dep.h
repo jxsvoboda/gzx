@@ -9,6 +9,9 @@
 
 #include "intdef.h"
 
+#define PROGMEM
+#define pgm_read_ptr(x) (*(x))
+
 u8 z80_memget8(u16 addr);
 void z80_memset8(u16 addr, u8 val);
 

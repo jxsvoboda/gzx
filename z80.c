@@ -37,7 +37,7 @@ unsigned long uoc;	/* unsupported opcode counter */
 unsigned long smc;	/* stray modifier counter */
 static u8 prefix1,prefix2;
 
-static void (**ei_tab)(void);
+static void (*const *ei_tab)(void);
 
 #ifndef NO_Z80STAT
 static unsigned stat_tab[7][256];
@@ -5149,8 +5149,8 @@ static void Mi_fd(void);
 
 #include "z80itab.c"
 
-static void (**(ei_opm  [3]))(void) = { ei_op,   ei_ddop,   ei_fdop   };
-static void (**(ei_cbopm[3]))(void) = { ei_cbop, ei_ddcbop, ei_fdcbop };
+static void (*const *(ei_opm  [3]))(void) = { ei_op,   ei_ddop,   ei_fdop   };
+static void (*const *(ei_cbopm[3]))(void) = { ei_cbop, ei_ddcbop, ei_fdcbop };
 
 static void Mi_dd(void) {
   z80_clock_inc(4);  /* according to Sean: 4T(as NOP), 1R */
@@ -5246,7 +5246,7 @@ void z80_execinstr(void) {
 #endif
     
     lastuoc=uoc;
-    ei_tab[opcode](); /* FAST branch .. execute the instruction */
+    ((void (*)(void))pgm_read_ptr(&ei_tab[opcode]))(); /* FAST branch .. execute the instruction */
     
     (void)lastuoc;
     (void) prefix1;
