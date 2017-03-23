@@ -1,7 +1,6 @@
 #ifndef Z80_H
 #define Z80_H
 
-#include <stdio.h>
 #include "intdef.h"
 
 /* flags */
@@ -54,16 +53,22 @@ extern unsigned long z80_clock;
 extern unsigned long uoc;
 extern unsigned long smc;
 
-extern unsigned stat_tab[7][256];
-
 void z80_init_tables(void);
 void z80_execinstr(void);
 int z80_reset(void);
 int z80_nmi(void);
 int z80_int(u8 data);
 
-void z80_fprintstatus(FILE *f);
-
 void z80_resetstat(void);
+unsigned z80_getstat(int, u8);
+
+u16 z80_getAF(void);
+u16 z80_getBC(void);
+u16 z80_getDE(void);
+u16 z80_getHL(void);
+u16 z80_getAF_(void);
+u16 z80_getBC_(void);
+u16 z80_getDE_(void);
+u16 z80_getHL_(void);
 
 #endif

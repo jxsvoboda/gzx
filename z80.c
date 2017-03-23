@@ -20,13 +20,11 @@
     - timing of undocumented instructions
 */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include "intdef.h"
 #include "z80.h"
 #include "z80dep.h"
 
-static void z80_printstatus(void);
 static int z80_readinstr(void);
 
 static u8 opcode;
@@ -40,8 +38,11 @@ unsigned long smc;	/* stray modifier counter */
 static u8 prefix1,prefix2;
 
 static void (**ei_tab)(void);
-unsigned stat_tab[7][256];
+
+#ifndef NO_Z80STAT
+static unsigned stat_tab[7][256];
 static int stat_i;
+#endif
 
 /* fast flag computation lookup table */
 static u8 ox_tab[256]; /* OR,XOR and more */
@@ -269,6 +270,45 @@ static void setHL(u16 val) {
   cpus.r[rL]=val & 0xff;
 }
 
+u16 z80_getAF(void)
+{
+	return getAF();
+}
+
+u16 z80_getBC(void)
+{
+	return getBC();
+}
+
+u16 z80_getDE(void)
+{
+	return getDE();
+}
+
+u16 z80_getHL(void)
+{
+	return getHL();
+}
+
+u16 z80_getAF_(void)
+{
+	return getAF_();
+}
+
+u16 z80_getBC_(void)
+{
+	return getBC_();
+}
+
+u16 z80_getDE_(void)
+{
+	return getDE_();
+}
+
+u16 z80_getHL_(void)
+{
+	return getHL_();
+}
 
 static u8 z80_iget8(void) {
   u8 tmp;
@@ -284,35 +324,6 @@ static u16 z80_iget16(void) {
   tmp=z80_memget16(cpus.PC);
   cpus.PC+=2;
   return tmp;
-}
-
-static void z80_printstatus(void) {
-  printf("AF%04x BC%04x DE%04x HL%04x IX%04x IY%04x PC%04x SP%04x iHL%02x\n",
-         getAF(),getBC(),getDE(),getHL(),cpus.IX, cpus.IY,
-	 cpus.PC,cpus.SP,_iHL8());
-}
-
-static void z80_dump_regs(void)
-{
-	static FILE *drf = NULL;
-
-	if (!drf) {
-		drf = fopen("dregs.txt","wt");
-		if (!drf) exit(1);
-	}
-	fprintf(drf,"PC=%04X, A=%02X, F=%02X, BC=%04X, DE=%04X, HL=%04X, IX=%04X, IY=%04X\n",
-		cpus.PC, cpus.r[rA], cpus.F, getBC(), getDE(), getHL(), cpus.IX, cpus.IY);
-	fprintf(drf,"SP=%04X, (SP)=%04X\n", cpus.SP, z80_memget16(cpus.SP));
-	//fprintf(drf,"(5CA9)=%02X\n", z80_memget8(0x5CA9));
-}
-
-void z80_fprintstatus(FILE *logfi) {
-  fprintf(logfi,"AF %04x BC %04x DE %04x HL %04x IX %04x PC %04x R%02d iHL%02x\n",
-          getAF()&0xffd7,getBC(),getDE(),getHL(),cpus.IX,
-	  cpus.PC,cpus.R,_iHL8());
-  fprintf(logfi,"AF'%04x BC'%04x DE'%04x HL'%04x IY %04x SP'%04x I%02d\n",
-          getAF_()&0xffd7,getBC_(),getDE_(),getHL_(),cpus.IY,
-	  cpus.SP,cpus.I);
 }
 
 /******************* undocumented operand access ************************/
@@ -453,7 +464,6 @@ static u8 _bit8(u8 a, u8 b) {
   u8 res;
 
   res=b & (1<<a);
- // printf("%04x: bit %d,0x%02x [%d]\n",cpus.PC,a,b,res);
   cpus.F=(cpus.F&fC)|ox_tab[res]; /* CF does not change */
 /*  setflags(res&0x80,
 	   res==0,
@@ -1377,7 +1387,6 @@ static void ei_cpir(void) {
 /************************************************************************/
 
 static void ei_cpl(void) { /* A <- cpl(A) ... one's complement */
-//  printf("CPL(1)\n");
   cpus.r[rA] ^= 0xff;
   setflags(-1,
            -1,
@@ -1394,8 +1403,6 @@ static void ei_cpl(void) { /* A <- cpl(A) ... one's complement */
 
 static void ei_daa(void) {
   u16 res;
-  
-//  printf("DAA - _fully_ implemented !\n");
   
   res=cpus.r[rA];
   
@@ -1560,7 +1567,6 @@ static void ei_dec_IY(void) {
 /************************************************************************/
 
 static void ei_di(void) {
-//  printf("DI\n");
   cpus.IFF1=cpus.IFF2=0;
   cpus.int_lock=1;
   z80_clock_inc(4);
@@ -1582,7 +1588,6 @@ static void ei_djnz(void) {
 /************************************************************************/
 
 static void ei_ei(void) {
-//  printf("EI\n");
   cpus.IFF1=cpus.IFF2=1;
   cpus.int_lock=1;
   z80_clock_inc(4);
@@ -1654,7 +1659,6 @@ static void ei_exx(void) {
 
 
 static void ei_halt(void) {
-//  printf("halt!\n");
   cpus.halted=1;
 
   z80_clock_inc(4);
@@ -1684,8 +1688,6 @@ static void ei_in_A_iN(void) {
   u8 res;
   u16 op;
 
-//  printf("ei_in_A_iN!!!\n");
-//  z80_printstatus();
   op=z80_iget8();
 
   res=_in8pf(((u16)cpus.r[rA]<<8)|(u16)op);
@@ -1696,7 +1698,7 @@ static void ei_in_A_iN(void) {
 
 static void Ui_in_iC(void) {
 
-  printf("ei_in_iC (unsupported)\n");
+//  printf("ei_in_iC (unsupported)\n");
   _in8(getBC());
 
   uoc++;
@@ -1995,7 +1997,6 @@ static void ei_jp_HL(void) {
 
   addr=getHL();
 //  printf("%04x:jp HL [0x%04x]\n",cpus.PC,addr);
-//  z80_printstatus();
   _jp16(addr);
   z80_clock_inc(4);
 }
@@ -2888,7 +2889,7 @@ static void ei_out_iN_A(void) {
 
 static void Ui_out_iC_0(void) {
 
-  printf("ei_out_iC_0 (unsupported)\n");
+//  printf("ei_out_iC_0 (unsupported)\n");
   _out8(getBC(),0);
 
   uoc++;
@@ -2998,7 +2999,6 @@ static void ei_otir(void) {
   setHL(getHL()+1);
   cpus.r[rB]--;
   
-  printf("otir step\n");
   if(cpus.r[rB]==0) {
 //    printf("B==0. otir terminated.\n");
     setflags(0,1,0,0,1,-1);
@@ -3420,7 +3420,6 @@ static void ei_rst_0(void) {
 }
 
 static void ei_rst_8(void) {
-  z80_printstatus();
   _call16(0x0008);
   z80_clock_inc(11);
 }
@@ -4709,7 +4708,6 @@ static void Ui_cp_IYl(void) {
 /**** ED .. ***************************************************************/
 
 static void Ui_ednop(void) { /* different from ei_nop! */
-  printf("EDNOP!\n");
   z80_clock_inc(8); /* according to Sean it's like 2 NOPs */
   uoc++;
 }
@@ -4732,21 +4730,21 @@ static void Ui_neg(void) {               /* A <- neg(A) .. two's complement */
 }
 
 static void Ui_im_0(void) { /* probably ..*/
-  printf("IM 0\n");
+//  printf("IM 0\n");
   cpus.int_mode=0;
   z80_clock_inc(8); /* timing taken from ei_im_0 */
   uoc++;
 }
 
 static void Ui_im_1(void) { /* probably ..*/
-  printf("IM 1\n");
+//  printf("IM 1\n");
   cpus.int_mode=1;
   z80_clock_inc(8); /* timing taken from ei_im_1 */
   uoc++;
 }
 
 static void Ui_im_2(void) { /* probably ..*/
-  printf("IM 2\n");
+//  printf("IM 2\n");
   cpus.int_mode=2;
   z80_clock_inc(8); /* timing taken from ei_im_2 */
   uoc++;
@@ -5171,11 +5169,22 @@ static void Si_stray(void) {  /* DD/FD was stray.. another DD/FD or unprefixed
 }
 
 void z80_resetstat(void) {
+#ifndef NO_Z80STAT
   int i,j;
   
   for(i=0;i<7;i++)
     for(j=0;j<256;j++)
       stat_tab[i][j]=0;
+#endif
+}
+
+unsigned z80_getstat(int tab, u8 opcode)
+{
+#ifndef NO_Z80STAT
+	return stat_tab[tab][opcode];
+#else
+	return 0;
+#endif
 }
 
 int z80_readinstr(void) {
@@ -5186,7 +5195,9 @@ int z80_readinstr(void) {
     incr_R(1);
     opcode=z80_iget8();
     ei_tab=ei_edop;
+#ifndef NO_Z80STAT
     stat_i=6;
+#endif
 //    prefix2=0xed;    
     return 0;
   }
@@ -5199,7 +5210,9 @@ int z80_readinstr(void) {
     }
     opcode=z80_iget8();
     ei_tab=ei_cbopm[cpus.modifier];
+#ifndef NO_Z80STAT
     stat_i=cpus.modifier+3;
+#endif
 //    prefix2=0xcb;
     return 0;
   }
@@ -5207,7 +5220,9 @@ int z80_readinstr(void) {
   /* one-byte opcode */
 //  prefix2=0;
   ei_tab=ei_opm[cpus.modifier];
+#ifndef NO_Z80STAT
   stat_i=cpus.modifier;
+#endif
   return 0;
 }
 
@@ -5216,10 +5231,6 @@ void z80_execinstr(void) {
 
   cpus.int_lock=0;
 
-  if (0) z80_dump_regs();
-/*  if(cpus.PC>=40000 && cpus.PC<=51000)
-    z80_fprintstatus(logfi);*/
-  
   if(cpus.halted) { /* NOP */
     z80_clock_inc(4);
     incr_R(1);
@@ -5228,7 +5239,9 @@ void z80_execinstr(void) {
     z80_readinstr();
 
     //printf("exec instr..\n");
+#ifndef NO_Z80STAT
     stat_tab[stat_i][opcode]++;
+#endif
     
     lastuoc=uoc;
     ei_tab[opcode](); /* FAST branch .. execute the instruction */
@@ -5292,7 +5305,7 @@ int z80_int(u8 data) {
 int z80_nmi(void) {
 
   if(cpus.int_lock) return -1;
-  printf("NMI!\n");
+//  printf("NMI!\n");
   
   cpus.halted=0;
   cpus.IFF1=0;

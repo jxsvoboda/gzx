@@ -105,6 +105,15 @@ void xmap_save(void) {
 
 #endif
 
+static void z80_fprintstatus(FILE *logfi) {
+  fprintf(logfi,"AF %04x BC %04x DE %04x HL %04x IX %04x PC %04x R%02d iHL%02x\n",
+          z80_getAF()&0xffd7,z80_getBC(),z80_getDE(),z80_getHL(),cpus.IX,
+	  cpus.PC,cpus.R,zx_memget8(z80_getHL()));
+  fprintf(logfi,"AF'%04x BC'%04x DE'%04x HL'%04x IY %04x SP'%04x I%02d\n",
+          z80_getAF_()&0xffd7,z80_getBC_(),z80_getDE_(),z80_getHL_(),cpus.IY,
+	  cpus.SP,cpus.I);
+}
+
 static void key_unmod(wkey_t *k)
 {
    switch(k->key) {
@@ -274,8 +283,8 @@ static void writestat_i(int i) {
   
   for(j=0;j<64;j++)
     fprintf(logfi,"0x%02x: %10d, %10d, %10d, %10d\n",j*4,
-      stat_tab[i][4*j],  stat_tab[i][4*j+1],
-      stat_tab[i][4*j+2],stat_tab[i][4*j+3]);
+      z80_getstat(i,4*j),  z80_getstat(i,4*j+1),
+      z80_getstat(i,4*j+2),z80_getstat(i,4*j+3));
 }
 
 static void writestat(void) {
@@ -436,7 +445,7 @@ int main(int argc, char **argv) {
   ic=0;
   //printf("inited.\n");
   //fprintf(logfi,"%d: pc=0x%04x, clock=%ld\n",ic,cpus.PC,z80_clock);
-  //z80_fprintstatus(logfi);
+  if (0) z80_fprintstatus(logfi);
   
   timer_reset(&frmt);
   
