@@ -364,11 +364,11 @@ static int zx_save_snap_z80(char *name) {
   flags3 = 0x07; /* R-reg & LDIR emulation on, AY always */
   fputu8(f,flags3);
   
-  fputu8(f,ay_cur_reg); /* sound chip register number */
+  fputu8(f,ay_get_sel_regn()); /* sound chip register number */
   
   /* contents of sound registers */
   for(i=0;i<16;i++) {
-    fputu8(f,ay_reg[i]);
+    fputu8(f,ay_get_reg_contents(i));
   }
     
   fseek(f,hdr_end,SEEK_SET); /* just to be sure .. */

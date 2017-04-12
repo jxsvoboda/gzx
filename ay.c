@@ -3,20 +3,23 @@
  * AY-3-8912 music chip emulation
  */
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "ay.h"
 
+/** AY register state */
 uint8_t ay_reg[16];
-int ay_cur_reg;
+/** Selected register */
+uint8_t ay_cur_reg;
 
 static unsigned long tone_cnt[3];
-static unsigned      tone_smp[3];
+static uint8_t       tone_smp[3];
 static unsigned long env_cnt[3];
 static unsigned long env_pn[3];
 static unsigned long env_pp[3];
-static unsigned      env_smp[3];
+static uint8_t       env_smp[3];
 static unsigned long noise_cnt;
 static uint8_t       noise_smp;
 static unsigned long d_clocks;
@@ -33,10 +36,10 @@ static int env_v_tab[4][16] = {
 
 /** Envelope shapes expressed as indices into @c env_v_tab */
 static int env_shape_tab[16][3] = {
-  { 2, 0, 0 }, { 2, 0, 0 }, { 2, 0, 0}, { 2, 0, 0 },
-  { 1, 0, 0 }, { 1, 0, 0 }, { 1, 0, 0}, { 1, 0, 0 },
-  { 2, 2, 2 }, { 2, 0, 0 }, { 2, 1, 2}, { 2, 3, 3 },
-  { 1, 1, 1 }, { 1, 3, 3 }, { 1, 2, 1}, { 1, 0, 0 }
+	{ 2, 0, 0 }, { 2, 0, 0 }, { 2, 0, 0}, { 2, 0, 0 },
+	{ 1, 0, 0 }, { 1, 0, 0 }, { 1, 0, 0}, { 1, 0, 0 },
+	{ 2, 2, 2 }, { 2, 0, 0 }, { 2, 1, 2}, { 2, 3, 3 },
+	{ 1, 1, 1 }, { 1, 3, 3 }, { 1, 2, 1}, { 1, 0, 0 }
 };
 
 /** Select AY register.
@@ -205,4 +208,15 @@ int ay_get_sample(void)
 	}
 
 	return smp;
+}
+
+uint8_t ay_get_sel_regn(void)
+{
+	return ay_cur_reg;
+}
+
+uint8_t ay_get_reg_contents(uint8_t regn)
+{
+	assert(regn < 16);
+	return ay_reg[regn];
 }
