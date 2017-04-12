@@ -8,6 +8,7 @@
 #include "ay.h"
 #include "gzx.h"
 #include "iorec.h"
+#include "iospace.h"
 #include "memio.h"
 #include "sys_all.h"
 #include "z80.h"
@@ -95,10 +96,10 @@ u8 zx_in8(u16 a) {
 //  z80_printstatus();
 //  getchar();
   if(a==AY_REG_READ_PORT) return ay_reg_read();
-  if(a==0x7ffd) printf("bnk sw port read!!!!!!\n");
+  if(a==ZX128K_PAGESEL_PORT) printf("bnk sw port read!!!!!!\n");
   switch(a&0xff) {
     /* ULA */
-    case 0xfe: res=zx_key_in(a>>8) | 0xa0 | (ear?0x40:0x00); break;
+    case ULA_PORT: res=zx_key_in(a>>8) | 0xa0 | (ear?0x40:0x00); break;
     
     default:  // printf("in 0x%04x\n (no device there)",a);
 //               res=0xff;          /* no device attached -> idle bus */
@@ -114,14 +115,14 @@ void zx_out8(u16 addr, u8 val) {
 //  printf("out (0x%04x),0x%02x\n",addr,val);
   iorec_out(z80_clock, addr, val);
   val=val;
-  if((addr&0xff)==0xfe) {  /* the ULA (border/speaker/mic) */
+  if((addr&ULA_PORT_MASK)==ULA_PORT) {  /* the ULA (border/speaker/mic) */
     border=val&7;
     spk=(val&0x10)==0;
     mic=(val&0x18)==0;
 //    printf("border %d, spk:%d, mic:%d\n",border,(val>>4)&1,(val>>3)&1);
 //    z80_printstatus();
 //    getchar();
-  } else if(addr==0x7ffd && has_banksw && !bnk_lock48)
+  } else if(addr==ZX128K_PAGESEL_PORT && has_banksw && !bnk_lock48)
     zx_mem_page_select(val);
   else if(addr==AY_REG_WRITE_PORT) {
     ay_reg_write(val);
