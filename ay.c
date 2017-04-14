@@ -14,17 +14,17 @@ uint8_t ay_reg[16];
 /** Selected register */
 uint8_t ay_cur_reg;
 
-static unsigned long tone_cnt[3];
-static uint8_t       tone_smp[3];
-static unsigned long env_cnt[3];
-static unsigned long env_pn[3];
-static unsigned long env_pp[3];
-static uint8_t       env_smp[3];
-static unsigned long noise_cnt;
-static uint8_t       noise_smp;
-static unsigned long d_clocks;
+static uint16_t tone_cnt[3];
+static uint8_t  tone_smp[3];
+static uint32_t env_cnt[3];
+static uint32_t env_pn[3];
+static uint8_t  env_pp[3];
+static uint8_t  env_smp[3];
+static uint16_t noise_cnt;
+static uint8_t  noise_smp;
+static uint32_t d_clocks;
 
-static unsigned      chn_out[3];
+static uint8_t chn_out[3];
 
 /** Envelope fragments: const. 0, rising, falling, const. 1 */
 static int env_v_tab[4][16] = {
@@ -112,8 +112,9 @@ int ay_init(unsigned long d_t_states)
  */
 int ay_get_sample(void)
 {
-	int i,smp;
-	unsigned long period;
+	int i, smp;
+	uint32_t period;
+	uint32_t cnt;
 	int is_tone, is_noise;
 	int vol;
 
@@ -128,10 +129,12 @@ int ay_get_sample(void)
 		period <<= 4;
 
 		if (period != 0) {
-			tone_cnt[i] += d_clocks;
-			if (tone_cnt[i] >= period) { /* generate new sample */
-				tone_smp[i] ^= (tone_cnt[i] / period) & 1;
-				tone_cnt[i]  =  tone_cnt[i] % period;
+			cnt = tone_cnt[i] + d_clocks;
+			if (cnt >= period) { /* generate new sample */
+				tone_smp[i] ^= (cnt / period) & 1;
+				tone_cnt[i]  = (uint16_t)(cnt % period);
+			} else {
+				tone_cnt[i] = cnt;
 			}
 		} else tone_cnt[i] = 0;
 	}
@@ -171,18 +174,18 @@ int ay_get_sample(void)
 		period = 1;
 	period <<= 4;
 
-	if (noise_cnt < period) {
-		noise_cnt += d_clocks;
-		if (noise_cnt >= period) {
-			/*
-			 * Generate new sample.
-			 *
-			 * we don't have to generate skipped samples so just
-			 * generate the last one
-			 */
-			noise_smp = (rand() & 0x8000) ? 1 : 0;
-			noise_cnt = noise_cnt % period;
-		}
+	cnt = noise_cnt + d_clocks;
+	if (cnt >= period) {
+		/*
+		 * Generate new sample.
+		 *
+		 * we don't have to generate skipped samples so just
+		 * generate the last one
+		 */
+		noise_smp = (rand() & 0x8000) ? 1 : 0;
+		noise_cnt = cnt % period;
+	} else {
+		noise_cnt = cnt;
 	}
 
 	/* mixer */
