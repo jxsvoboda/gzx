@@ -27,6 +27,7 @@ sources_generic = \
     snap.c \
     snap_ay.c \
     strutil.c \
+    zx.c \
     zx_kbd.c \
     zx_sound.c \
     zx_tape.c \

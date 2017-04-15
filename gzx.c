@@ -29,6 +29,7 @@
 #include "menus.h"
 #include "debug.h"
 #include "z80g.h"
+#include "zx.h"
 #include "sys_all.h"
 
 /*
@@ -226,7 +227,7 @@ void zx_reset(void) {
   gpu_reset();
 #endif
   z80_reset();
-  ay_reset();
+  ay_reset(&ay0);
   
   /* select default banks */
   bnk_lock48=0;
@@ -263,7 +264,7 @@ static int zx_init(void) {
   printf("sound\n");
   if(zx_sound_init()<0) return -1;
   printf("ay\n");
-  if(ay_init(125/*d_t_states*/)<0) return -1;
+  if(ay_init(&ay0, 125/*d_t_states*/)<0) return -1;
   if(zx_tape_init(79)<0) return -1;
   //if(zx_tape_selectfile("/mnt/dos/jetpac.tap")<0) return -1;
 
@@ -369,7 +370,7 @@ void zx_debug_mstep(void) {
 #endif      
     
   if(CLOCK_GE(z80_clock-snd_t,125)) { 
-    zx_sound_smp(ay_get_sample()+(tape_smp?+16:-16));
+    zx_sound_smp(ay_get_sample(&ay0)+(tape_smp?+16:-16));
     /* build a new sound sample */
     snd_t+=125;
   }
@@ -509,7 +510,7 @@ int main(int argc, char **argv) {
     
     if(CLOCK_GE(z80_clock-snd_t,125)) { 
 //     putchar('S');
-      zx_sound_smp(ay_get_sample()+(tape_smp?+16:-16));
+      zx_sound_smp(ay_get_sample(&ay0)+(tape_smp?+16:-16));
       /* build a new sound sample */
       snd_t+=125;
 //     fputs("~S",stdout);

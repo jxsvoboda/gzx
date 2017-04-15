@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "z80.h"
 #include "fileutil.h"
 #include "intdef.h"
 #include "memio.h"
@@ -14,6 +13,8 @@
 #include "ay.h"
 #include "snap.h"
 #include "snap_ay.h"
+#include "z80.h"
+#include "zx.h"
 
 /*
   Translate 48k page numbers (8,4,5) to our numbering system (0,1,2)
@@ -181,13 +182,13 @@ int zx_load_snap_z80(char *name) {
     flags3=fgetu8(f); /* totally useless */
     (void) flags3;
     ay_r=fgetu8(f); /* sound chip register number */
-    ay_reg_select(ay_r);
+    ay_reg_select(&ay0, ay_r);
     /* contents of sound registers */
     for(i=0;i<16;i++) {
-      ay_reg_select(i);
-      ay_reg_write(fgetu8(f));
+      ay_reg_select(&ay0, i);
+      ay_reg_write(&ay0, fgetu8(f));
     }
-    ay_reg_select(ay_r);
+    ay_reg_select(&ay0, ay_r);
     
     fseek(f,hdr_end,SEEK_SET); /* just to be sure .. */
     
@@ -364,11 +365,11 @@ static int zx_save_snap_z80(char *name) {
   flags3 = 0x07; /* R-reg & LDIR emulation on, AY always */
   fputu8(f,flags3);
   
-  fputu8(f,ay_get_sel_regn()); /* sound chip register number */
+  fputu8(f,ay_get_sel_regn(&ay0)); /* sound chip register number */
   
   /* contents of sound registers */
   for(i=0;i<16;i++) {
-    fputu8(f,ay_get_reg_contents(i));
+    fputu8(f,ay_get_reg_contents(&ay0, i));
   }
     
   fseek(f,hdr_end,SEEK_SET); /* just to be sure .. */

@@ -13,6 +13,7 @@
 #include "sys_all.h"
 #include "z80.h"
 #include "z80g.h"
+#include "zx.h"
 #include "zx_kbd.h"
 
 u8 *zxram,*zxrom; /* whole memory */
@@ -95,7 +96,7 @@ u8 zx_in8(u16 a) {
 //  printf("in 0x%04x\n",a);
 //  z80_printstatus();
 //  getchar();
-  if(a==AY_REG_READ_PORT) return ay_reg_read();
+  if(a==AY_REG_READ_PORT) return ay_reg_read(&ay0);
   if(a==ZX128K_PAGESEL_PORT) printf("bnk sw port read!!!!!!\n");
   switch(a&0xff) {
     /* ULA */
@@ -125,9 +126,9 @@ void zx_out8(u16 addr, u8 val) {
   } else if(addr==ZX128K_PAGESEL_PORT && has_banksw && !bnk_lock48)
     zx_mem_page_select(val);
   else if(addr==AY_REG_WRITE_PORT) {
-    ay_reg_write(val);
+    ay_reg_write(&ay0, val);
   } if(addr==AY_REG_SEL_PORT) {
-    ay_reg_select(val);
+    ay_reg_select(&ay0, val);
   } else {
 //    printf("out (0x%04x),0x%02x (no device there)\n",addr,val);
   }
