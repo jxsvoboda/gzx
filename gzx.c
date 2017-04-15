@@ -14,6 +14,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <time.h>
+#include "clock.h"
 #include "intdef.h"
 #include "memio.h"
 #include "mgfx.h"
@@ -22,11 +23,13 @@
 #include "z80.h"
 #include "zx_kbd.h"
 #include "zx_scr.h"
+#include "rs232.h"
 #include "snap.h"
 #include "zx_sound.h"
 #include "zx_tape.h"
 #include "ay.h"
 #include "menus.h"
+#include "midi.h"
 #include "debug.h"
 #include "z80g.h"
 #include "zx.h"
@@ -220,6 +223,22 @@ void zx_scr_save(void) {
   fclose(f);
 }
 
+/** Value was written to AY I/O port.
+ *
+ * @param arg Callback argument
+ * @param val Value
+ */
+static void gzx_ay_ioport_write(void *arg, uint8_t val)
+{
+	rs232_write(&rs232, val);
+}
+
+/** Character was sent via RS-232 port */
+static void gzx_rs232_sendchar(void *arg, uint8_t val)
+{
+	midi_port_write(&midi, val);
+}
+
 static unsigned long snd_t,tapp_t;
 
 void zx_reset(void) {
@@ -263,8 +282,16 @@ static int zx_init(void) {
   if(zx_keys_init()<0) return -1;
   printf("sound\n");
   if(zx_sound_init()<0) return -1;
+
   printf("ay\n");
   if(ay_init(&ay0, 125/*d_t_states*/)<0) return -1;
+  ay0.ioport_write = gzx_ay_ioport_write;
+  ay0.ioport_write_arg = &ay0;
+
+  rs232_init(&rs232, Z80_CLOCK / MIDI_BAUD);
+  rs232.sendchar = gzx_rs232_sendchar;
+  rs232.sendchar_arg = &rs232;
+
   if(zx_tape_init(79)<0) return -1;
   //if(zx_tape_selectfile("/mnt/dos/jetpac.tap")<0) return -1;
 

@@ -5,7 +5,6 @@
 
 #include <assert.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include "ay.h"
 
@@ -50,6 +49,17 @@ static void reset_env_gen(ay_t *ay)
 	}
 }
 
+/** Write AY I/O port.
+ *
+ * @param ay AY
+ * @param val Value
+ */
+static void ay_io_port_write(ay_t *ay, uint8_t val)
+{
+	if (ay->ioport_write != NULL)
+		ay->ioport_write(ay->ioport_write_arg, val);
+}
+
 /** Write AY register.
  *
  * @param ay AY
@@ -59,10 +69,10 @@ void ay_reg_write(ay_t *ay, uint8_t val)
 {
 	switch (ay->cur_reg) {
 	case ay_rn_esccr: reset_env_gen(ay); break;
+	case ay_rn_io_a: ay_io_port_write(ay, val); break;
 	}
 
 	ay->reg[ay->cur_reg] = val;
-//	printf("ay_reg_write %d,0x%02x\n", ay->cur_reg, val);
 }
 
 /** Read currently selected AY register.

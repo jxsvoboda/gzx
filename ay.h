@@ -58,6 +58,9 @@ typedef struct {
 	uint16_t noise_cnt;
 	uint8_t  noise_smp;
 	uint32_t d_clocks;
+
+	void (*ioport_write)(void *, uint8_t);
+	void *ioport_write_arg;
 } ay_t;
 
 extern void ay_reg_select(ay_t *, uint8_t);

@@ -22,8 +22,10 @@ sources_generic = \
     fileutil.c \
     gzx.c \
     memio.c \
+    midi.c \
     z80.c \
     z80dep.c \
+    rs232.c \
     snap.c \
     snap_ay.c \
     strutil.c \
