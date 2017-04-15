@@ -41,15 +41,13 @@ void ay_reg_select(ay_t *ay, uint8_t regn)
  */
 static void reset_env_gen(ay_t *ay)
 {
-	ay->env_cnt[0] = 0;
-	ay->env_cnt[1] = 0;
-	ay->env_cnt[2] = 0;
-	ay->env_pn[0] = 0;
-	ay->env_pn[1] = 0;
-	ay->env_pn[2] = 0;
-	ay->env_pp[0] = 0;
-	ay->env_pp[1] = 0;
-	ay->env_pp[2] = 0;
+	uint8_t i;
+
+	for (i = 0; i < ay_nchan; i++) {
+		ay->env_cnt[i] = 0;
+		ay->env_pn[i] = 0;
+		ay->env_pp[i] = 0;
+	}
 }
 
 /** Write AY register.
@@ -60,7 +58,7 @@ static void reset_env_gen(ay_t *ay)
 void ay_reg_write(ay_t *ay, uint8_t val)
 {
 	switch (ay->cur_reg) {
-	case 13: reset_env_gen(ay); break;
+	case ay_rn_esccr: reset_env_gen(ay); break;
 	}
 
 	ay->reg[ay->cur_reg] = val;
@@ -83,7 +81,7 @@ uint8_t ay_reg_read(ay_t *ay)
  */
 void ay_reset(ay_t *ay)
 {
-	ay->reg[7] = 0x3f;
+	ay->reg[ay_rn_mcioen] = 0x3f;
 	ay->noise_cnt = 0;
 }
 
@@ -117,8 +115,8 @@ int ay_get_sample(ay_t *ay)
 
 	/* tone generator */
 	for(i = 0; i < ay_nchan; i++) {
-		period = ay->reg[2 * i] +
-		    ((unsigned)(ay->reg[2 * i + 1] & 0x0f) << 8);
+		period = ay->reg[ay_rn_ctr_a + 2 * i] +
+		    ((unsigned)(ay->reg[ay_rn_ftr_a + 2 * i] & 0x0f) << 8);
 		if (period == 0)
 			period = 1;
 		period <<= 4;
@@ -135,10 +133,11 @@ int ay_get_sample(ay_t *ay)
 	}
 
 	/* envelope generator */
-	eshape = ay->reg[13] & 0x0f;
+	eshape = ay->reg[ay_rn_esccr] & 0x0f;
 
 	for (i = 0; i < ay_nchan; i++) {
-		period = ((uint16_t)ay->reg[11]) | ((uint16_t)ay->reg[12] << 8);
+		period = ((uint16_t)ay->reg[ay_rn_ectr]) |
+		    ((uint16_t)ay->reg[ay_rn_eftr] << 8);
 		if (period == 0)
 		    period = 1;
 		period <<= 4;
@@ -164,7 +163,7 @@ int ay_get_sample(ay_t *ay)
 	}
 
 	/* noise generator */
-	period = ay->reg[6] & 0x1f;
+	period = ay->reg[ay_rn_npr] & 0x1f;
 	if (period == 0)
 		period = 1;
 	period <<= 4;
@@ -185,8 +184,8 @@ int ay_get_sample(ay_t *ay)
 
 	/* mixer */
 	for (i = 0; i < ay_nchan; i++) {
-		is_tone = !!(ay->reg[7] & (1 << i));
-		is_noise = !!(ay->reg[7] & (1 << (i + 3)));
+		is_tone = !!(ay->reg[ay_rn_mcioen] & (1 << i));
+		is_noise = !!(ay->reg[ay_rn_mcioen] & (1 << (i + 3)));
 
 		chn_out[i] = (ay->tone_smp[i] || is_tone) &&
 		    (ay->noise_smp || is_noise);
@@ -194,12 +193,12 @@ int ay_get_sample(ay_t *ay)
 
 	smp = 0;
 	for (i = 0; i < ay_nchan; i++) {
-		if (ay->reg[8 + i] & 0x10) {
+		if (ay->reg[ay_rn_amp_a + i] & 0x10) {
 			 /* use envelope generator */
 			vol = ay->env_smp[i];
 		} else {
 			/* use direct value for volume */
-			vol = ay->reg[8 + i] & 0x0f;
+			vol = ay->reg[ay_rn_amp_a + i] & 0x0f;
 		}
 
 		smp += chn_out[i] ? vol : 0;

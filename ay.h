@@ -9,7 +9,38 @@
 
 enum {
 	ay_nchan = 3,
-	ay_nreg = 16
+	ay_nreg = 16,
+
+	/** Channel A coarse tune register */
+	ay_rn_ctr_a  = 0x0,
+	/** Channel A fine tune register */
+	ay_rn_ftr_a  = 0x1,
+	/** Channel B coarse tune register */
+	ay_rn_ctr_b  = 0x2,
+	/** Channel B fine tune register */
+	ay_rn_ftr_b  = 0x3,
+	/** Channel C coarse tune register */
+	ay_rn_ctr_c  = 0x4,
+	/** Channel C fine tune register */
+	ay_rn_ftr_c  = 0x5,
+	/** Noise period register */
+	ay_rn_npr    = 0x6,
+	/** Mixer control - I/O enable */
+	ay_rn_mcioen = 0x7,
+	/** Channel A amplitude control register */
+	ay_rn_amp_a  = 0x8,
+	/** Channel B amplitude control register */
+	ay_rn_amp_b  = 0x9,
+	/** Channel C amplitude control register */
+	ay_rn_amp_c  = 0xa,
+	/** Envelope coarse tune register */
+	ay_rn_ectr   = 0xb,
+	/** Envelope fine tune register */
+	ay_rn_eftr   = 0xc,
+	/** Envelope shape, cycle control register */
+	ay_rn_esccr  = 0xd,
+	/** I/O port A data store */
+	ay_rn_io_a   = 0xe
 };
 
 typedef struct {
