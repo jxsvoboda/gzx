@@ -17,6 +17,7 @@
 #include "clock.h"
 #include "intdef.h"
 #include "memio.h"
+#include "midi.h"
 #include "mgfx.h"
 #include "gzx.h"
 #include "iorec.h"
@@ -239,6 +240,12 @@ static void gzx_rs232_sendchar(void *arg, uint8_t val)
 	midi_port_write(&midi, val);
 }
 
+/** Midi event was sent via MIDI port */
+static void gzx_midi_ev(void *arg, midi_event_t *ev)
+{
+	printf("MIDI event %02x %02x %02x\n", ev->sb, ev->db1, ev->db2);
+}
+
 static unsigned long snd_t,tapp_t;
 
 void zx_reset(void) {
@@ -291,6 +298,10 @@ static int zx_init(void) {
   rs232_init(&rs232, Z80_CLOCK / MIDI_BAUD);
   rs232.sendchar = gzx_rs232_sendchar;
   rs232.sendchar_arg = &rs232;
+
+  midi_port_init(&midi);
+  midi.midi_ev = gzx_midi_ev;
+  midi.midi_ev_arg = &midi;
 
   if(zx_tape_init(79)<0) return -1;
   //if(zx_tape_selectfile("/mnt/dos/jetpac.tap")<0) return -1;
