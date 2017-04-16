@@ -35,6 +35,7 @@
 #include "z80g.h"
 #include "zx.h"
 #include "sys_all.h"
+#include "sysmidi.h"
 
 /*
   Clock comparison is calculated in unsigned long. It works as long
@@ -66,6 +67,9 @@ int field_n=0;
 /* Start up working directory */
 /* ... used as base for finding the ROM files */
 char *start_dir;
+
+/** MIDI device specification */
+const char *midi_dev;
 
 int key_lalt_held;
 
@@ -241,9 +245,9 @@ static void gzx_rs232_sendchar(void *arg, uint8_t val)
 }
 
 /** Midi event was sent via MIDI port */
-static void gzx_midi_ev(void *arg, midi_event_t *ev)
+static void gzx_midi_msg(void *arg, midi_msg_t *msg)
 {
-	printf("MIDI event %02x %02x %02x\n", ev->sb, ev->db1, ev->db2);
+	sysmidi_send_msg(0, msg);
 }
 
 static unsigned long snd_t,tapp_t;
@@ -289,6 +293,9 @@ static int zx_init(void) {
   if(zx_keys_init()<0) return -1;
   printf("sound\n");
   if(zx_sound_init()<0) return -1;
+  if (sysmidi_init(midi_dev)<0) {
+	printf("Note: MIDI not available.\n");
+  }
 
   printf("ay\n");
   if(ay_init(&ay0, 125/*d_t_states*/)<0) return -1;
@@ -300,8 +307,8 @@ static int zx_init(void) {
   rs232.sendchar_arg = &rs232;
 
   midi_port_init(&midi);
-  midi.midi_ev = gzx_midi_ev;
-  midi.midi_ev_arg = &midi;
+  midi.midi_msg = gzx_midi_msg;
+  midi.midi_msg_arg = &midi;
 
   if(zx_tape_init(79)<0) return -1;
   //if(zx_tape_selectfile("/mnt/dos/jetpac.tap")<0) return -1;
@@ -454,9 +461,22 @@ int main(int argc, char **argv) {
   argi = 1;
   
   dbl_ln=0;
-  if(argc > argi && !strcmp(argv[argi],"d")) {
-    dbl_ln=1;
-    argi++;
+
+  while (argc > argi && argv[argi][0] == '-') {
+    if (!strcmp(argv[argi],"-dl")) {
+      dbl_ln=1;
+      argi++;
+    } else if (!strcmp(argv[argi],"-midi")) {
+	    if (argc <= argi + 1) {
+		    printf("Option -midi missing argument.\n");
+		    exit(1);
+	    }
+	    midi_dev = argv[argi + 1];
+	    argi+=2;
+    } else {
+	    printf("Invalid option '%s'.\n", argv[argi]);
+	    exit(1);
+    }
   }
 
   uoc=0;

@@ -1,9 +1,9 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * MIDI event
+ * MIDI message
  */
-#ifndef MIDI_EVENT_H
-#define MIDI_EVENT_H
+#ifndef MIDI_MSG_H
+#define MIDI_MSG_H
 
 #include <stdint.h>
 
@@ -11,6 +11,6 @@ typedef struct {
 	uint8_t sb;
 	uint8_t db1;
 	uint8_t db2;
-} midi_event_t;
+} midi_msg_t;
 
 #endif

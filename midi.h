@@ -6,7 +6,7 @@
 #define MIDI_PORT_H
 
 #include <stdint.h>
-#include "midi_event.h"
+#include "midi_msg.h"
 
 enum {
 	midi_sb_min        = 0x80,
@@ -43,10 +43,10 @@ typedef struct {
 	uint8_t sb;
 	/** Last data byte 1 */
 	uint8_t db1;
-	/** MIDI event decoded callback */
-	void (*midi_ev)(void *, midi_event_t *);
-	/** midi_ev callback argument */
-	void *midi_ev_arg;
+	/** MIDI message decoded callback */
+	void (*midi_msg)(void *, midi_msg_t *);
+	/** midi_msg callback argument */
+	void *midi_msg_arg;
 } midi_port_t;
 
 extern void midi_port_init(midi_port_t *);

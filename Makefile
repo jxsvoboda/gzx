@@ -8,12 +8,12 @@
 CC		= gcc
 CC_w32		= i686-w64-mingw32-gcc
 
-CFLAGS		= -O2 -Wall -Werror -Wmissing-prototypes -I/usr/include/SDL
+CFLAGS		= -O2 -Wall -Werror -Wmissing-prototypes -I/usr/include/SDL -DWITH_MIDI
 CFLAGS_g	= $(CFLAGS) -DUSE_GPU
 CFLAGS_w32	= -O2 -Wall -Werror -Wmissing-prototypes
 CFLAGS_w32_g	= $(CFLAGS_w32) -DUSE_GPU
 
-LIBS		= -lSDL
+LIBS		= -lSDL -lasound
 LIBS_w32	= -lgdi32 -lwinmm
 
 bkqual = $$(date '+%Y-%m-%d')
@@ -48,7 +48,8 @@ sources = \
     $(sources_generic) \
     gfx_sdl.c \
     snd_sdl.c \
-    sys_unix.c
+    sys_unix.c \
+    sysmidi_alsa.c
 
 sources_g = \
     $(sources) \
@@ -58,7 +59,8 @@ sources_w32 = \
     $(sources_generic) \
     gfx_win.c \
     snd_win.c \
-    sys_win.c
+    sys_win.c \
+    sysmidi_win.c
 
 sources_w32_g = \
     $(sources_w32) \

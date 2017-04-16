@@ -38,24 +38,24 @@ static uint8_t midi_msg_ndata_bytes(uint8_t statusb)
 	}
 }
 
-/** Event was sent through MIDI port.
+/** Message was sent through MIDI port.
  *
  * @param mp MIDI port
  * @param sb Status byte
  * @param db1 Data byte 1
  * @param db2 Data byte 2
  */
-static void midi_port_event(midi_port_t *mp, uint8_t sb, uint8_t db1,
+static void midi_port_msg(midi_port_t *mp, uint8_t sb, uint8_t db1,
     uint8_t db2)
 {
-	midi_event_t event;
+	midi_msg_t msg;
 
-	event.sb = sb;
-	event.db1 = db1;
-	event.db2 = db2;
+	msg.sb = sb;
+	msg.db1 = db1;
+	msg.db2 = db2;
 
-	if (mp->midi_ev != NULL)
-		mp->midi_ev(mp->midi_ev_arg, &event);
+	if (mp->midi_msg != NULL)
+		mp->midi_msg(mp->midi_msg_arg, &msg);
 }
 
 /** Write byte to MIDI port.
@@ -92,7 +92,7 @@ again:
 			mp->db1 = val;
 			mp->ms = ms_datab2;
 		} else {
-			midi_port_event(mp, mp->sb, val, 0);
+			midi_port_msg(mp, mp->sb, val, 0);
 		}
 		break;
 	case ms_datab2:
@@ -100,7 +100,7 @@ again:
 			mp->ms = ms_statusb;
 			goto again;
 		}
-		midi_port_event(mp, mp->sb, mp->db1, val);
+		midi_port_msg(mp, mp->sb, mp->db1, val);
 		break;
 	case ms_sysexb:
 		if (val == midi_sb_sysex_end)
