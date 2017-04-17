@@ -247,7 +247,7 @@ static void gzx_rs232_sendchar(void *arg, uint8_t val)
 /** Midi event was sent via MIDI port */
 static void gzx_midi_msg(void *arg, midi_msg_t *msg)
 {
-	sysmidi_send_msg(0, msg);
+	sysmidi_send_msg(z80_clock, msg);
 }
 
 static unsigned long snd_t,tapp_t;
@@ -535,7 +535,7 @@ int main(int argc, char **argv) {
 #ifdef USE_GPU
         zx_scr_disp_fast();
 #endif
-
+	sysmidi_poll(z80_clock);
 	mgfx_updscr();
 	
 	/* Next field */

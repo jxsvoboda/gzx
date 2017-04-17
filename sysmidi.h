@@ -12,5 +12,6 @@
 extern int sysmidi_init(const char *);
 extern void sysmidi_done(void);
 extern void sysmidi_send_msg(uint32_t, midi_msg_t *);
+extern void sysmidi_poll(uint32_t);
 
 #endif
