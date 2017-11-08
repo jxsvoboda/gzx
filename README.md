@@ -29,8 +29,8 @@ Some of the features of this emulator:
 To get the latest source
 ------------------------
 
-  $ hg clone https://bitbucket.org/jiri_svoboda/gzx/ gzx/trunk
-  $ cd gzx/trunk
+    $ hg clone https://bitbucket.org/jiri_svoboda/gzx/ gzx/trunk
+    $ cd gzx/trunk
 
 Compiling
 ---------
