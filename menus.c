@@ -45,7 +45,10 @@
 #include "snap.h"
 #include "menus.h"
 #include "sys_all.h"
-#include "sys_win.h"
+
+#ifdef __MINGW32__
+#include "platform/win/sys_win.h"
+#endif
 
 #define MIN(x,y) ((x)<(y) ? (x) : (y))
 

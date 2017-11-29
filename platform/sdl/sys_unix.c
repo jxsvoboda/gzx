@@ -1,6 +1,6 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Win32: emulate some linux function, that are not supplied by mingw
+ * UN*X system platform wrapper
  *
  * Copyright (c) 1999-2017 Jiri Svoboda
  * All rights reserved.
@@ -29,34 +29,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <windows.h>
-#include <mmsystem.h>
-#include "clock.h"
-#include "sys_win.h"
+#include <dirent.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include "../../clock.h"
+#include "../../sys_all.h"
 
-#ifndef _TIMEVAL_DEFINED
-#define _TIMEVAL_DEFINED
-struct timeval {
-  long tv_sec;
-  long tv_usec;
-};
-#endif
-
-struct timezone {
-  int tz_minuteswest;
-  int tz_dsttime;
-};
-
-static int gettimeofday(struct timeval *tv, struct timezone *tz) {
-  unsigned long t;
-  
-  t=timeGetTime();
-  tv->tv_sec=t/1000;
-  t=t%1000;
-  tv->tv_usec=t*1000;
-
-  return 0;
-}
+static DIR *sd;
 
 void timer_reset(timer *t) {
   struct timezone tz;
@@ -83,14 +63,6 @@ unsigned long timer_val(timer *t) {
   return tstates;
 }
 
-unsigned long win_enumdrives(void) {
-  return GetLogicalDrives();
-}
-
-/* MINGW stuff */
-#include <unistd.h>
-#include <sys/stat.h>
-
 int sys_chdir(const char *path) {
   return chdir(path);
 }
@@ -105,9 +77,6 @@ int sys_isdir(char *filename) {
   stat(filename,&statbuf);
   return S_ISDIR(statbuf.st_mode);
 }
-
-#include <dirent.h>
-static DIR *sd;
 
 int sys_opendir(char *path) {
   sd = opendir(path);

@@ -34,8 +34,8 @@
 #include <errno.h>
 #include <unistd.h>
 #include <windows.h>
-#include "mgfx.h"
-#include "sndw.h"
+#include "../../mgfx.h"
+#include "../../sndw.h"
 
 /*
   Latency <= N_BUF * 40 ms

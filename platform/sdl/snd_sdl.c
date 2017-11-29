@@ -34,8 +34,8 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
-#include "mgfx.h"
-#include "sndw.h"
+#include "../../mgfx.h"
+#include "../../sndw.h"
 
 static u8 *audio_ring;
 static int audio_bufsize;

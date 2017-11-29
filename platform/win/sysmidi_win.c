@@ -33,10 +33,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
-#include "clock.h"
-#include "midi.h"
-#include "midi_msg.h"
-#include "sysmidi.h"
+#include "../../clock.h"
+#include "../../midi.h"
+#include "../../midi_msg.h"
+#include "../../sysmidi.h"
 
 enum {
 	/** Number of MIDI buffers */

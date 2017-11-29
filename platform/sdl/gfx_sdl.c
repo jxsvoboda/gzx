@@ -32,7 +32,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL.h>
-#include "mgfx.h"
+#include "../../mgfx.h"
 
 static SDL_Surface *sdl_screen;
 static int fs = 0;

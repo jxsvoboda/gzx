@@ -42,8 +42,8 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <string.h>
-#include "gzx.h"
-#include "mgfx.h"
+#include "../../gzx.h"
+#include "../../mgfx.h"
 
 #include <ddraw.h>
 

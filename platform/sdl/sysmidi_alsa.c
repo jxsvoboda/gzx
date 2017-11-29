@@ -33,9 +33,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "midi.h"
-#include "midi_msg.h"
-#include "sysmidi.h"
+#include "../../midi.h"
+#include "../../midi_msg.h"
+#include "../../sysmidi.h"
 
 enum {
 	/** Play MIDI with 0.1 second buffer/latency */

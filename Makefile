@@ -46,10 +46,10 @@ sources_generic = \
 
 sources = \
     $(sources_generic) \
-    gfx_sdl.c \
-    snd_sdl.c \
-    sys_unix.c \
-    sysmidi_alsa.c
+    platform/sdl/gfx_sdl.c \
+    platform/sdl/snd_sdl.c \
+    platform/sdl/sys_unix.c \
+    platform/sdl/sysmidi_alsa.c
 
 sources_g = \
     $(sources) \
@@ -57,10 +57,10 @@ sources_g = \
 
 sources_w32 = \
     $(sources_generic) \
-    gfx_win.c \
-    snd_win.c \
-    sys_win.c \
-    sysmidi_win.c
+    platform/win/gfx_win.c \
+    platform/win/snd_win.c \
+    platform/win/sys_win.c \
+    platform/win/sysmidi_win.c
 
 sources_w32_g = \
     $(sources_w32) \
