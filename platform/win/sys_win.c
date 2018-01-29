@@ -128,3 +128,8 @@ int sys_readdir(char **name, int *is_dir) {
 void sys_closedir(void) {
   closedir(sd);
 }
+
+void sys_usleep(unsigned usec)
+{
+  usleep(usec);
+}

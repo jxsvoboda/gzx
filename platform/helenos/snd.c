@@ -1,6 +1,6 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Platform-specific system functions
+ * PCM playback through Hound
  *
  * Copyright (c) 1999-2017 Jiri Svoboda
  * All rights reserved.
@@ -29,26 +29,84 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SYS_ALL_H
-#define SYS_ALL_H
+#include <errno.h>
+#include <hound/client.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "../../sndw.h"
 
-#define SYS_PATH_MAX 128
+static size_t audio_buf_size;
+static size_t rsbuf_size;
+static size_t rsbuf_pos = 0;
+static size_t rsbuf_rem;
+static size_t rs_n;
+static size_t rs_d;
+static u8 *rsbuf;
+static hound_context_t *hound;
 
-typedef struct {
-  long sec,usec;
-} timer;
+int sndw_init(int bufs)
+{
+	pcm_format_t fmt;
+	int rc;
 
-void timer_reset(timer *t);
-unsigned long timer_val(timer *t);
+	fmt.channels = 1;
+	fmt.sampling_rate = /*28000*/44100;
+	fmt.sample_format = PCM_SAMPLE_UINT8;
 
-int sys_chdir(const char *path);
-char *sys_getcwd(char *buf, int buflen);
+	audio_buf_size = bufs;
+	rsbuf_size = audio_buf_size;
+	rsbuf = malloc(rsbuf_size);
+	if (rsbuf == NULL)
+		return -1;
 
-/* static buffers are evil, I know */
-int sys_isdir(char *path);
-int sys_opendir(char *path);
-int sys_readdir(char **name, int *is_dir);
-void sys_closedir(void);
-void sys_usleep(unsigned);
+	rs_n = 28000;
+	rs_d = 44100;
 
-#endif
+	hound = hound_context_create_playback(NULL, fmt, audio_buf_size * 3);
+	if (hound == NULL)
+		return -1;
+
+	rc = hound_context_connect_target(hound, HOUND_DEFAULT_TARGET);
+	if (rc != EOK) {
+		hound_context_destroy(hound);
+		hound = NULL;
+		return -1;
+	}
+
+	return 0;
+}
+
+void sndw_done(void)
+{
+	hound_context_destroy(hound);
+}
+
+static void sndw_resample(u8 smp)
+{
+	int rc;
+
+	while (rsbuf_rem < rs_d) {
+		rsbuf[rsbuf_pos++] = smp;
+		if (rsbuf_pos >= rsbuf_size) {
+			rc = hound_write_main_stream(hound, rsbuf, rsbuf_size);
+		        if (rc != EOK) {
+	    			printf("Error writing audio stream.\n");
+    				exit(1);
+			}
+
+			rsbuf_pos = 0;
+		}
+		rsbuf_rem += rs_n;
+	}
+
+	rsbuf_rem -= rs_d;
+}
+
+void sndw_write(u8 *buf)
+{
+	size_t i;
+
+	for (i = 0; i < audio_buf_size; i++) {
+		sndw_resample(buf[i]);
+	}
+}

@@ -31,7 +31,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 #include "debug.h"
 #include "gzx.h"
 #include "memio.h"
@@ -39,6 +38,7 @@
 #include "zx_scr.h"
 #include "z80.h"
 #include "disasm.h"
+#include "sys_all.h"
 
 #define MK_PAIR(hi,lo) ( (((u16)(hi)) << 8) | (lo) )
 
@@ -61,14 +61,14 @@ static void dreg(char *name, u16 value) {
   char buf[16];
   
   fgc=7; gputs(name); gputc(':'); fgc=5;
-  sprintf(buf,"%04X",value); gputs(buf);
+  snprintf(buf,16,"%04X",value); gputs(buf);
 }
 
 static void dflag(char *name, int value) {
   char buf[8];
   
   fgc=7; gputs(name); fgc=5;
-  sprintf(buf,"%d ",value); gputs(buf);
+  snprintf(buf,8,"%d ",value); gputs(buf);
 }
 
 static void d_regs(void) {
@@ -121,7 +121,7 @@ static void d_hex(void) {
   
   for(i=0;i<6;i++) {
     fgc=7;
-    sprintf(buf,"%04X:",hex_base+8*i);
+    snprintf(buf,16,"%04X:",hex_base+8*i);
     gmovec(1,HEX_CY+i); gputs(buf);
     fgc=5;
     for(j=0;j<8;j++) {      
@@ -130,7 +130,7 @@ static void d_hex(void) {
     }
     for(j=0;j<8;j++) {
       b=zx_memget8(hex_base+8*i+j);
-      sprintf(buf,"%02X", b);
+      snprintf(buf,16,"%02X", b);
       gmovec(16+3*j,HEX_CY+i);
       gputs(buf);
     }
@@ -147,14 +147,14 @@ static void d_instr(void) {
   for(i=0;i<INSTR_LINES;i++) {
     bgc = (ic_ln==i) ? 1 : 0;
     fgc=7;
-    sprintf(buf,"%04X:",disasm_org&0xffff);
+    snprintf(buf,16,"%04X:",disasm_org&0xffff);
     gmovec(1,INSTR_CY+i); gputs(buf);
     
     disasm_instr();
 
     fgc=5;    
     for(c=xpos;c!=disasm_org;c++) {
-      sprintf(buf,"%02X",zx_memget8(c));
+      snprintf(buf,16,"%02X",zx_memget8(c));
       gputs(buf);
     }
     
@@ -295,7 +295,7 @@ void debugger(void) {
     mgfx_updscr();
     do {
       mgfx_input_update();
-      usleep(1000);
+      sys_usleep(1000);
     } while(!w_getkey(&k));
     
     if(k.press)

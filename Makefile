@@ -7,14 +7,20 @@
 
 CC		= gcc
 CC_w32		= i686-w64-mingw32-gcc
+CC_helenos	= helenos-cc
+LD_helenos	= helenos-ld
 
 CFLAGS		= -O2 -Wall -Werror -Wmissing-prototypes -I/usr/include/SDL -DWITH_MIDI
 CFLAGS_g	= $(CFLAGS) -DUSE_GPU
 CFLAGS_w32	= -O2 -Wall -Werror -Wmissing-prototypes
 CFLAGS_w32_g	= $(CFLAGS_w32) -DUSE_GPU
+CFLAGS_helenos	= -O2 -Wall -Wno-error \
+    `helenos-pkg-config --cflags libgui libdraw libmath libhound libpcm`
+CFLAGS_helenos_g = $(CFLAGS_helenos) -DUSE_GPU
 
 LIBS		= -lSDL -lasound
 LIBS_w32	= -lgdi32 -lwinmm
+LIBS_helenos	=  `helenos-pkg-config --libs libgui libdraw libmath libhound libpcm`
 
 bkqual = $$(date '+%Y-%m-%d')
 
@@ -66,21 +72,39 @@ sources_w32_g = \
     $(sources_w32) \
     z80g.c
 
+sources_helenos = \
+    $(sources_generic) \
+    platform/helenos/gfx.c \
+    platform/helenos/snd.c \
+    platform/helenos/sys.c
+
+sources_helenos_g = \
+    $(sources_helenos) \
+    z80g.c
+
 binary = gzx
 binary_g = gzx-g
 binary_w32 = gzx.exe
 binary_w32_g = gzx-g.exe
+binary_helenos = gzx-hos
+binary_helenos_g = gzx-g-hos
 
 objects = $(sources:.c=.o)
 objects_g = $(sources_g:.c=.g.o)
 objects_w32 = $(sources_w32:.c=.w32.o)
 objects_w32_g = $(sources_w32_g:.c=.g.w32.o)
+objects_helenos = $(sources_helenos:.c=.hos.o)
+objects_helenos_g = $(sources_helenos_g:.c=.g.hos.o)
 headers = $(wildcard *.h)
 
 # Default target
 default: $(binary)
 
-all: $(binary) $(binary_g) $(binary_w32) $(binary_w32_g)
+all: $(binary) $(binary_g) $(binary_w32) $(binary_w32_g) $(binary_helenos) \
+    $(binary_helenos_g)
+
+w32: $(binary_w32) $(binary_w32_g)
+hos: $(binary_helenos) $(binary_helenos_g)
 
 $(binary): $(objects)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
@@ -94,6 +118,12 @@ $(binary_w32): $(objects_w32)
 $(binary_w32_g): $(objects_w32_g)
 	$(CC_w32) $(CFLAGS) -o $@ $^ $(LIBS_w32)
 
+$(binary_helenos): $(objects_helenos)
+	$(LD_helenos) -o $@ $^ $(LIBS_helenos)
+
+$(binary_helenos_g): $(objects_helenos_g)
+	$(LD_helenos) -o $@ $^ $(LIBS_helenos)
+
 $(objects): $(headers)
 
 %.g.o: %.c
@@ -104,6 +134,12 @@ $(objects): $(headers)
 
 %.g.w32.o: %.c
 	$(CC_w32) -c $(CFLAGS_w32_g) -o $@ $<
+
+%.hos.o: %.c
+	$(CC_helenos) -c $(CFLAGS_helenos) -o $@ $<
+
+%.g.hos.o: %.c
+	$(CC_helenos) -c $(CFLAGS_helenos_g) -o $@ $<
 
 clean:
 	rm -f *.o $(binary) $(binary_g) $(binary_w32) $(binary_w32_g)

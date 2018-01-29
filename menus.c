@@ -35,7 +35,6 @@
 #include <string.h>
 //#include <sys/stat.h>
 //#include <sys/fcntl.h>
-#include <unistd.h>
 #include <limits.h>
 
 #include "gzx.h"
@@ -264,7 +263,7 @@ static void add_entry(char *fname, unsigned flags) {
   if(!(flist[nent].name=malloc(nlen+1))) {
     printf("malloc failed\n");
   }
-  strcpy(flist[nent].name,fname);
+  strncpy(flist[nent].name,fname,nlen + 1);
   flist[nent].flags=flags;
   nent++;
 }
@@ -297,7 +296,7 @@ static void get_dir(void) {
     int i;
     char dstr[4];
     
-    strcpy(dstr,"X:\\");
+    strncpy(dstr,"X:\\",4);
     dmask = win_enumdrives();
     for(i=0;i<26;i++)
       if(dmask & (1<<i)) {
@@ -410,7 +409,8 @@ static void fsel_nameline(void) {
     mgfx_updscr();
     do {
       mgfx_input_update();
-      usleep(1000);
+
+      sys_usleep(1000);
     } while(!w_getkey(&k));
     
     if(k.press)
@@ -535,7 +535,7 @@ int file_sel(char **fname, char *caption) {
     mgfx_updscr();
     do {
       mgfx_input_update();
-      usleep(1000);
+      sys_usleep(1000);
     } while(!w_getkey(&k));
     if(k.press)
     switch(k.key) {
@@ -609,7 +609,7 @@ int file_sel(char **fname, char *caption) {
       fprintf(logfi,"malloc failed\n");
       exit(1);
     }
-    strcpy(*fname,sf);
+    strncpy(*fname,sf, strlen(sf)+1);
     res=1;
   } else {
     *fname=NULL;
@@ -710,7 +710,7 @@ void main_menu(void) {
     mgfx_updscr();
     do {
       mgfx_input_update();
-      usleep(1000);
+      sys_usleep(1000);
     } while(!w_getkey(&k));
     if(k.press)
     switch(k.key) {
@@ -808,7 +808,7 @@ void tape_menu(void) {
     mgfx_updscr();
     do {
       mgfx_input_update();
-      usleep(1000);
+      sys_usleep(1000);
     } while(!w_getkey(&k));
     if(k.press)
     switch(k.key) {
@@ -896,7 +896,7 @@ void save_snap_dialog(void) {
     mgfx_updscr();
     do {
       mgfx_input_update();
-      usleep(1000);
+      sys_usleep(1000);
     } while(!w_getkey(&k));
     
     if(k.press)

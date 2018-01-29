@@ -1,6 +1,6 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Platform-specific system functions
+ * HelenOS system platform wrapper
  *
  * Copyright (c) 1999-2017 Jiri Svoboda
  * All rights reserved.
@@ -29,26 +29,83 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SYS_ALL_H
-#define SYS_ALL_H
+#include <async.h>
+#include <dirent.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <vfs/vfs.h>
+#include "../../clock.h"
+#include "../../sys_all.h"
 
-#define SYS_PATH_MAX 128
+static DIR *sd;
 
-typedef struct {
-  long sec,usec;
-} timer;
+void timer_reset(timer *t)
+{
+}
 
-void timer_reset(timer *t);
-unsigned long timer_val(timer *t);
+unsigned long timer_val(timer *t)
+{
+   return 0;
+}
 
-int sys_chdir(const char *path);
-char *sys_getcwd(char *buf, int buflen);
+int sys_chdir(const char *path)
+{
+	int rc;
 
-/* static buffers are evil, I know */
-int sys_isdir(char *path);
-int sys_opendir(char *path);
-int sys_readdir(char **name, int *is_dir);
-void sys_closedir(void);
-void sys_usleep(unsigned);
+	rc = vfs_cwd_set(path);
+	if (rc != EOK)
+		return -1;
 
-#endif
+	return 0;
+}
+
+char *sys_getcwd(char *buf, int buflen)
+{
+	int rc;
+
+	rc = vfs_cwd_get(buf, buflen);
+	if (rc != EOK)
+		return NULL;
+
+	return buf;
+}
+
+int sys_isdir(char *filename)
+{
+	struct stat statbuf;
+	int rc;
+
+	printf("sys_isdir('%s')?\n", filename);
+	rc = vfs_stat_path(filename,&statbuf);
+	printf("vfs_stat -> %d, is_dir=%d\n", rc, statbuf.is_directory);
+	return statbuf.is_directory;
+}
+
+int sys_opendir(char *path)
+{
+	sd = opendir(path);
+	return sd ? 0 : -1;
+}
+
+int sys_readdir(char **name, int *is_dir)
+{
+	struct dirent *de;
+
+	de = readdir(sd);
+	if (!de)
+		return -1;
+
+	*name = de->d_name;
+	*is_dir = sys_isdir(de->d_name);
+	return 0;
+}
+
+void sys_closedir(void)
+{
+	closedir(sd);
+}
+
+void sys_usleep(unsigned usec)
+{
+	async_usleep(usec);
+}

@@ -249,7 +249,7 @@ void zx_scr_save(void) {
   char name[32];
 
 //  snprintf(name,31,"scr%04d.bin",scr_no++);
-  sprintf(name,"scr%04d.bin",scr_no++);
+  snprintf(name, 32, "scr%04d.bin",scr_no++);
   f=fopen(name,"wb");
   fwrite(zxscr,1,0x1B00,f);
   fclose(f);
@@ -274,7 +274,9 @@ static void gzx_rs232_sendchar(void *arg, uint8_t val)
 /** Midi event was sent via MIDI port */
 static void gzx_midi_msg(void *arg, midi_msg_t *msg)
 {
+#ifdef WITH_MIDI
 	sysmidi_send_msg(z80_clock, msg);
+#endif
 }
 
 static unsigned long snd_t,tapp_t;
@@ -320,9 +322,11 @@ static int zx_init(void) {
   if(zx_keys_init()<0) return -1;
   printf("sound\n");
   if(zx_sound_init()<0) return -1;
+#ifdef WITH_MIDI
   if (sysmidi_init(midi_dev)<0) {
 	printf("Note: MIDI not available.\n");
   }
+#endif
 
   printf("ay\n");
   if(ay_init(&ay0, 125/*d_t_states*/)<0) return -1;
@@ -562,7 +566,9 @@ int main(int argc, char **argv) {
 #ifdef USE_GPU
         zx_scr_disp_fast();
 #endif
+#ifdef WITH_MIDI
 	sysmidi_poll(z80_clock);
+#endif
 	mgfx_updscr();
 	
 	/* Next field */
