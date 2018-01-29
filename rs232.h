@@ -34,9 +34,17 @@
 
 #include <stdint.h>
 
-/* Bits within the RS232 register */
+/** Bits within the RS232 register
+ *
+ * Note that the Spectrum Service manual notation used here refers
+ * to the name of the signals as seen by the other side (i.e. CTS, RXD
+ * are output lines, TXD, DTR are input lines.
+ */
 enum {
-	rs232_txd = 2
+	rs232_txd = 7,
+	rs232_dtr = 6,
+	rs232_rxd = 3,
+	rs232_cts = 2
 };
 
 typedef enum {

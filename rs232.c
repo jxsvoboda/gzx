@@ -42,7 +42,8 @@ void rs232_write(rs232_t *rs, uint8_t val)
 {
 	uint8_t b;
 
-	b = (val >> rs232_txd) & 0x1;
+	/* Spectrum ROM transmits MIDI data via CTS line */
+	b = (val >> rs232_cts) & 0x1;
 
 	if (rs->state == rs232_idle && (b == 0x0)) {
 		rs->state = rs232_sending;
