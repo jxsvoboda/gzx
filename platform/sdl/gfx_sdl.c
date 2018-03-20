@@ -34,6 +34,8 @@
 #include <SDL.h>
 #include "../../mgfx.h"
 
+#define WINDOW_CAPTION "GZX"
+
 static SDL_Surface *sdl_screen;
 static int fs = 0;
 static  SDL_Color color[256];
@@ -175,6 +177,8 @@ static void init_video(void) {
   if (dbl_ln) {
     vh *= 2;
   }
+  
+  SDL_WM_SetCaption(WINDOW_CAPTION, WINDOW_CAPTION);
   
   sdl_screen = SDL_SetVideoMode(vw, vh, 8, flags);
   
