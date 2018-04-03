@@ -72,21 +72,18 @@ Controls
 --------
 Note that most functions can be accessed via menus as well as via shortcuts.
 
-  Key | Function
-  --- | --------
-  Esc | Open main menu
-  F2  | Save snapshot
-  F3  | Load snapshot
-  F5  | Tape menu
-  F7  | Reset to 48K mode
-  F8  | Reset to 128K mode
-  F10 | Quit
-  F12 | Enter debugger
-
-  Key          | Function
-  ------------ | --------
-  Ctrl-Shift-L | Lock down UI (disable emulator control keys)
-  Ctrl-Shift-U | Unlock UI (reenable emulator control keys)
+  Key         | Function
+  ----------- | --------
+  Esc         | Open main menu
+  F2          | Save snapshot
+  F3          | Load snapshot
+  F5          | Tape menu
+  F7          | Reset to 48K mode
+  F8          | Reset to 128K mode
+  F10         | Quit
+  F12         | Enter debugger
+  Alt-Shift-L | Lock down UI (disable emulator control keys)
+  Alt-Shift-U | Unlock UI (reenable emulator control keys)
 
 On the numerical keypad:
 

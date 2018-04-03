@@ -102,7 +102,6 @@ char *start_dir;
 /** MIDI device specification */
 const char *midi_dev;
 
-int key_lctrl_held;
 int key_lalt_held;
 int key_lshift_held;
 
@@ -231,7 +230,7 @@ static void key_lalt(wkey_t *k)
     }
 }
 
-static void key_lctrl_lshift(wkey_t *k)
+static void key_lalt_lshift(wkey_t *k)
 {
    switch(k->key) {
       case WKEY_L:
@@ -250,22 +249,19 @@ static void key_handler(wkey_t *k) {
     return;
   }
 
-  if (k->key == WKEY_LCTRL)
-    key_lctrl_held = k->press;
-
   if (k->key == WKEY_LSHIFT)
     key_lshift_held = k->press;
-  
+
+  if (key_lalt_held && key_lshift_held && k->press) {
+      key_lalt_lshift(k);
+      return;
+  }
+
   if (key_lalt_held && k->press && !ui_lock) {
       key_lalt(k);
       return;
   }
 
-  if (key_lctrl_held && key_lshift_held && k->press) {
-      key_lctrl_lshift(k);
-      return;
-  }
-  
   if(k->key>=KST_SIZE) {
     printf("warning. got a key with a too high scancode (>=KST_SIZE)\n");
     printf("ignoring key\n");
