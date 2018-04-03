@@ -32,12 +32,14 @@
 #ifndef GZX_H
 #define GZX_H
 
+#include <stdbool.h>
 #include <stdio.h>
 
 void zx_reset(void);
 
 void zx_debug_mstep(void);
 void zx_debug_key(int press, int key);
+void gzx_ui_lock(void);
 
 extern char *start_dir;
 extern FILE *logfi;

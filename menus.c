@@ -627,7 +627,7 @@ int file_sel(char **fname, char *caption) {
 
 /***** main menu *****/
 
-#define MENU_NENT 7
+#define MENU_NENT 8
 
 static int menu_cx0;
 
@@ -638,11 +638,12 @@ static char *mentry_text[MENU_NENT]= {
   "Reset ~48",
   "Reset ~128",
   "Toggle ~Windowed",
+  "Lock ~UI",
   "~Quit",
 };
 
 static int mkeys[MENU_NENT]={
-  WKEY_L,WKEY_S,WKEY_T,WKEY_4,WKEY_1,WKEY_W,WKEY_Q
+  WKEY_L,WKEY_S,WKEY_T,WKEY_4,WKEY_1,WKEY_W,WKEY_U,WKEY_Q
 };
 
 
@@ -690,7 +691,8 @@ static void menu_run_line(int l) {
     case 3: zx_select_memmodel(ZXM_48K); zx_reset(); break;
     case 4: zx_select_memmodel(ZXM_128K); zx_reset(); break;
     case 5: mgfx_toggle_fs(); break;
-    case 6: quit=1; break;
+    case 6: gzx_ui_lock(); break;
+    case 7: quit=1; break;
   }
 }
 

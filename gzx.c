@@ -36,6 +36,7 @@
 #define SNAP_CRASH "/mnt/dos/spcrash.z80"
 #undef LOG
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -88,6 +89,9 @@ static int fl_frames=0;
 int quit=0;
 int slow_load=1;
 
+/** User interface lock */
+bool ui_lock = false;
+
 /* even(0) or odd(1) field */
 int field_n=0;
 
@@ -98,7 +102,9 @@ char *start_dir;
 /** MIDI device specification */
 const char *midi_dev;
 
+int key_lctrl_held;
 int key_lalt_held;
+int key_lshift_held;
 
 /******* execution map **********/
 
@@ -148,6 +154,12 @@ static void z80_fprintstatus(FILE *logfi) {
   fprintf(logfi,"AF'%04x BC'%04x DE'%04x HL'%04x IY %04x SP'%04x I%02d\n",
           z80_getAF_()&0xffd7,z80_getBC_(),z80_getDE_(),z80_getHL_(),cpus.IY,
 	  cpus.SP,cpus.I);
+}
+
+/** Lock down user interface */
+void gzx_ui_lock(void)
+{
+	ui_lock = true;
 }
 
 static void key_unmod(wkey_t *k)
@@ -219,15 +231,38 @@ static void key_lalt(wkey_t *k)
     }
 }
 
+static void key_lctrl_lshift(wkey_t *k)
+{
+   switch(k->key) {
+      case WKEY_L:
+	ui_lock = true;
+	break;
+      case WKEY_U:
+	ui_lock = false;
+	break;
+    }
+}
+
 static void key_handler(wkey_t *k) {
   
   if (k->key == WKEY_LALT) {
     key_lalt_held = k->press;
     return;
   }
+
+  if (k->key == WKEY_LCTRL)
+    key_lctrl_held = k->press;
+
+  if (k->key == WKEY_LSHIFT)
+    key_lshift_held = k->press;
   
-  if (key_lalt_held && k->press) {
+  if (key_lalt_held && k->press && !ui_lock) {
       key_lalt(k);
+      return;
+  }
+
+  if (key_lctrl_held && key_lshift_held && k->press) {
+      key_lctrl_lshift(k);
       return;
   }
   
@@ -239,7 +274,7 @@ static void key_handler(wkey_t *k) {
   
   zx_key_state_set(k->key, k->press?1:0);
   
-  if (k->press) {
+  if (k->press && !ui_lock) {
       key_unmod(k);
   }
 }

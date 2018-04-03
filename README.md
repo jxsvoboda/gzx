@@ -83,6 +83,11 @@ Note that most functions can be accessed via menus as well as via shortcuts.
   F10 | Quit
   F12 | Enter debugger
 
+  Key          | Function
+  ------------ | --------
+  Ctrl-Shift-L | Lock down UI (disable emulator control keys)
+  Ctrl-Shift-U | Unlock UI (reenable emulator control keys)
+
 On the numerical keypad:
 
   Key | Function
