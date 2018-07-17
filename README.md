@@ -60,11 +60,12 @@ In Windows:
 
 Supported command-line options:
 
-  Option          | Description
-  --------------- | -----------
-  -dl             | Enable double-scanline mode
-  -midi <device>  | Output to specified MIDI device
-  <snapshot-file> | Load snapshot file at startup
+  Option           | Description
+  ---------------  | -----------
+  -acap <file.wav> | Capture audio output to WAVE file
+  -dl              | Enable double-scanline mode
+  -midi <device>   | Output to specified MIDI device
+  <snapshot-file>  | Load snapshot file at startup
 
 `gzx-g` and `gzx-g.exe` are variants with GPU/Spec256 support enabled
 

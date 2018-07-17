@@ -1,8 +1,5 @@
 /*
- * GZX - George's ZX Spectrum Emulator
- * Sound output
- *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 2015 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,66 +26,35 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "memio.h"
-#include "sndw.h"
-#include "zx_sound.h"
-#include "wav/rwave.h"
+/** @addtogroup riff
+ * @{
+ */
+/**
+ * @file RIFF chunk.
+ */
 
-static u8 *snd_buf;
-static int snd_bufs,snd_bff;
-static rwavew_t *rwave;
+#ifndef RIFF_CHUNK_H
+#define RIFF_CHUNK_H
 
-int zx_sound_init(void) {
-  snd_bufs=560*2;
+#include <stddef.h>
+#include "../types/chunk.h"
 
-  if(sndw_init(snd_bufs)<0) return -1;
-    
-  snd_bff=0;
-  snd_buf=malloc(snd_bufs);
+extern int riff_wopen(const char *, riffw_t **);
+extern int riff_wclose(riffw_t *);
+extern int riff_wchunk_start(riffw_t *, riff_ckid_t, riff_wchunk_t *);
+extern int riff_wchunk_end(riffw_t *, riff_wchunk_t *);
+extern int riff_wchunk_write(riffw_t *, void *, size_t);
+extern int riff_write_uint32(riffw_t *, uint32_t);
 
-  if(!snd_buf) {
-    fprintf(stderr,"malloc failed\n");
-    return -1;
-  }
-  return 0;
-}
+extern int riff_ropen(const char *, riffr_t **);
+extern int riff_rclose(riffr_t *);
+extern int riff_read_uint32(riffr_t *, uint32_t *);
+extern int riff_rchunk_start(riffr_t *, riff_rchunk_t *);
+extern int riff_rchunk_end(riffr_t *, riff_rchunk_t *);
+extern int riff_rchunk_read(riffr_t *, riff_rchunk_t *, void *, size_t,
+    size_t *);
 
-void zx_sound_done(void) {
-  sndw_done();
-  if (rwave != NULL)
-    rwave_wclose(rwave);
-  free(snd_buf);
-}
+#endif
 
-void zx_sound_smp(int ay_out) {
-  
-  /* mixing */
-  snd_buf[snd_bff++]=128 + ay_out + (spk?-16:+16)+(mic?-16:+16);
-  
-  if(snd_bff>=snd_bufs) {
-    snd_bff=0;
-    
-    sndw_write(snd_buf);
-
-    if (rwave != NULL)
-      (void) rwave_write_samples(rwave, snd_buf, snd_bufs);
-  }
-}
-
-int zx_sound_start_capture(const char *fname)
-{
-	rwave_params_t params;
-	int rc;
-
-	params.channels = 1;
-	params.bits_smp = 8;
-	params.smp_freq = 28000;
-
-	rc = rwave_wopen(fname, &params, &rwave);
-	if (rc != 0)
-		return -1;
-
-	return 0;
-}
+/** @}
+ */

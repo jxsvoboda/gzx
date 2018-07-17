@@ -1,8 +1,5 @@
 /*
- * GZX - George's ZX Spectrum Emulator
- * Sound output
- *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 2015 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,66 +26,68 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/** @addtogroup riff
+ * @{
+ */
+/**
+ * @file RIFF chunk types.
+ */
+
+#ifndef RIFF_TYPES_CHUNK_H
+#define RIFF_TYPES_CHUNK_H
+
+#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include "memio.h"
-#include "sndw.h"
-#include "zx_sound.h"
-#include "wav/rwave.h"
 
-static u8 *snd_buf;
-static int snd_bufs,snd_bff;
-static rwavew_t *rwave;
+typedef uint32_t riff_ckid_t;
+typedef uint32_t riff_cksize_t;
 
-int zx_sound_init(void) {
-  snd_bufs=560*2;
+/** RIFF chunk for reading */
+typedef struct {
+	long ckstart;
+	riff_ckid_t ckid;
+	riff_cksize_t cksize;
+} riff_rchunk_t;
 
-  if(sndw_init(snd_bufs)<0) return -1;
-    
-  snd_bff=0;
-  snd_buf=malloc(snd_bufs);
+/** RIFF chunk for writing */
+typedef struct {
+	long ckstart;
+} riff_wchunk_t;
 
-  if(!snd_buf) {
-    fprintf(stderr,"malloc failed\n");
-    return -1;
-  }
-  return 0;
-}
+/** RIFF chunk info */
+typedef struct {
+	long ckstart;
+	riff_ckid_t ckid;
+	riff_cksize_t cksize;
+} riff_ckinfo_t;
 
-void zx_sound_done(void) {
-  sndw_done();
-  if (rwave != NULL)
-    rwave_wclose(rwave);
-  free(snd_buf);
-}
+/** RIFF writer */
+typedef struct {
+	FILE *f;
+	/** Chunk start offset */
+	long ckstart;
+} riffw_t;
 
-void zx_sound_smp(int ay_out) {
-  
-  /* mixing */
-  snd_buf[snd_bff++]=128 + ay_out + (spk?-16:+16)+(mic?-16:+16);
-  
-  if(snd_bff>=snd_bufs) {
-    snd_bff=0;
-    
-    sndw_write(snd_buf);
+/** RIFF reader */
+typedef struct {
+	FILE *f;
+} riffr_t;
 
-    if (rwave != NULL)
-      (void) rwave_write_samples(rwave, snd_buf, snd_bufs);
-  }
-}
+enum {
+	/** RIFF chunk ID */
+	CKID_RIFF = 0x46464952,
+	/** WAVE RIFF form ID */
+	FORM_WAVE = 0x45564157,
+	/** fmt chunk ID */
+	CKID_fmt = 0x20746d66,
+	/** data chunk ID */
+	CKID_data = 0x61746164,
 
-int zx_sound_start_capture(const char *fname)
-{
-	rwave_params_t params;
-	int rc;
+	/** PCM wave format */
+	WFMT_PCM = 0x0001
+};
 
-	params.channels = 1;
-	params.bits_smp = 8;
-	params.smp_freq = 28000;
+#endif
 
-	rc = rwave_wopen(fname, &params, &rwave);
-	if (rc != 0)
-		return -1;
-
-	return 0;
-}
+/** @}
+ */

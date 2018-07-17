@@ -25,6 +25,8 @@ LIBS_helenos	=  `helenos-pkg-config --libs libgui libdraw libmath libhound libpc
 bkqual = $$(date '+%Y-%m-%d')
 
 sources_generic = \
+    wav/chunk.c \
+    wav/rwave.c \
     fileutil.c \
     gzx.c \
     memio.c \
@@ -52,6 +54,7 @@ sources_generic = \
 
 sources = \
     $(sources_generic) \
+    platform/sdl/byteorder.c \
     platform/sdl/gfx_sdl.c \
     platform/sdl/snd_sdl.c \
     platform/sdl/sys_unix.c \
@@ -63,6 +66,7 @@ sources_g = \
 
 sources_w32 = \
     $(sources_generic) \
+    platform/win/byteorder.c \
     platform/win/gfx_win.c \
     platform/win/snd_win.c \
     platform/win/sys_win.c \

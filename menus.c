@@ -72,7 +72,7 @@ static void teline_settext(teline_t *t, char *s) {
   
   l=strlen(s);
   if(l>t->maxlen) l=t->maxlen;
-  strncpy(t->buf,s,l);
+  strncpy(t->buf,s,t->maxlen);
   memset(t->buf+l,' ',t->maxlen-l);
   t->pos=t->len=l;
 }
@@ -609,7 +609,7 @@ int file_sel(char **fname, char *caption) {
       fprintf(logfi,"malloc failed\n");
       exit(1);
     }
-    strncpy(*fname,sf, strlen(sf)+1);
+    strcpy(*fname,sf);
     res=1;
   } else {
     *fname=NULL;
