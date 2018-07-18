@@ -29,6 +29,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -43,17 +44,17 @@
 #include "zx.h"
 #include "zx_kbd.h"
 
-u8 *zxram,*zxrom; /* whole memory */
-u8 *zxbnk[4];	  /* currently switched in banks */
-u8 *zxscr;	  /* selected screen bank */
-u8 border;
-u8 spk,mic,ear;
+uint8_t *zxram,*zxrom; /* whole memory */
+uint8_t *zxbnk[4];	  /* currently switched in banks */
+uint8_t *zxscr;	  /* selected screen bank */
+uint8_t border;
+uint8_t spk,mic,ear;
 
 unsigned ram_size,rom_size;
 int has_banksw,bnk_lock48;
 int mem_model;
 
-u8 page_reg; /* last data written to the page select port */
+uint8_t page_reg; /* last data written to the page select port */
 
 static int rom_load(char *fname, int bank, int banksize);
 static int spec_rom_load(char *fname, int bank);
@@ -62,7 +63,7 @@ static int spec_rom_load(char *fname, int bank);
   memory access routines
   any wraps as MMIOs should be placed here
 */
-u8 zx_memget8(u16 addr) {
+uint8_t zx_memget8(uint16_t addr) {
   if(mem_model==ZXM_ZX81) {
     if(addr<=0x7fff)
       return zxbnk[addr>>14][addr&0x1fff];
@@ -71,7 +72,7 @@ u8 zx_memget8(u16 addr) {
     return zxbnk[addr>>14][addr&0x3fff];
 }
 
-void zx_memset8(u16 addr, u8 val) {
+void zx_memset8(uint16_t addr, uint8_t val) {
   if(mem_model==ZXM_ZX81) {
     if(addr>=8192 && addr<=0x7fff) zxbnk[addr>>14][addr&0x1fff]=val;
   } else {
@@ -84,23 +85,23 @@ void zx_memset8(u16 addr, u8 val) {
 }
 
 /** Write byte without ROM protection */
-void zx_memset8f(u16 addr, u8 val) {
+void zx_memset8f(uint16_t addr, uint8_t val) {
   zxbnk[addr >> 14][addr & 0x3fff] = val;
 }
 
-u16 zx_memget16(u16 addr) {
-  return (u16)zx_memget8(addr)+(((u16)zx_memget8(addr+1))<<8);
+uint16_t zx_memget16(uint16_t addr) {
+  return (uint16_t)zx_memget8(addr)+(((uint16_t)zx_memget8(addr+1))<<8);
 }
 
-void zx_memset16(u16 addr, u16 val) {
+void zx_memset16(uint16_t addr, uint16_t val) {
   zx_memset8(addr, val & 0xff);
   zx_memset8(addr+1, val >> 8);
 }
 
-void zx_mem_page_select(u8 val) {
+void zx_mem_page_select(uint8_t val) {
   page_reg = val; /* needed for snapshot saving */
   
-  zxbnk[3]=zxram + ((u32)(val&0x07)<<14);        /* RAM select */
+  zxbnk[3]=zxram + ((uint32_t)(val&0x07)<<14);   /* RAM select */
   zxbnk[0]=zxrom + ((val&0x10)?0x4000:0);        /* ROM select */
   zxscr   =zxram + ((val&0x08)?0x1c000:0x14000); /* screen select */
 //  printf("bnk select 0x%02x: ram=%d,rom=%d,scr=%d\n",val,val&7,val&0x10,val&0x08);
@@ -117,8 +118,8 @@ void zx_mem_page_select(u8 val) {
   all wraps should be placed here
 */
 
-u8 zx_in8(u16 a) {
-  u8 res;
+uint8_t zx_in8(uint16_t a) {
+  uint8_t res;
 
 //  printf("in 0x%04x\n",a);
 //  z80_printstatus();
@@ -140,7 +141,7 @@ u8 zx_in8(u16 a) {
   return res;
 }
 
-void zx_out8(u16 addr, u8 val) {
+void zx_out8(uint16_t addr, uint8_t val) {
 //  printf("out (0x%04x),0x%02x\n",addr,val);
   iorec_out(z80_clock, addr, val);
   val=val;
@@ -309,8 +310,8 @@ static int spec_rom_load(char *fname, int bank) {
 int gfxrom_load(char *fname, unsigned bank) {
   FILE *f;
   unsigned u,v,w;
-  u8 buf[8];
-  u8 b;
+  uint8_t buf[8];
+  uint8_t b;
 
   f=fopen(fname,"rb");
   if(!f) {
@@ -334,8 +335,8 @@ int gfxrom_load(char *fname, unsigned bank) {
 int gfxram_load(char *fname) {
   FILE *f;
   unsigned u,v,w;
-  u8 buf[8];
-  u8 b;
+  uint8_t buf[8];
+  uint8_t b;
 
   f=fopen(fname,"rb");
   if(!f) {

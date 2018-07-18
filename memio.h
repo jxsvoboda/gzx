@@ -32,7 +32,7 @@
 #ifndef MEMIO_H
 #define MEMIO_H
 
-#include "intdef.h"
+#include <stdint.h>
 
 /* memory models */
 #define ZXM_48K   0
@@ -42,25 +42,25 @@
 #define ZXM_ZX81  4
 
 /* spectrum memory access */
-u8 zx_memget8(u16 addr);
-void zx_memset8(u16 addr, u8 val);
-void zx_memset8f(u16 addr, u8 val);
-u16 zx_memget16(u16 addr);
-void zx_memset16(u16 addr, u16 val);
+uint8_t zx_memget8(uint16_t addr);
+void zx_memset8(uint16_t addr, uint8_t val);
+void zx_memset8f(uint16_t addr, uint8_t val);
+uint16_t zx_memget16(uint16_t addr);
+void zx_memset16(uint16_t addr, uint16_t val);
 
 /* spectrum i/o port access */
-void zx_out8(u16 addr, u8 val);
-u8 zx_in8(u16 addr);
+void zx_out8(uint16_t addr, uint8_t val);
+uint8_t zx_in8(uint16_t addr);
 
 int zx_select_memmodel(int model);
-void zx_mem_page_select(u8 val);
+void zx_mem_page_select(uint8_t val);
 int gfxram_load(char *fname);
 int gfxrom_load(char *fname, unsigned bank);
 
-extern u8 page_reg;
-extern u8 border;
-extern u8 spk,mic,ear;
-extern u8 *zxram,*zxrom,*zxscr,*zxbnk[4];
+extern uint8_t page_reg;
+extern uint8_t border;
+extern uint8_t spk,mic,ear;
+extern uint8_t *zxram,*zxrom,*zxscr,*zxbnk[4];
 extern int mem_model;
 
 extern int bnk_lock48;
