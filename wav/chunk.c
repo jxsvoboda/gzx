@@ -193,7 +193,7 @@ int riff_wchunk_write(riffw_t *rw, void *data, size_t bytes)
  * @param rrr   Place to store pointer to RIFF reader
  *
  * @return 0 on success, ENOMEM if out of memory, EIO if failed to open
- *         file..
+ *         file.
  */
 int riff_ropen(const char *fname, riffr_t **rrr)
 {
@@ -368,8 +368,7 @@ int riff_rchunk_read(riffr_t *rr, riff_rchunk_t *rchunk, void *buf,
 	if (*nread == 0)
 		return EIO;
 
-	return 0
-	;
+	return 0;
 }
 
 
