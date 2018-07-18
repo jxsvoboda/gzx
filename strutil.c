@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * String utility functions
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2018 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,12 +33,19 @@
 #include <string.h>
 #include "strutil.h"
 
-/*
- * case-insensitive strcmp
+/** Case-insensitive strcmp.
+ *
+ * @param a First string
+ * @param b Second string
+ * @return Less than zero, zero, greater than zero, if a < b, a == b, a > b,
+ *         respectively.
  */
-int strcmpci(char *a, char *b) {
-  while(*a && *b && tolower(*a)==tolower(*b)) {
-    a++; b++;
-  }
-  return tolower(*a) - tolower(*b);
+int strcmpci(char *a, char *b)
+{
+	while (*a && *b && tolower(*a) == tolower(*b)) {
+		a++;
+		b++;
+	}
+
+	return tolower(*a) - tolower(*b);
 }
