@@ -29,73 +29,75 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "fileutil.h"
 #include "iorec.h"
 
-static char *iorec_file = "out.ior";
-static FILE *iorf;
-static unsigned long last_tick = 0;
-static int have_tick;
+int iorec_open(const char *fname, iorec_t **riorec)
+{
+	iorec_t *iorec;
 
-void iorec_enable(void) {
-  if (iorf != NULL)
-    return;
-  
-  printf("I/O recording start to %s\n", iorec_file);
-  iorf = fopen(iorec_file, "wt");
-  if (iorf == NULL) {
-    printf("Failed opening file.\n");
-    return;
-  }
-  
-  have_tick = 0;
+	iorec = calloc(1, sizeof(iorec_t));
+	if (iorec == NULL)
+		return ENOMEM;
+
+	printf("I/O recording start to %s\n", fname);
+
+	iorec->iorf = fopen(fname, "wb");
+	if (iorec->iorf == NULL) {
+		printf("Failed opening file.\n");
+		free(iorec);
+		return EIO;
+	}
+
+	iorec->have_tick = 0;
+	*riorec = iorec;
+	return 0;
 }
 
-void iorec_disable(void)
+int iorec_close(iorec_t *iorec)
 {
-  int rc;
-  
-  if (iorf == NULL)
-    return;
-  
-  printf("I/O recording stop\n");
-  
-  rc = fclose(iorf);
-  if (rc < 0)
-    printf("Failed closing file.\n");
-  iorf = NULL;
+	int rc;
+
+	printf("I/O recording stop\n");
+
+	rc = fclose(iorec->iorf);
+	if (rc < 0) {
+		printf("Failed closing file.\n");
+		return EIO;
+	}
+
+	free(iorec);
+	return 0;
 }
 
 static void fputvlc(FILE *f, unsigned long val)
 {
-    uint8_t cur;
-    uint8_t cont;
+	uint8_t cur;
+	uint8_t cont;
 
-    do {
-      cur = val & 0x7f;
-      cont = (val & ~0x7f) != 0 ? 0x80 : 0x00;
-      fputu8(f, cur | cont);
-      val = val >> 7;
-    } while (val != 0);
+	do {
+		cur = val & 0x7f;
+		cont = (val & ~0x7f) != 0 ? 0x80 : 0x00;
+		fputu8(f, cur | cont);
+		val = val >> 7;
+	} while (val != 0);
 }
 
-void iorec_out(unsigned long tick, uint16_t addr, uint8_t data)
+void iorec_out(iorec_t *iorec, unsigned long tick, uint16_t addr, uint8_t data)
 {
-  if (iorf == NULL)
-    return;
-  
-  if (!have_tick) {
-    last_tick = tick;
-    have_tick = 1;
-  }
-  
-  printf("%lu,0x%04x,0x%02x\n", tick - last_tick, addr, data);
-  fputvlc(iorf, tick - last_tick);
-  fputu16le(iorf, addr);
-  fputu8(iorf, data);
-  
-  last_tick = tick;
+	if (!iorec->have_tick) {
+		iorec->last_tick = tick;
+		iorec->have_tick = true;
+	}
+
+	printf("%lu,0x%04x,0x%02x\n", tick - iorec->last_tick, addr, data);
+	fputvlc(iorec->iorf, tick - iorec->last_tick);
+	fputu16le(iorec->iorf, addr);
+	fputu8(iorec->iorf, data);
+
+	iorec->last_tick = tick;
 }

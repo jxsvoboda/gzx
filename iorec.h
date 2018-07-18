@@ -32,10 +32,19 @@
 #ifndef IOREC_H
 #define IOREC_H
 
+#include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
-void iorec_enable(void);
-void iorec_disable(void);
-void iorec_out(unsigned long, uint16_t, uint8_t);
+/** I/O recording */
+typedef struct {
+	FILE *iorf;
+	unsigned long last_tick;
+	bool have_tick;
+} iorec_t;
+
+int iorec_open(const char *, iorec_t **);
+int iorec_close(iorec_t *);
+void iorec_out(iorec_t *, unsigned long, uint16_t, uint8_t);
 
 #endif

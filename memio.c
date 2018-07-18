@@ -143,7 +143,8 @@ uint8_t zx_in8(uint16_t a) {
 
 void zx_out8(uint16_t addr, uint8_t val) {
 //  printf("out (0x%04x),0x%02x\n",addr,val);
-  iorec_out(z80_clock, addr, val);
+  if (iorec != NULL)
+    iorec_out(iorec, z80_clock, addr, val);
   val=val;
   if((addr&ULA_PORT_MASK)==ULA_PORT) {  /* the ULA (border/speaker/mic) */
     border=val&7;

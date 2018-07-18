@@ -105,6 +105,9 @@ const char *midi_dev;
 /** Audio capture file */
 const char *acap_file;
 
+/** I/O recording */
+iorec_t *iorec;
+
 int key_lalt_held;
 int key_lshift_held;
 
@@ -225,10 +228,14 @@ static void key_lalt(wkey_t *k)
 {
    switch(k->key) {
       case WKEY_R:
-	iorec_enable();
+	if (iorec == NULL)
+	  (void) iorec_open("out.ior", &iorec);
 	break;
       case WKEY_T:
-	iorec_disable();
+        if (iorec != NULL) {
+	  iorec_close(iorec);
+	  iorec = NULL;
+	}
 	break;
     }
 }
