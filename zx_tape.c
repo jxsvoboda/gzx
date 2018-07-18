@@ -246,8 +246,11 @@ static void gs_voice(void) {
       if(tfr->b_voice_getsmps(1,&voice_smp)) { /* end of data */
         voice_state=1;
 	voice_cnt=0;
+      } else {
+        voice_cnt-=b_voice_info.smp_len;
       }
     }
+    voice_cnt += tape_delta_t;
   }
   
   if(voice_state==1) { /* play pause */
