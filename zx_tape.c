@@ -242,7 +242,7 @@ static void gs_voice_newblock(void) {
 
 static void gs_voice(void) {
   if(voice_state==0) { /* play data */
-    if(voice_cnt>=b_voice_info.smp_len) {
+    while(voice_state == 0 && voice_cnt >= b_voice_info.smp_len) {
       if(tfr->b_voice_getsmps(1,&voice_smp)) { /* end of data */
         voice_state=1;
 	voice_cnt=0;
