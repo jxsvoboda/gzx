@@ -367,7 +367,7 @@ static int zx_init(void) {
 #endif
 
   printf("ay\n");
-  if(ay_init(&ay0, 125/*d_t_states*/)<0) return -1;
+  if(ay_init(&ay0, ZX_SOUND_TICKS_SMP)<0) return -1;
   ay0.ioport_write = gzx_ay_ioport_write;
   ay0.ioport_write_arg = &ay0;
 
@@ -379,7 +379,7 @@ static int zx_init(void) {
   midi.midi_msg = gzx_midi_msg;
   midi.midi_msg_arg = &midi;
 
-  if(zx_tape_init(79)<0) return -1;
+  if(zx_tape_init(ZX_TAPE_TICKS_SMP)<0) return -1;
   //if(zx_tape_selectfile("/mnt/dos/jetpac.tap")<0) return -1;
 
   zx_reset();
@@ -428,8 +428,8 @@ void zx_debug_mstep(void) {
   u8 tape_smp;
   int frmno;
 
-  if(CLOCK_GE(z80_clock-disp_t,70000)) { /* every 50th of a second */
-    disp_t+=70000;
+  if(CLOCK_GE(z80_clock-disp_t,ULA_FIELD_TICKS)) { /* every 50th of a second */
+    disp_t+=ULA_FIELD_TICKS;
       
     frmno=1;
     if(frmno>=1) {
@@ -440,7 +440,7 @@ void zx_debug_mstep(void) {
         /* sync with time */
 /*	twstart = timer_val(&frmt);
         while(CLOCK_LT(timer_val(&frmt), z80_clock)
-	   && CLOCK_LT(timer_val(&frmt),twstart+70000)) {
+	   && CLOCK_LT(timer_val(&frmt),twstart+ULA_FIELD_TICKS)) {
 	  printf("sync with time\n");*/
 	  /* dulezite pro zpracovani udalosti woutproc */
 /*          mgfx_input_update();
@@ -483,15 +483,15 @@ void zx_debug_mstep(void) {
     zx_scr_disp();
 #endif      
     
-  if(CLOCK_GE(z80_clock-snd_t,125)) { 
+  if(CLOCK_GE(z80_clock-snd_t,ZX_SOUND_TICKS_SMP)) { 
     zx_sound_smp(ay_get_sample(&ay0)+(tape_smp?+16:-16));
     /* build a new sound sample */
-    snd_t+=125;
+    snd_t+=ZX_SOUND_TICKS_SMP;
   }
-  if(CLOCK_GE(z80_clock-tapp_t,79/*109*/)) { 
+  if(CLOCK_GE(z80_clock-tapp_t,ZX_TAPE_TICKS_SMP)) {
     zx_tape_getsmp(&tape_smp);
     ear=tape_smp;
-    tapp_t+=79/*109*/;
+    tapp_t+=ZX_TAPE_TICKS_SMP;
   }
   if(!slow_load) {
     if(cpus.PC==ZX_LDBYTES_TRAP) {
@@ -586,8 +586,8 @@ int main(int argc, char **argv) {
   
   while(!quit) {
 
-    if(CLOCK_GE(z80_clock-disp_t,70000)) { /* every 50th of a second */
-      disp_t+=70000;
+    if(CLOCK_GE(z80_clock-disp_t,ULA_FIELD_TICKS)) { /* every 50th of a second */
+      disp_t+=ULA_FIELD_TICKS;
       
       if(frmno>=1) {
 //        unsigned long twstart;
@@ -597,7 +597,7 @@ int main(int argc, char **argv) {
         /* sync with time */
 /*	twstart = timer_val(&frmt);
         while(CLOCK_LT(timer_val(&frmt), z80_clock)
-	   && CLOCK_LT(timer_val(&frmt),twstart+70000)) {
+	   && CLOCK_LT(timer_val(&frmt),twstart+ULA_FIELD_TICKS)) {
 	  printf("sync with time\n");*/
 	  /* dulezite pro zpracovani udalosti woutproc */
 /*          mgfx_input_update();
@@ -644,18 +644,18 @@ int main(int argc, char **argv) {
       zx_scr_disp();
 #endif      
     
-    if(CLOCK_GE(z80_clock-snd_t,125)) { 
+    if(CLOCK_GE(z80_clock-snd_t,ZX_SOUND_TICKS_SMP)) { 
 //     putchar('S');
       zx_sound_smp(ay_get_sample(&ay0)+(tape_smp?+16:-16));
       /* build a new sound sample */
-      snd_t+=125;
+      snd_t+=ZX_SOUND_TICKS_SMP;
 //     fputs("~S",stdout);
     }
-    if(CLOCK_GE(z80_clock-tapp_t,79/*109*/)) { 
+    if(CLOCK_GE(z80_clock-tapp_t,ZX_TAPE_TICKS_SMP)) {
 //      putchar('T');
       zx_tape_getsmp(&tape_smp);
       ear=tape_smp;
-      tapp_t+=79/*109*/;
+      tapp_t+=ZX_TAPE_TICKS_SMP;
     }
     ic++;
     if(!slow_load) {

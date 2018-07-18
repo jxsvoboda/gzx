@@ -31,7 +31,15 @@
 #ifndef CLOCK_H
 #define CLOCK_H
 
+/** Z80 clock speed (in Hz) */
 #define Z80_CLOCK 3500000L
+/** MIDI baud rate (symbols per second) */
 #define MIDI_BAUD 31250
+/** Z80 clock ticks per tape sample (approx. 44100) */
+#define ZX_TAPE_TICKS_SMP 79
+/** Z80 clock ticks per audio output sample (28000 Hz exactly) */
+#define ZX_SOUND_TICKS_SMP 125
+/** Z80 clock ticks per ULA picture field (50 per second) */
+#define ULA_FIELD_TICKS 70000
 
 #endif
