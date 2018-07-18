@@ -108,9 +108,6 @@ const char *acap_file;
 int key_lalt_held;
 int key_lshift_held;
 
-/** Emulated keyboard */
-zx_keys_t keys;
-
 /******* execution map **********/
 
 //#define XMAP

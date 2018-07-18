@@ -32,6 +32,7 @@
 #include "ay.h"
 #include "rs232.h"
 #include "zx.h"
+#include "zx_kbd.h"
 
 /** First AY */
 ay_t ay0;
@@ -41,3 +42,6 @@ midi_port_t midi;
 
 /** RS-232 port */
 rs232_t rs232;
+
+/** Keyboard */
+zx_keys_t keys;

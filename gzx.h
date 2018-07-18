@@ -34,7 +34,6 @@
 
 #include <stdbool.h>
 #include <stdio.h>
-#include "zx_kbd.h"
 
 void zx_reset(void);
 
@@ -47,6 +46,5 @@ extern FILE *logfi;
 extern int quit;
 
 extern int slow_load;
-extern zx_keys_t keys;
 
 #endif
