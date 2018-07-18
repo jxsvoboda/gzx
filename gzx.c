@@ -108,6 +108,9 @@ const char *acap_file;
 int key_lalt_held;
 int key_lshift_held;
 
+/** Emulated keyboard */
+zx_keys_t keys;
+
 /******* execution map **********/
 
 //#define XMAP
@@ -271,7 +274,7 @@ static void key_handler(wkey_t *k) {
     return;
   }
   
-  zx_key_state_set(k->key, k->press?1:0);
+  zx_key_state_set(&keys, k->key, k->press?1:0);
   
   if (k->press && !ui_lock) {
       key_unmod(k);
@@ -353,7 +356,7 @@ static int zx_init(void) {
   gloadfont("font.bin");
   printf("init screen\n");
   if(zx_scr_init()<0) return -1;
-  if(zx_keys_init()<0) return -1;
+  if(zx_keys_init(&keys)<0) return -1;
   printf("sound\n");
   if(zx_sound_init()<0) return -1;
   if (acap_file != NULL && zx_sound_start_capture(acap_file) < 0) {
@@ -420,7 +423,7 @@ void zx_debug_key(int press, int key) {
     printf("ignoring key\n");
     return;
   }
-  zx_key_state_set(key, press?1:0);
+  zx_key_state_set(&keys, key, press?1:0);
 }
 
 /* Machine step for the debugger */

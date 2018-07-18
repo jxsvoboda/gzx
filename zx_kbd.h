@@ -47,13 +47,15 @@ typedef struct {
 	zx_keymtx_t mtx[KST_SIZE];
 } zx_keymap_t;
 
-/** State of emulator keys */
+/** Emulated keyboard */
 typedef struct {
 	bool pressed[KST_SIZE];
-} zx_emukey_state_t;
+	zx_keymtx_t kmstate;
+	zx_keymap_t map;
+} zx_keys_t;
 
-uint8_t zx_key_in(uint8_t pwr);
-void zx_key_state_set(int key, int press);
-int zx_keys_init(void);
+uint8_t zx_key_in(zx_keys_t *, uint8_t pwr);
+void zx_key_state_set(zx_keys_t *, int key, int press);
+int zx_keys_init(zx_keys_t *);
 
 #endif

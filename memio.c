@@ -127,7 +127,8 @@ u8 zx_in8(u16 a) {
   if(a==ZX128K_PAGESEL_PORT) printf("bnk sw port read!!!!!!\n");
   switch(a&0xff) {
     /* ULA */
-    case ULA_PORT: res=zx_key_in(a>>8) | 0xa0 | (ear?0x40:0x00); break;
+    case ULA_PORT:
+      res=zx_key_in(&keys, a>>8) | 0xa0 | (ear?0x40:0x00); break;
     
     default:  // printf("in 0x%04x\n (no device there)",a);
 //               res=0xff;          /* no device attached -> idle bus */
