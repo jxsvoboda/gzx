@@ -37,6 +37,7 @@
   in a window.
 */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
@@ -600,14 +601,14 @@ int mgfx_init(void) {
     
   /* setup virtual framebuffer */
   
-  vscr0=malloc(scr_xs*scr_ys*sizeof(_U8));
+  vscr0=malloc(scr_xs*scr_ys*sizeof(uint8_t));
   if(!vscr0) return 1;
   
-  vscr1=malloc(scr_xs*scr_ys*sizeof(_U8));
+  vscr1=malloc(scr_xs*scr_ys*sizeof(uint8_t));
   if(!vscr1) return 1;
  
 
-  vscr2=malloc(sxs*sys*sizeof(_U8));
+  vscr2=malloc(sxs*sys*sizeof(uint8_t));
   if(!vscr2) return 1;
   
 

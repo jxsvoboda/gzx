@@ -29,6 +29,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "memio.h"
@@ -36,7 +37,7 @@
 #include "zx_sound.h"
 #include "wav/rwave.h"
 
-static u8 *snd_buf;
+static uint8_t *snd_buf;
 static int snd_bufs,snd_bff;
 static rwavew_t *rwave;
 

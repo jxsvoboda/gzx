@@ -36,15 +36,15 @@
 #ifndef Z80DEP_H
 #define Z80DEP_H
 
-#include "intdef.h"
+#include <stdint.h>
 
 #define PROGMEM
 #define pgm_read_ptr(x) (*(x))
 
-u8 z80_memget8(u16 addr);
-void z80_memset8(u16 addr, u8 val);
+uint8_t z80_memget8(uint16_t addr);
+void z80_memset8(uint16_t addr, uint8_t val);
 
-void z80_out8(u16 addr, u8 val);
-u8 z80_in8(u16 addr);
+void z80_out8(uint16_t addr, uint8_t val);
+uint8_t z80_in8(uint16_t addr);
 
 #endif

@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * I/O recording (output only)
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2018 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "fileutil.h"
@@ -70,8 +71,8 @@ void iorec_disable(void)
 
 static void fputvlc(FILE *f, unsigned long val)
 {
-    u8 cur;
-    u8 cont;
+    uint8_t cur;
+    uint8_t cont;
 
     do {
       cur = val & 0x7f;
@@ -81,7 +82,7 @@ static void fputvlc(FILE *f, unsigned long val)
     } while (val != 0);
 }
 
-void iorec_out(unsigned long tick, u16 addr, u8 data)
+void iorec_out(unsigned long tick, uint16_t addr, uint8_t data)
 {
   if (iorf == NULL)
     return;

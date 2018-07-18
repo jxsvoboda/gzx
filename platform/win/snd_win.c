@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * PCM playback through windows waveOut
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2018 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -55,7 +56,7 @@ static int server_on=0;
 static int buf_size;
 
 static HWAVEOUT hwaveout;
-static u8 *sndbuf[N_BUF];
+static uint8_t *sndbuf[N_BUF];
 static WAVEHDR wavehdr[N_BUF];
 
 /*
@@ -156,7 +157,7 @@ static void wout_checkfinished(void) {
 
 /**********************************************/
 
-void sndw_write(u8 *buf) {
+void sndw_write(uint8_t *buf) {
   int c;
   
   c=0;

@@ -29,25 +29,26 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdint.h>
 #include "memio.h"
 #include "z80dep.h"
 
-u8 z80_memget8(u16 addr)
+uint8_t z80_memget8(uint16_t addr)
 {
 	return zx_memget8(addr);
 }
 
-void z80_memset8(u16 addr, u8 val)
+void z80_memset8(uint16_t addr, uint8_t val)
 {
 	zx_memset8(addr, val);
 }
 
-u8 z80_in8(u16 a)
+uint8_t z80_in8(uint16_t a)
 {
 	return zx_in8(a);
 }
 
-void z80_out8(u16 addr, u8 val)
+void z80_out8(uint16_t addr, uint8_t val)
 {
 	zx_out8(addr, val);
 }

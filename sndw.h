@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Sound platform wrapper
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2018 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,10 +32,10 @@
 #ifndef SNDW_H
 #define SNDW_H
 
-#include "intdef.h"
+#include <stdint.h>
 
 int sndw_init(int bufs);
 void sndw_done(void);
-void sndw_write(u8 *buf);
+void sndw_write(uint8_t *buf);
 
 #endif

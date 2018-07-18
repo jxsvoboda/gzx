@@ -37,13 +37,13 @@
 #undef LOG
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 #include <time.h>
 #include "clock.h"
-#include "intdef.h"
 #include "memio.h"
 #include "midi.h"
 #include "mgfx.h"
@@ -113,7 +113,7 @@ int key_lshift_held;
 //#define XMAP
 #ifdef XMAP
 
-static u8 xmap[8*1024];
+static uint8_t xmap[8*1024];
 
 /* execution map */
 void xmap_clear(void) {
@@ -124,7 +124,7 @@ void xmap_clear(void) {
 }
 
 void xmap_mark(void) {
-  u8 mask;
+  uint8_t mask;
   unsigned offs;
 
   mask = 1<<(cpus.PC & 7);
@@ -425,7 +425,7 @@ void zx_debug_key(int press, int key) {
 
 /* Machine step for the debugger */
 void zx_debug_mstep(void) {
-  u8 tape_smp;
+  uint8_t tape_smp;
   int frmno;
 
   if(CLOCK_GE(z80_clock-disp_t,ULA_FIELD_TICKS)) { /* every 50th of a second */
@@ -523,7 +523,7 @@ int main(int argc, char **argv) {
   int frmno=0;
   int argi;
   timer frmt;
-  u8 tape_smp;
+  uint8_t tape_smp;
   wkey_t k;
   
   //printf("start\n");

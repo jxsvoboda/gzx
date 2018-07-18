@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * PCM playback through Hound
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2018 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@
 
 #include <errno.h>
 #include <hound/client.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "../../sndw.h"
@@ -41,7 +42,7 @@ static size_t rsbuf_pos = 0;
 static size_t rsbuf_rem;
 static size_t rs_n;
 static size_t rs_d;
-static u8 *rsbuf;
+static uint8_t *rsbuf;
 static hound_context_t *hound;
 
 int sndw_init(int bufs)
@@ -81,7 +82,7 @@ void sndw_done(void)
 	hound_context_destroy(hound);
 }
 
-static void sndw_resample(u8 smp)
+static void sndw_resample(uint8_t smp)
 {
 	int rc;
 
@@ -102,7 +103,7 @@ static void sndw_resample(u8 smp)
 	rsbuf_rem -= rs_d;
 }
 
-void sndw_write(u8 *buf)
+void sndw_write(uint8_t *buf)
 {
 	size_t i;
 

@@ -29,6 +29,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL.h>
@@ -217,14 +218,14 @@ int mgfx_init(void) {
     
   /* set up virtual frame buffer */
   
-  vscr0=malloc(scr_xs*scr_ys*sizeof(_U8));
+  vscr0=malloc(scr_xs*scr_ys*sizeof(uint8_t));
   if(!vscr0) {
     printf("malloc failed\n");
     exit(1);
   }
   
   if(dbl_ln) {
-    vscr1=malloc(scr_xs*scr_ys*sizeof(_U8));
+    vscr1=malloc(scr_xs*scr_ys*sizeof(uint8_t));
     if(!vscr1) {
       printf("malloc failed\n");
       exit(1);

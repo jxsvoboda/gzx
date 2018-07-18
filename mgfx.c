@@ -29,13 +29,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
 #include "mgfx.h"
 
-_U8 *vscr0,*vscr1;
+uint8_t *vscr0,*vscr1;
 
 int scr_xs,scr_ys;
 int clip_x0,clip_x1,clip_y0,clip_y1;
@@ -96,9 +97,9 @@ void mgfx_drawpixel(int x, int y) {
 
 /**** gui - text/windows ****/
 
-static u8 *gfont;
+static uint8_t *gfont;
 static int gdx, gdy;
-u8 fgc,bgc;
+uint8_t fgc,bgc;
 
 int gloadfont(char *name) {
   FILE *f;
@@ -120,7 +121,7 @@ void gmovec(int cx, int cy) {
 
 void gputc(char c) {
   int x,y;
-  u8 b;
+  uint8_t b;
   
   if(c<32) c=0;
     else c=c-32;

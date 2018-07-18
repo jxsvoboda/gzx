@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * PCM playback through SDL
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2018 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@
  */
 
 #include <SDL.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -37,7 +38,7 @@
 #include "../../mgfx.h"
 #include "../../sndw.h"
 
-static u8 *audio_ring;
+static uint8_t *audio_ring;
 static int audio_bufsize;
 static int audio_ringsize;
 static int bin, bout, bcnt;
@@ -107,7 +108,7 @@ void sndw_done(void) {
   SDL_CloseAudio();
 }
 
-void sndw_write(u8 *buf) {
+void sndw_write(uint8_t *buf) {
   SDL_LockAudio();
   while (bcnt + audio_bufsize > audio_ringsize) {
     SDL_UnlockAudio();

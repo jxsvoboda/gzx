@@ -32,9 +32,7 @@
 #ifndef CGFX_H
 #define CGFX_H
 
-#include "intdef.h"
-
-#define _U8 unsigned char
+#include <stdint.h>
 
 #define WKEYBUF_SIZE 64
 #define KST_SIZE 128
@@ -50,7 +48,7 @@ void mgfx_setcolor(int color);
 void mgfx_drawpixel(int x, int y);
 void mgfx_fillrect(int x0, int y0, int x1, int y1, int color);
 
-extern u8 fgc, bgc;
+extern uint8_t fgc, bgc;
 int gloadfont(char *name);
 void gmovec(int cx, int cy);
 void gputc(char c);
@@ -61,8 +59,8 @@ int w_getkey(wkey_t *k);
 void w_putkey(int press, int key, int c);
 int w_initkey(void);
 
-extern _U8 *vscr0;
-extern _U8 *vscr1;
+extern uint8_t *vscr0;
+extern uint8_t *vscr1;
 extern int clip_x0,clip_y0,clip_x1,clip_y1;
 extern int scr_xs,scr_ys;
 extern int dbl_ln;
