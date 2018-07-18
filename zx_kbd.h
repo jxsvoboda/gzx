@@ -31,7 +31,26 @@
 #ifndef ZX_KBD_H
 #define ZX_KBD_H
 
+#include <stdbool.h>
 #include <stdint.h>
+#include "mgfx.h"
+#include "zx_keys.h"
+
+/** ZX keyboard matrix (state for each ZX key) */
+typedef struct {
+	uint8_t mask[zx_keymtx_rows];
+} zx_keymtx_t;
+
+/** Map emulator keys to ZX Spectrum keys */
+typedef struct {
+	/** For each emulator key we have the corresponding ZX keyboard matrix */
+	zx_keymtx_t mtx[KST_SIZE];
+} zx_keymap_t;
+
+/** State of emulator keys */
+typedef struct {
+	bool pressed[KST_SIZE];
+} zx_emukey_state_t;
 
 uint8_t zx_key_in(uint8_t pwr);
 void zx_key_state_set(int key, int press);

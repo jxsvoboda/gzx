@@ -29,15 +29,44 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include "mgfx.h"
 #include "zx_kbd.h"
 #include "zx_keys.h"
 
-uint8_t zx_keymap[8];
-int key_state[KST_SIZE];
-uint8_t key_mask[KST_SIZE * 8];
+zx_keymtx_t zx_kmstate;
+zx_emukey_state_t emukey_state;
+zx_keymap_t key_map;
+
+/** Clear keyboard matrix.
+ *
+ * @param km ZX keyboard matrix
+ */
+static void zx_keymtx_clear(zx_keymtx_t *km)
+{
+	int i;
+
+	for (i = 0; i < zx_keymtx_rows; i++)
+		km->mask[i] = 0x00;
+}
+
+
+/** Logically OR keyboard matrix to another matrix.
+ *
+ * Performs @a dst <- @a dst OR @a src
+ *
+ * @param dst Destination matrix
+ * @param src Source matrix
+ */
+static void zx_keymtx_or(zx_keymtx_t *dst, zx_keymtx_t *src)
+{
+	int i;
+
+	for (i = 0; i < zx_keymtx_rows; i++)
+		dst->mask[i] |= src->mask[i];
+}
 
 /** Returns the 6 keyboard bits.
  *
@@ -47,12 +76,13 @@ uint8_t zx_key_in(uint8_t pwr)
 {
 	uint8_t res;
 	int i;
+
 	/* don't simulate matrix behaviour for now.. */
 	res = 0x00;
 
-	for (i = 0; i < 8; i++)
+	for (i = 0; i < zx_keymtx_rows; i++)
 		if ((pwr & (0x01 << i)) == 0)
-			res |= zx_keymap[i];
+			res |= zx_kmstate.mask[i];
 
 	return res ^ 0x1f;
 }
@@ -60,36 +90,34 @@ uint8_t zx_key_in(uint8_t pwr)
 /* figure out which crossings are connected */
 static void zx_keys_recalc(void)
 {
-	int i, j;
+	int i;
 
-	for (i = 0; i < 8; i++)
-		zx_keymap[i] = 0x00;
+	for (i = 0; i < zx_keymtx_rows; i++)
+		zx_keymtx_clear(&zx_kmstate);
 
 	for (i = 0; i < KST_SIZE; i++) {
-		if (key_state[i]) {
-			for (j = 0; j < 8; j++) {
-				zx_keymap[j] |= key_mask[8 * i + j];
-			}
-		}
+		if (emukey_state.pressed[i])
+			zx_keymtx_or(&zx_kmstate, &key_map.mtx[i]);
 	}
 }
 
-static void zx_key_register(int key, uint16_t m0, uint16_t m1, uint16_t m2, uint16_t m3,
-    uint16_t m4, uint16_t m5, uint16_t m6, uint16_t m7)
+static void zx_key_register(int key, uint16_t m0, uint16_t m1, uint16_t m2,
+    uint16_t m3, uint16_t m4, uint16_t m5, uint16_t m6, uint16_t m7)
 {
 	if (key >= KST_SIZE) {
-		printf("error: key cannot be registered - scancode too high. enlarge KST_SIZE\n");
+		printf("error: key cannot be registered - scancode too high. "
+		    "enlarge KST_SIZE\n");
 		return;
 	}
 
-	key_mask[8 * key + 0] = m0;
-	key_mask[8 * key + 1] = m1;
-	key_mask[8 * key + 2] = m2;
-	key_mask[8 * key + 3] = m3;
-	key_mask[8 * key + 4] = m4;
-	key_mask[8 * key + 5] = m5;
-	key_mask[8 * key + 6] = m6;
-	key_mask[8 * key + 7] = m7;
+	key_map.mtx[key].mask[0] = m0;
+	key_map.mtx[key].mask[1] = m1;
+	key_map.mtx[key].mask[2] = m2;
+	key_map.mtx[key].mask[3] = m3;
+	key_map.mtx[key].mask[4] = m4;
+	key_map.mtx[key].mask[5] = m5;
+	key_map.mtx[key].mask[6] = m6;
+	key_map.mtx[key].mask[7] = m7;
 }
 
 int zx_keys_init(void)
@@ -97,9 +125,10 @@ int zx_keys_init(void)
 	int i;
 
 	for (i = 0; i < KST_SIZE; i++)
-		key_state[i] = 0;
-	for (i = 0; i < KST_SIZE * 8; i++)
-		key_mask[i] = 0;
+		emukey_state.pressed[i] = false;
+
+	for (i = 0; i < KST_SIZE; i++)
+		zx_keymtx_clear(&key_map.mtx[i]);
 
 	/* create a zx-mask for each key */
 	/* ZX48-like mapping */
@@ -165,6 +194,6 @@ int zx_keys_init(void)
 
 void zx_key_state_set(int key, int press)
 {
-	key_state[key] = press ? 1 : 0;
+	emukey_state.pressed[key] = press ? true : false;
 	zx_keys_recalc();
 }

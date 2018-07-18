@@ -32,6 +32,10 @@
 #ifndef ZX_KEYS_H
 #define ZX_KEYS_H
 
+enum {
+	zx_keymtx_rows = 8
+};
+
 /* half-row v,c,x,z,CS */
 #define ZX_KEY_V	0x10
 #define ZX_KEY_C	0x08
