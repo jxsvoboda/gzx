@@ -1,6 +1,6 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Waveform Audio File Format (WAVE) types.
+ * Linked list
  *
  * Copyright (c) 1999-2018 Jiri Svoboda
  * All rights reserved.
@@ -29,68 +29,41 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @addtogroup riff
- * @{
- */
-/**
- * @file RIFF chunk types.
- */
+#ifndef ADT_LIST_H
+#define ADT_LIST_H
 
-#ifndef TYPES_CHUNK_H
-#define TYPES_CHUNK_H
+#include <stdbool.h>
+#include <stddef.h>
+#include "../types/adt/list.h"
 
-#include <stdint.h>
-#include <stdio.h>
+#define list_get_instance(link, type, member) \
+	((type *)( (void *)(link) - ((void *) &((type *) NULL)->member)))
 
-typedef uint32_t riff_ckid_t;
-typedef uint32_t riff_cksize_t;
+#define list_foreach(list, member, itype, iterator) \
+	for (itype *iterator = NULL; iterator == NULL; iterator = (itype *) 1) \
+	    for (link_t *_link = (list).head.next; \
+	    iterator = list_get_instance(_link, itype, member), \
+	    _link != &(list).head; _link = _link->next)
 
-/** RIFF chunk for reading */
-typedef struct {
-	long ckstart;
-	riff_ckid_t ckid;
-	riff_cksize_t cksize;
-} riff_rchunk_t;
+#define list_foreach_rev(list, member, itype, iterator) \
+	for (itype *iterator = NULL; iterator == NULL; iterator = (itype *) 1) \
+	    for (link_t *_link = (list).head.prev; \
+	    iterator = list_get_instance(_link, itype, member), \
+	    _link != &(list).head; _link = _link->prev)
 
-/** RIFF chunk for writing */
-typedef struct {
-	long ckstart;
-} riff_wchunk_t;
-
-/** RIFF chunk info */
-typedef struct {
-	long ckstart;
-	riff_ckid_t ckid;
-	riff_cksize_t cksize;
-} riff_ckinfo_t;
-
-/** RIFF writer */
-typedef struct {
-	FILE *f;
-	/** Chunk start offset */
-	long ckstart;
-} riffw_t;
-
-/** RIFF reader */
-typedef struct {
-	FILE *f;
-} riffr_t;
-
-enum {
-	/** RIFF chunk ID */
-	CKID_RIFF = 0x46464952,
-	/** WAVE RIFF form ID */
-	FORM_WAVE = 0x45564157,
-	/** fmt chunk ID */
-	CKID_fmt = 0x20746d66,
-	/** data chunk ID */
-	CKID_data = 0x61746164,
-
-	/** PCM wave format */
-	WFMT_PCM = 0x0001
-};
+extern void list_initialize(list_t *);
+extern void link_initialize(link_t *);
+extern void list_insert_before(link_t *, link_t *);
+extern void list_insert_after(link_t *, link_t *);
+extern void list_prepend(link_t *, list_t *);
+extern void list_append(link_t *, list_t *);
+extern void list_remove(link_t *);
+extern bool link_used(link_t *);
+extern bool list_empty(list_t *);
+extern unsigned long list_count(list_t *);
+extern link_t *list_first(list_t *);
+extern link_t *list_last(list_t *);
+extern link_t *list_prev(link_t *, list_t *);
+extern link_t *list_next(link_t *, list_t *);
 
 #endif
-
-/** @}
- */

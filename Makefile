@@ -25,6 +25,8 @@ LIBS_helenos	=  `helenos-pkg-config --libs libgui libdraw libmath libhound libpc
 bkqual = $$(date '+%Y-%m-%d')
 
 sources_generic = \
+    adt/list.c \
+    tape/tape.c \
     wav/chunk.c \
     wav/rwave.c \
     fileutil.c \

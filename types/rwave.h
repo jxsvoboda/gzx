@@ -1,5 +1,8 @@
 /*
- * Copyright (c) 2015 Jiri Svoboda
+ * GZX - George's ZX Spectrum Emulator
+ * Waveform Audio File Format (WAVE) types.
+ *
+ * Copyright (c) 1999-2018 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,8 +36,8 @@
  * @file Waveform Audio File Format (WAVE) types.
  */
 
-#ifndef RIFF_TYPES_WAVE_H
-#define RIFF_TYPES_WAVE_H
+#ifndef TYPES_RWAVE_H
+#define TYPES_RWAVE_H
 
 #include <stdint.h>
 #include "chunk.h"
