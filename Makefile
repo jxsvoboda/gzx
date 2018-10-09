@@ -14,13 +14,14 @@ CFLAGS		= -O2 -Wall -Werror -Wmissing-prototypes -I/usr/include/SDL -DWITH_MIDI
 CFLAGS_g	= $(CFLAGS) -DUSE_GPU
 CFLAGS_w32	= -O2 -Wall -Werror -Wmissing-prototypes
 CFLAGS_w32_g	= $(CFLAGS_w32) -DUSE_GPU
-CFLAGS_helenos	= -O2 -Wall -Wno-error \
+CFLAGS_helenos	= -O2 -Wall -Wno-error -DHELENOS_BUILD -D_HELENOS_SOURCE \
+    -D_REALLY_WANT_STRING_H \
     `helenos-pkg-config --cflags libgui libdraw libmath libhound libpcm`
 CFLAGS_helenos_g = $(CFLAGS_helenos) -DUSE_GPU
 
 LIBS		= -lSDL -lasound
 LIBS_w32	= -lgdi32 -lwinmm
-LIBS_helenos	=  `helenos-pkg-config --libs libgui libdraw libmath libhound libpcm`
+LIBS_helenos	=  `helenos-pkg-config --libs libgui libdraw libmath libpcm libhound`
 
 bkqual = $$(date '+%Y-%m-%d')
 
@@ -148,7 +149,7 @@ $(objects): $(headers)
 	$(CC_helenos) -c $(CFLAGS_helenos_g) -o $@ $<
 
 clean:
-	rm -f *.o $(binary) $(binary_g) $(binary_w32) $(binary_w32_g)
+	rm -f *.o */*.o $(binary) $(binary_g) $(binary_w32) $(binary_w32_g)
 
 backup: clean
 	cd .. && tar czf gzx-$(bkqual).tar.gz trunk

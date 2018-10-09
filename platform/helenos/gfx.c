@@ -30,6 +30,7 @@
  */
 
 #include <canvas.h>
+#include <fibril.h>
 #include <io/keycode.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -312,7 +313,7 @@ void mgfx_setpal(int base, int cnt, int *p) {
 /* input */
 
 void mgfx_input_update(void) {
-	async_usleep(10);
+	fibril_usleep(10);
 }
 
 int mgfx_toggle_fs(void) {

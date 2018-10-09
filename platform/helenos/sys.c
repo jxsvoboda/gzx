@@ -29,9 +29,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <async.h>
 #include <dirent.h>
 #include <errno.h>
+#include <fibril.h>
 #include <stdlib.h>
 #include <vfs/vfs.h>
 #include "../../clock.h"
@@ -72,7 +72,7 @@ char *sys_getcwd(char *buf, int buflen)
 
 int sys_isdir(char *filename)
 {
-	struct stat statbuf;
+	vfs_stat_t statbuf;
 	int rc;
 
 	printf("sys_isdir('%s')?\n", filename);
@@ -107,5 +107,5 @@ void sys_closedir(void)
 
 void sys_usleep(unsigned usec)
 {
-	async_usleep(usec);
+	fibril_usleep(usec);
 }
