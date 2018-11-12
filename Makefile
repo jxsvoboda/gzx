@@ -18,6 +18,7 @@ CFLAGS_helenos	= -O2 -Wall -Wno-error -DHELENOS_BUILD -D_HELENOS_SOURCE \
     -D_REALLY_WANT_STRING_H \
     `helenos-pkg-config --cflags libgui libdraw libmath libhound libpcm`
 CFLAGS_helenos_g = $(CFLAGS_helenos) -DUSE_GPU
+INSTALL_helenos = helenos-install
 
 LIBS		= -lSDL -lasound
 LIBS_w32	= -lgdi32 -lwinmm
@@ -112,6 +113,19 @@ all: $(binary) $(binary_g) $(binary_w32) $(binary_w32_g) $(binary_helenos) \
 
 w32: $(binary_w32) $(binary_w32_g)
 hos: $(binary_helenos) $(binary_helenos_g)
+
+hos-install: hos
+	$(INSTALL_helenos) -d gzx
+	$(INSTALL_helenos) -T $(binary_helenos) /gzx/gzx
+	$(INSTALL_helenos) -T $(binary_helenos_g) /gzx/gzx_g
+	$(INSTALL_helenos) -T font.bin /gzx/font.bin
+	$(INSTALL_helenos) -d /gzx/roms
+	$(INSTALL_helenos) -T roms/zx48.rom /gzx/roms/zx48.rom
+	$(INSTALL_helenos) -T roms/zx128_0.rom /gzx/roms/zx128_0.rom
+	$(INSTALL_helenos) -T roms/zx128_1.rom /gzx/roms/zx128_1.rom
+
+hos-test: hos-install
+	helenos-test
 
 $(binary): $(objects)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)

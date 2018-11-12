@@ -47,6 +47,42 @@ To build all binaries, including Windows binaries:
 
     $ make all
 
+Cross-compiling for HelenOS
+---------------------------
+
+You need a built HelenOS workspace and a working cross-compiler toolchain.
+If you don't have one, you need to do something like
+
+    $ git clone https://github.com/HelenOS/helenos.git helenos
+    $ cd helenos
+    $ sudo tools/toolchain.sh amd64
+    $ make PROFILE=amd64
+
+For details, see http://www.helenos.org/wiki/UsersGuide/CompilingFromSource
+
+Next you need to setup XCW tools which we use for the cross-compilation:
+    $ PATH=$PATH:$PWD/tools/xcw/bin
+
+Now go to your gzx workspace and off we go:
+    $ cd ../gzx
+    $ make hos-test
+
+This will build the HelenOS binaries, install then to the HelenOS workspace
+and start emulation. Once in HelenOS start GZX by typing
+
+    # cd gzx
+    # ./gzx
+
+If you want to only build the binaries without installing, type
+    $ make hos
+
+If you want to only build and install the binaries without starting emulation,
+type
+    $ make hos-install
+
+Now you need to go to root of your HelenOS workspace and type 'make' to re-build
+the OS image.
+
 Running
 -------
 
