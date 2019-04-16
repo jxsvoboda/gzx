@@ -1,6 +1,6 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Spectrum tape
+ * TZX file format support
  *
  * Copyright (c) 1999-2018 Jiri Svoboda
  * All rights reserved.
@@ -28,27 +28,12 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef TAPE_TZX_H
+#define TAPE_TZX_H
 
-/**
- * @file Spectrum tape.
- *
- * This is an in-core, editable, representation of Spectrum tape. It should
- * be able to perfectly represent any TZX file.
- */
-
-#ifndef TAPE_TAPE_H
-#define TAPE_TAPE_H
-
-#include <stdint.h>
 #include "../types/tape/tape.h"
 
-extern int tape_create(tape_t **);
-extern void tape_destroy(tape_t *);
-extern int tblock_archive_info_create(tblock_archive_info_t **);
-extern void tblock_archive_info_destroy(tblock_archive_info_t *);
-extern int tape_text_create(tape_text_t **);
-extern void tape_text_destroy(tape_text_t *);
-extern int tblock_unknown_create(tblock_unknown_t **);
-extern void tblock_unknown_destroy(tblock_unknown_t *);
+extern int tzx_tape_load(const char *, tape_t **);
+extern int tzx_tape_save(tape_t *, const char *);
 
 #endif

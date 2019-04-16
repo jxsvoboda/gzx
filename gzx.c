@@ -524,6 +524,19 @@ void zx_debug_mstep(void) {
 
 extern int dln_odd;
 
+#include "tape/tzx.h"
+static void tzx_tape_test(void)
+{
+	tape_t *tape = NULL;
+	int rc;
+
+	rc = tzx_tape_load("test.tzx", &tape);
+	if (rc != 0) {
+		printf("tzx_tape_load -> %d\n", rc);
+	}
+
+	exit(0);
+}
 
 int main(int argc, char **argv) {
   int ic;
@@ -532,6 +545,8 @@ int main(int argc, char **argv) {
   timer frmt;
   uint8_t tape_smp;
   wkey_t k;
+
+  if (0) tzx_tape_test();
   
   //printf("start\n");
   argi = 1;

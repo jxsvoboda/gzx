@@ -390,6 +390,8 @@ typedef struct {
 typedef struct {
 	/** Containing archive info block */
 	struct tblock_archive_info *ainfo;
+	/** Link to @c ainfo->texts */
+	link_t lainfo;
 	/** Text identification */
 	uint8_t text_type;
 	/** Text */
@@ -408,6 +410,8 @@ typedef struct tblock_archive_info {
 typedef struct {
 	/** Containing hardware type block */
 	struct tblock_hw_type *hw_type;
+	/** Link to hw_type->hwinfos */
+	link_t lhwinfos;
 	/** Hardware type */
 	uint8_t hwtype;
 	/** Hardware ID */
@@ -421,7 +425,7 @@ typedef struct tblock_hw_type {
 	/** Containing tape block */
 	struct tape_block *block;
 	/** Hardware info structures */
-	list_t texts; /* of tape_hwinfo_t */
+	list_t hwinfos; /* of tape_hwinfo_t */
 } tblock_hw_type_t;
 
 /** Custom info block */
@@ -541,6 +545,16 @@ typedef struct {
 	/** Snapshot data */
 	uint8_t *snap;
 } tblock_snapshot_t;
+
+/** Unknown block */
+typedef struct {
+	/** Containing tape block */
+	struct tape_block *block;
+	/** Data length */
+	uint32_t data_len;
+	/** Block data */
+	void *data;
+} tblock_unknown_t;
 
 /** Tape block */
 typedef struct tape_block {

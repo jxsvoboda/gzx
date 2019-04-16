@@ -29,6 +29,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * @file Spectrum tape.
+ *
+ * This is an in-core, editable, representation of Spectrum tape. It should
+ * be able to perfectly represent any TZX file.
+ */
+
 #include <assert.h>
 #include <errno.h>
 #include <stdint.h>
@@ -39,7 +46,7 @@
 
 /** Create empty tape.
  *
- * @param rtape Place to store pointer to new tape.
+ * @param rtape Place to store pointer to new tape
  * @return Zero on success or error code
  */
 int tape_create(tape_t **rtape)
@@ -52,6 +59,7 @@ int tape_create(tape_t **rtape)
 
 	list_initialize(&tape->blocks);
 
+	*rtape = tape;
 	return 0;
 }
 
@@ -61,5 +69,162 @@ int tape_create(tape_t **rtape)
  */
 void tape_destroy(tape_t *tape)
 {
+	if (tape == NULL)
+		return;
+
 	free(tape);
+}
+
+/** Create tape block.
+ *
+ * @param btype Block type
+ * @param ext Block-specific data
+ * @param rblock Place to store pointer to newly allocated block
+ * @return Zero on success, ENOMEM if out of memory
+ */
+static int tape_block_create(tape_btype_t btype, void *ext,
+    tape_block_t **rblock)
+{
+	tape_block_t *block;
+
+	block = calloc(1, sizeof(tape_block_t));
+	if (block == NULL)
+		return ENOMEM;
+
+	block->btype = btype;
+	block->ext = ext;
+	*rblock = block;
+	return 0;
+}
+
+/** Destroy block base object.
+ *
+ * Destroy just the base block object.
+ *
+ * @param block Tape block
+ */
+static void tape_block_destroy_base(tape_block_t *block)
+{
+	if (block == NULL)
+		return;
+
+	free(block);
+}
+
+/** Create archive info.
+ *
+ * @param rainfo Place to store pointer to new archive info
+ * @return Zero on success or error code
+ */
+int tblock_archive_info_create(tblock_archive_info_t **rainfo)
+{
+	tblock_archive_info_t *ainfo;
+	tape_block_t *block = NULL;
+	int rc;
+
+	ainfo = calloc(1, sizeof(tblock_archive_info_t));
+	if (ainfo == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	rc = tape_block_create(tb_archive_info, ainfo, &block);
+	if (rc != 0)
+		goto error;
+
+	ainfo->block = block;
+	list_initialize(&ainfo->texts);
+
+	*rainfo = ainfo;
+	return 0;
+error:
+	if (ainfo != NULL)
+		free(ainfo);
+	return rc;
+}
+
+/** Destroy archive info.
+ *
+ * @param ainfo Archive info
+ */
+void tblock_archive_info_destroy(tblock_archive_info_t *ainfo)
+{
+	if (ainfo == NULL)
+		return;
+
+	assert(list_empty(&ainfo->texts));
+	tape_block_destroy_base(ainfo->block);
+	free(ainfo);
+}
+
+/** Create tape text.
+ *
+ * @param rtext Place to store pointer to new tape text
+ * @return Zero on success or error code
+ */
+int tape_text_create(tape_text_t **rtext)
+{
+	tape_text_t *text;
+
+	text = calloc(1, sizeof(tape_text_t));
+	if (text == NULL)
+		return ENOMEM;
+
+	*rtext = text;
+	return 0;
+}
+
+/** Destroy tape text.
+ *
+ * @param text Tape text
+ */
+void tape_text_destroy(tape_text_t *text)
+{
+	if (text == NULL)
+		return;
+
+	free(text);
+}
+
+/** Create unknown block.
+ *
+ * @param runknown Place to store pointer to new unknown block
+ * @return Zero on success or error code
+ */
+int tblock_unknown_create(tblock_unknown_t **runknown)
+{
+	tblock_unknown_t *unknown;
+	tape_block_t *block = NULL;
+	int rc;
+
+	unknown = calloc(1, sizeof(tblock_unknown_t));
+	if (unknown == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	rc = tape_block_create(tb_archive_info, unknown, &block);
+	if (rc != 0)
+		goto error;
+
+	unknown->block = block;
+	*runknown = unknown;
+	return 0;
+error:
+	if (unknown != NULL)
+		free(unknown);
+	return rc;
+}
+
+/** Destroy unknown block.
+ *
+ * @param unknown Unknown block
+ */
+void tblock_unknown_destroy(tblock_unknown_t *unknown)
+{
+	if (unknown == NULL)
+		return;
+
+	tape_block_destroy_base(unknown->block);
+	free(unknown);
 }

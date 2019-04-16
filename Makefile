@@ -30,6 +30,7 @@ bkqual = $$(date '+%Y-%m-%d')
 sources_generic = \
     adt/list.c \
     tape/tape.c \
+    tape/tzx.c \
     wav/chunk.c \
     wav/rwave.c \
     fileutil.c \
