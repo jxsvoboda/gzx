@@ -75,6 +75,17 @@ void tape_destroy(tape_t *tape)
 	free(tape);
 }
 
+/** Append block to tape.
+ *
+ * @param tape Tape
+ * @param block Block to append
+ */
+void tape_append(tape_t *tape, tape_block_t *block)
+{
+	block->tape = tape;
+	list_append(&block->ltape, &tape->blocks);
+}
+
 /** Create tape block.
  *
  * @param btype Block type
@@ -109,6 +120,52 @@ static void tape_block_destroy_base(tape_block_t *block)
 		return;
 
 	free(block);
+}
+
+/** Create standard speed data.
+ *
+ * @param rdata Place to store pointer to new archive info
+ * @return Zero on success or error code
+ */
+int tblock_data_create(tblock_data_t **rdata)
+{
+	tblock_data_t *data;
+	tape_block_t *block = NULL;
+	int rc;
+
+	data = calloc(1, sizeof(tblock_data_t));
+	if (data == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	rc = tape_block_create(tb_data, data, &block);
+	if (rc != 0)
+		goto error;
+
+	data->block = block;
+
+	*rdata = data;
+	return 0;
+error:
+	if (data != NULL)
+		free(data);
+	return rc;
+}
+
+/** Destroy standard speed data.
+ *
+ * @param data Standard speed data
+ */
+void tblock_data_destroy(tblock_data_t *data)
+{
+	if (data == NULL)
+		return;
+
+	if (data->data != NULL)
+		free(data->data);
+
+	free(data);
 }
 
 /** Create archive info.

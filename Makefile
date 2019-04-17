@@ -105,7 +105,7 @@ objects_w32 = $(sources_w32:.c=.w32.o)
 objects_w32_g = $(sources_w32_g:.c=.g.w32.o)
 objects_helenos = $(sources_helenos:.c=.hos.o)
 objects_helenos_g = $(sources_helenos_g:.c=.g.hos.o)
-headers = $(wildcard *.h)
+headers = $(wildcard *.h */*.h */*/*.h)
 
 # Default target
 default: $(binary)

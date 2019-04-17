@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * TZX file format support
  *
- * Copyright (c) 1999-2018 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -73,8 +73,45 @@ static int tzx_header_validate(tzx_header_t *header)
  */
 static int tzx_load_data(FILE *f, tape_t *tape)
 {
-	printf("load data block\n");
+	tzx_block_data_t block;
+	tblock_data_t *data;
+	size_t nread;
+	int rc;
+
+	printf("load standard speed data block\n");
+
+	nread = fread(&block, 1, sizeof(tzx_block_data_t), f);
+	if (nread != sizeof(tzx_block_data_t))
+		return EIO;
+
+	rc = tblock_data_create(&data);
+	if (rc != 0)
+		goto error;
+
+	data->pause_after = uint16_t_le2host(block.pause_after);
+	data->data_len = uint16_t_le2host(block.data_len);
+
+	data->data = calloc(block.data_len, 1);
+	if (data->data == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	printf("pause after:%zu\n", (size_t) data->pause_after);
+	printf("data len:%zu\n", (size_t) data->data_len);
+
+	nread = fread(data->data, 1, data->data_len, f);
+	if (nread != data->data_len) {
+		rc = EIO;
+		goto error;
+	}
+
+	tape_append(tape, data->block);
 	return 0;
+error:
+	if (data != NULL)
+		tblock_data_destroy(data);
+	return rc;
 }
 
 /** Load text structure.
@@ -93,7 +130,7 @@ static int tzx_load_text(FILE *f, size_t *bremain, tape_text_t **rtext)
 	size_t nread;
 	int rc;
 
-	printf("load archive info\n");
+	printf("load text\n");
 
 	if (*bremain < sizeof(tzx_text_t)) {
 		rc = EIO;
@@ -186,6 +223,8 @@ static int tzx_load_archive_info(FILE *f, tape_t *tape)
 		list_append(&ttext->lainfo, &ainfo->texts);
 	}
 
+	tape_append(tape, ainfo->block);
+
 	return 0;
 error:
 	if (ainfo != NULL)
@@ -235,6 +274,8 @@ static int tzx_load_unknown(FILE *f, uint8_t btype, tape_t *tape)
 	unknown->data = data;
 	unknown->data_len = blen;
 
+	tape_append(tape, unknown->block);
+
 	return 0;
 error:
 	free(data);
@@ -279,11 +320,14 @@ int tzx_tape_load(const char *fname, tape_t **rtape)
 	}
 
 	printf("read blocks\n");
-	while (!feof(f)) {
+	while (true) {
 		printf("read block type\n");
 		/* Read block type */
 		nread = fread(&btype, 1, sizeof(uint8_t), f);
 		if (nread != sizeof(uint8_t)) {
+			if (feof(f))
+				break;
+
 			rc = EIO;
 			goto error;
 		}

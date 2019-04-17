@@ -112,6 +112,14 @@ typedef enum {
 	tzxb_snapshot = 0x40
 } tzx_btype_t;
 
+/** Standard speed data header */
+typedef struct {
+	/** Pause after this block in ms */
+	uint16_t pause_after;
+	/** Data length in bytes */
+	uint16_t data_len;
+} __attribute__((packed)) tzx_block_data_t;
+
 /** Text structure */
 typedef struct {
 	/** Text identification */
