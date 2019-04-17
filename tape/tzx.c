@@ -350,6 +350,7 @@ int tzx_tape_load(const char *fname, tape_t **rtape)
 	}
 
 	fclose(f);
+	*rtape = tape;
 	return 0;
 error:
 	if (tape != NULL)

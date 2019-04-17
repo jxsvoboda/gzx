@@ -49,6 +49,7 @@
  * @param rtape Place to store pointer to new tape
  * @return Zero on success or error code
  */
+#include <stdio.h>
 int tape_create(tape_t **rtape)
 {
 	tape_t *tape;
@@ -59,6 +60,7 @@ int tape_create(tape_t **rtape)
 
 	list_initialize(&tape->blocks);
 
+	printf("Allocated tape=%p\n", tape);
 	*rtape = tape;
 	return 0;
 }
@@ -69,10 +71,84 @@ int tape_create(tape_t **rtape)
  */
 void tape_destroy(tape_t *tape)
 {
+	tape_block_t *block;
+
+	printf("Freeing tape=%p\n", tape);
 	if (tape == NULL)
 		return;
 
+	block = tape_first(tape);
+	while (block != NULL) {
+		tape_block_destroy(block);
+		block = tape_first(tape);
+	}
+
+	printf("Freeing tape=%p\n", tape);
 	free(tape);
+}
+
+/** Get first block of tape.
+ *
+ * @param tape Tape
+ * @return First block or @c NULL
+ */
+tape_block_t *tape_first(tape_t *tape)
+{
+	link_t *link;
+
+	link = list_first(&tape->blocks);
+	if (link == NULL)
+		return NULL;
+
+	return list_get_instance(link, tape_block_t, ltape);
+}
+
+/** Get last block of tape.
+ *
+ * @param tape Tape
+ * @return Last block or @c NULL
+ */
+tape_block_t *tape_last(tape_t *tape)
+{
+	link_t *link;
+
+	link = list_last(&tape->blocks);
+	if (link == NULL)
+		return NULL;
+
+	return list_get_instance(link, tape_block_t, ltape);
+}
+
+/** Get next block of tape.
+ *
+ * @param cur Current block
+ * @return Next block or @c NULL
+ */
+tape_block_t *tape_next(tape_block_t *cur)
+{
+	link_t *link;
+
+	link = list_next(&cur->ltape, &cur->tape->blocks);
+	if (link == NULL)
+		return NULL;
+
+	return list_get_instance(link, tape_block_t, ltape);
+}
+
+/** Get previous block of tape.
+ *
+ * @param cur Current block
+ * @return Previous block or @c NULL
+ */
+tape_block_t *tape_prev(tape_block_t *cur)
+{
+	link_t *link;
+
+	link = list_prev(&cur->ltape, &cur->tape->blocks);
+	if (link == NULL)
+		return NULL;
+
+	return list_get_instance(link, tape_block_t, ltape);
 }
 
 /** Append block to tape.
@@ -119,7 +195,33 @@ static void tape_block_destroy_base(tape_block_t *block)
 	if (block == NULL)
 		return;
 
+	if (link_used(&block->ltape))
+		list_remove(&block->ltape);
+
 	free(block);
+}
+
+/** Destroy tape block.
+ *
+ * @param block Tape block
+ */
+void tape_block_destroy(tape_block_t *block)
+{
+	switch (block->btype) {
+	case tb_data:
+		tblock_data_destroy((tblock_data_t *) block->ext);
+		break;
+	case tb_archive_info:
+		tblock_archive_info_destroy((tblock_archive_info_t *)
+		    block->ext);
+		break;
+	case tb_unknown:
+		tblock_unknown_destroy((tblock_unknown_t *) block->ext);
+		break;
+	default:
+		assert(false);
+		break;
+	}
 }
 
 /** Create standard speed data.
@@ -165,6 +267,7 @@ void tblock_data_destroy(tblock_data_t *data)
 	if (data->data != NULL)
 		free(data->data);
 
+	tape_block_destroy_base(data->block);
 	free(data);
 }
 
@@ -206,12 +309,83 @@ error:
  */
 void tblock_archive_info_destroy(tblock_archive_info_t *ainfo)
 {
+	tape_text_t *text;
+
 	if (ainfo == NULL)
 		return;
 
-	assert(list_empty(&ainfo->texts));
+	text = tblock_archive_info_first(ainfo);
+	while (text != NULL) {
+		tape_text_destroy(text);
+		text = tblock_archive_info_first(ainfo);
+	}
+
 	tape_block_destroy_base(ainfo->block);
 	free(ainfo);
+}
+
+/** Get first text of archive info.
+ *
+ * @param ainfo Archive info
+ * @return First text or @c NULL
+ */
+tape_text_t *tblock_archive_info_first(tblock_archive_info_t *ainfo)
+{
+	link_t *link;
+
+	link = list_first(&ainfo->texts);
+	if (link == NULL)
+		return NULL;
+
+	return list_get_instance(link, tape_text_t, lainfo);
+}
+
+/** Get last text of archive info.
+ *
+ * @param ainfo Archive info
+ * @return Last text or @c NULL
+ */
+tape_text_t *tblock_archive_info_last(tblock_archive_info_t *ainfo)
+{
+	link_t *link;
+
+	link = list_last(&ainfo->texts);
+	if (link == NULL)
+		return NULL;
+
+	return list_get_instance(link, tape_text_t, lainfo);
+}
+
+/** Get next text of archive info.
+ *
+ * @param cur Current text
+ * @return Next text or @c NULL
+ */
+tape_text_t *tblock_archive_info_next(tape_text_t *cur)
+{
+	link_t *link;
+
+	link = list_next(&cur->lainfo, &cur->ainfo->texts);
+	if (link == NULL)
+		return NULL;
+
+	return list_get_instance(link, tape_text_t, lainfo);
+}
+
+/** Get previous text of archive info.
+ *
+ * @param cur Current text
+ * @return Previous text or @c NULL
+ */
+tape_text_t *tblock_archive_info_prev(tape_text_t *cur)
+{
+	link_t *link;
+
+	link = list_prev(&cur->lainfo, &cur->ainfo->texts);
+	if (link == NULL)
+		return NULL;
+
+	return list_get_instance(link, tape_text_t, lainfo);
 }
 
 /** Create tape text.
@@ -239,6 +413,12 @@ void tape_text_destroy(tape_text_t *text)
 {
 	if (text == NULL)
 		return;
+
+	if (link_used(&text->lainfo))
+		list_remove(&text->lainfo);
+
+	if (text->text != NULL)
+		free(text->text);
 
 	free(text);
 }

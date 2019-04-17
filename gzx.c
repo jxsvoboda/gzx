@@ -524,6 +524,7 @@ void zx_debug_mstep(void) {
 
 extern int dln_odd;
 
+#include "tape/tape.h"
 #include "tape/tzx.h"
 static void tzx_tape_test(void)
 {
@@ -535,6 +536,8 @@ static void tzx_tape_test(void)
 		printf("tzx_tape_load -> %d\n", rc);
 	}
 
+	printf("destroy tape..\n");
+	tape_destroy(tape);
 	exit(0);
 }
 
