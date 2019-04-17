@@ -534,6 +534,13 @@ static void tzx_tape_test(void)
 	rc = tzx_tape_load("test.tzx", &tape);
 	if (rc != 0) {
 		printf("tzx_tape_load -> %d\n", rc);
+		exit(1);
+	}
+
+	rc = tzx_tape_save(tape, "test-out.tzx");
+	if (rc != 0) {
+		printf("tzx_tape_save -> %d\n", rc);
+		exit(1);
 	}
 
 	printf("destroy tape..\n");

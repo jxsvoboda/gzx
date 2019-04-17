@@ -550,10 +550,12 @@ typedef struct {
 typedef struct {
 	/** Containing tape block */
 	struct tape_block *block;
+	/** Block type */
+	uint8_t block_type;
 	/** Data length */
-	uint32_t data_len;
+	uint32_t block_len;
 	/** Block data */
-	void *data;
+	void *udata;
 } tblock_unknown_t;
 
 /** Tape block */
