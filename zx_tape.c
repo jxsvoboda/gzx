@@ -284,7 +284,11 @@ void zx_tape_ldbytes(void) {
   if(tape_playing) return;
   btype=tfr->block_type();
   fprintf(logfi,"btype==BT_DATA?\n");
-  if(btype!=BT_DATA) return;
+  while (btype != BT_DATA) {
+    if(btype != BT_UNKNOWN) return;
+    if (tfr->skip_block() < 0) return;
+    btype=tfr->block_type();
+  }
   fprintf(logfi,"!getinfo?\n");
   if(tfr->get_b_data_info(&binfo)) return;
   
