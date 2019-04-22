@@ -40,6 +40,7 @@
 #include "zx_tape.h"
 #include "z80.h"
 #include "zxt_fif.h"
+#include "zxt_ng.h"
 
 /* 0=LOW 1=HI */
 
@@ -423,7 +424,7 @@ int zx_tape_selectfile(char *name) {
   }
   
   if(strcmpci(ext,".tap")==0) tfr=&tfr_tap;
-    else if(strcmpci(ext,".tzx")==0) tfr=&tfr_tzx;
+    else if(strcmpci(ext,".tzx")==0) tfr=&tfr_tzx; // &tfr_ng;
     else if(strcmpci(ext,".wav")==0) tfr=&tfr_wav;
     else {
       printf("uknown extension '%s'\n",ext);

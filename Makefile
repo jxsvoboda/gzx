@@ -47,6 +47,7 @@ sources_generic = \
     zx_kbd.c \
     zx_sound.c \
     zx_tape.c \
+    zxt_ng.c \
     zxt_tap.c \
     zxt_wav.c \
     zxt_tzx.c \
