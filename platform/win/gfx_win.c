@@ -349,7 +349,7 @@ static int dd_init(HWND wnd) {
   if(dbl_ln) {
     ddxr=640; ddyr=400;
   } else {
-    ddxr=320; ddyr=200;
+    ddxr=640; ddyr=400;
   }
   ddrval=IDirectDraw_SetDisplayMode(lpdd,ddxr,ddyr,/*8*/16);
   if(ddrval!=DD_OK) {
@@ -572,8 +572,8 @@ int mgfx_init(void) {
   
   mgfx_selln(3);
   
-  sxs=dbl_ln ? (scr_xs<<1) : scr_xs;
-  sys=dbl_ln ? (scr_ys<<1) : scr_ys;
+  sxs = scr_xs << 1;
+  sys = scr_ys << 1;
   
   /* Create window, set graph. mode, create surface */
   if(mwin_init(0)<0) return -1;
@@ -649,12 +649,16 @@ void mgfx_updscr(void) {
   int y,x;
 
   if(!dbl_ln) {
-    dp=vscr2+(scr_ys-1)*scr_xs;
+    dp=vscr2+(scr_ys-1)*2*scr_xs*2;
     sp=vscr0;
   
     for(y=0;y<scr_ys;y++) {
-      memcpy(dp,sp,scr_xs);
-      dp-=scr_xs;
+      for(x=0;x<scr_xs;x++)
+        dp[2*x]=dp[2*x+1]=sp[x];
+      dp-=scr_xs << 1;
+      for(x=0;x<scr_xs;x++)
+        dp[2*x]=dp[2*x+1]=sp[x];
+      dp-=scr_xs << 1;
       sp+=scr_xs;
     }
   } else {
