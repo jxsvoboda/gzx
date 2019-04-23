@@ -140,6 +140,15 @@ uninstall-hos:
 test-hos: install-hos
 	helenos-test
 
+dist: $(binary) $(binary_g) $(binary_w32) $(binary_w32_g)
+	mkdir -p distrib/gzx
+	cp -t distrib/gzx $^
+	cp -r -t distrib/gzx roms
+	cp -r -t distrib/gzx font.bin
+	cp -r -t distrib/gzx README.md
+	rm -rf distrib/gzx.zip
+	cd distrib && zip -r gzx.zip gzx
+
 $(binary): $(objects)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
@@ -177,6 +186,7 @@ $(objects): $(headers)
 
 clean:
 	rm -f *.o */*.o */*/*.o $(binary) $(binary_g) $(binary_w32) $(binary_w32_g)
+	rm -rf distrib
 
 backup: clean
 	cd .. && tar czf gzx-$(bkqual).tar.gz trunk
