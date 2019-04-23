@@ -40,7 +40,8 @@
 static SDL_Surface *sdl_screen;
 static int fs = 0;
 static  SDL_Color color[256];
-static int scale = 2;
+static int xscale;
+static int yscale;
 
 static int *txkey;
 static int txsize;
@@ -172,8 +173,16 @@ static void init_video(void) {
   scr_xs = 320;
   scr_ys = 200;
   
-  vw = scr_xs * scale;
-  vh = scr_ys * scale;
+  if (dbl_ln) {
+    xscale = 2;
+    yscale = 1;
+  } else {
+    xscale = 2;
+    yscale = 2;
+  }
+  
+  vw = scr_xs * xscale;
+  vh = scr_ys * yscale;
   
   if (dbl_ln) {
     vh *= 2;
@@ -246,12 +255,12 @@ static void render_display_line(int dy, uint8_t *spix)
   uint8_t *dp;
   int i, j, k;
   
-  dp = sdl_screen->pixels + sdl_screen->pitch * dy * scale;
-  if (scale != 1) {
-    for (j = 0; j < scale; j++) {
+  dp = sdl_screen->pixels + sdl_screen->pitch * dy * yscale;
+  if (xscale != 1 || yscale != 1) {
+    for (j = 0; j < yscale; j++) {
       for (i = 0; i < scr_xs; i++) {
-        for (k = 0; k < scale; k++) {
-          dp[scale * i + k] = spix[i];
+        for (k = 0; k < xscale; k++) {
+          dp[xscale * i + k] = spix[i];
         }
       }
       dp += sdl_screen->pitch;
