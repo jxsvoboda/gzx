@@ -26,6 +26,10 @@ LIBS_w32	= -lgdi32 -lwinmm
 LIBS_helenos	=  `helenos-pkg-config --libs libgui libdraw libmath libpcm libhound`
 
 bkqual = $$(date '+%Y-%m-%d')
+version = git
+distname = gzx-$(version)
+distbase = distrib
+distdir = $(distbase)/$(distname)
 
 sources_generic = \
     adt/list.c \
@@ -141,13 +145,14 @@ test-hos: install-hos
 	helenos-test
 
 dist: $(binary) $(binary_g) $(binary_w32) $(binary_w32_g)
-	mkdir -p distrib/gzx
-	cp -t distrib/gzx $^
-	cp -r -t distrib/gzx roms
-	cp -r -t distrib/gzx font.bin
-	cp -r -t distrib/gzx README.md
-	rm -rf distrib/gzx.zip
-	cd distrib && zip -r gzx.zip gzx
+	mkdir -p $(distdir)
+	cp -t $(distdir) $^
+	cp -r -t $(distdir) roms
+	cp -r -t $(distdir) font.bin
+	cp -r -t $(distdir) README.md
+	echo $(version) > $(distdir)/VERSION
+	rm -rf $(distbase)/$(distname)/gzx.zip
+	cd $(distbase) && zip -r $(distname).zip $(distname)
 
 $(binary): $(objects)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
