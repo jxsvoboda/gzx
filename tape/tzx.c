@@ -66,6 +66,7 @@ static uint8_t tzx_block_type(tape_block_t *block)
 		return unknown->block_type;
 	default:
 		assert(false);
+		return 0;
 	}
 }
 
@@ -136,8 +137,8 @@ static int tzx_load_data(FILE *f, tape_t *tape)
 		goto error;
 	}
 
-	printf("pause after:%zu\n", (size_t) data->pause_after);
-	printf("data len:%zu\n", (size_t) data->data_len);
+	printf("pause after:%u\n", (unsigned) data->pause_after);
+	printf("data len:%u\n", (unsigned) data->data_len);
 
 	nread = fread(data->data, 1, data->data_len, f);
 	if (nread != data->data_len) {
@@ -303,9 +304,9 @@ static int tzx_load_archive_info(FILE *f, tape_t *tape)
 		return EIO;
 
 	blen = uint16_t_le2host(block.block_len);
-	printf("block size:%zu\n", (size_t)blen);
-	printf("size of block header:%zu\n", sizeof(tzx_block_archive_info_t));
-	printf("# of strings:%zu\n", (size_t)block.nstrings);
+	printf("block size:%u\n", (unsigned) blen);
+	printf("size of block header:%u\n", (unsigned) sizeof(tzx_block_archive_info_t));
+	printf("# of strings:%u\n", (unsigned) block.nstrings);
 
 	rc = tblock_archive_info_create(&ainfo);
 	if (rc != 0)
@@ -413,13 +414,13 @@ static int tzx_load_unknown(FILE *f, uint8_t btype, tape_t *tape)
 		return EIO;
 
 	blen = uint32_t_le2host(block.block_len);
-	printf("block size:%zu\n", (size_t)blen);
+	printf("block size:%u\n", (unsigned) blen);
 	data = malloc(blen);
 	if (data == NULL)
 		return ENOMEM;
 
 	nread = fread(data, 1, blen, f);
-	printf("bytes read: %zu\n", nread);
+	printf("bytes read: %u\n", (unsigned) nread);
 	if (nread != blen) {
 		rc = EIO;
 		goto error;

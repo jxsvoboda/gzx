@@ -176,7 +176,7 @@ $(objects): $(headers)
 	$(CC_helenos) -c $(CFLAGS_helenos_g) -o $@ $<
 
 clean:
-	rm -f *.o */*.o $(binary) $(binary_g) $(binary_w32) $(binary_w32_g)
+	rm -f *.o */*.o */*/*.o $(binary) $(binary_g) $(binary_w32) $(binary_w32_g)
 
 backup: clean
 	cd .. && tar czf gzx-$(bkqual).tar.gz trunk
