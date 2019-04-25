@@ -556,6 +556,8 @@ int main(int argc, char **argv) {
   uint8_t tape_smp;
   wkey_t k;
 
+  rompath_set("roms/");
+
   if (0) tzx_tape_test();
   
   //printf("start\n");
@@ -581,6 +583,14 @@ int main(int argc, char **argv) {
 	    }
 	    acap_file = argv[argi + 1];
 	    argi+=2;
+    } else if (!strcmp(argv[argi],"-rp")) {
+	    if (argc <= argi + 1) {
+		    printf("Option -rp missing argument.\n");
+		    exit(1);
+	    }
+	    rompath_set(argv[argi + 1]);
+	    argi+=2;
+
     } else {
 	    printf("Invalid option '%s'.\n", argv[argi]);
 	    exit(1);

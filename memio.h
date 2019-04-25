@@ -41,6 +41,8 @@
 #define ZXM_PLUS3 3
 #define ZXM_ZX81  4
 
+void rompath_set(const char *rp);
+
 /* spectrum memory access */
 uint8_t zx_memget8(uint16_t addr);
 void zx_memset8(uint16_t addr, uint8_t val);

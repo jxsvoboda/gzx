@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 #include "ay.h"
 #include "gzx.h"
 #include "iorec.h"
@@ -56,8 +57,22 @@ int mem_model;
 
 uint8_t page_reg; /* last data written to the page select port */
 
-static int rom_load(char *fname, int bank, int banksize);
+
+char *rompath=NULL; /* list of ':' seperated dir paths to look in for roms */
+
+
+static int rom_load(const char *fname, int bank, int banksize);
+static int rom_find_and_load(const char *fname, int bank, int banksize);
 static int spec_rom_load(char *fname, int bank);
+
+
+void rompath_set(const char *rp) {
+
+if (rompath) free(rompath);
+rompath=strdup(rp);
+}
+
+
 
 /*
   memory access routines
@@ -221,26 +236,26 @@ int zx_select_memmodel(int model) {
 
   switch(mem_model) {
     case ZXM_48K:
-      if(spec_rom_load("roms/zx48.rom",0)<0) return -1;
+      if(spec_rom_load("zx48.rom",0)<0) return -1;
       break;
       
     case ZXM_128K:
-      if(spec_rom_load("roms/zx128_0.rom",0)<0) return -1;
-      if(spec_rom_load("roms/zx128_1.rom",1)<0) return -1;
+      if(spec_rom_load("zx128_0.rom",0)<0) return -1;
+      if(spec_rom_load("zx128_1.rom",1)<0) return -1;
       break;
       
     case ZXM_PLUS2:
-      if(spec_rom_load("roms/zxp2_0.rom",0)<0) return -1;
-      if(spec_rom_load("roms/zxp2_1.rom",1)<0) return -1;
+      if(spec_rom_load("zxp2_0.rom",0)<0) return -1;
+      if(spec_rom_load("zxp2_1.rom",1)<0) return -1;
       break;
       
     case ZXM_PLUS3:
-      if(spec_rom_load("roms/zxp3_0.rom",0)<0) return -1;
-      if(spec_rom_load("roms/zxp3_1.rom",1)<0) return -1;
+      if(spec_rom_load("zxp3_0.rom",0)<0) return -1;
+      if(spec_rom_load("zxp3_1.rom",1)<0) return -1;
       break;
       
     case ZXM_ZX81:
-      if(rom_load("roms/zx81.rom",0,0x2000)<0) return -1;
+      if(rom_find_and_load("zx81.rom",0,0x2000)<0) return -1;
       break;
   }
   if(cur_dir) {
@@ -287,7 +302,7 @@ int zx_select_memmodel(int model) {
   return 0;
 }
 
-static int rom_load(char *fname, int bank, int banksize) {
+static int rom_load(const char *fname, int bank, int banksize) {
   FILE *f;
 
   f=fopen(fname,"rb");
@@ -303,8 +318,31 @@ static int rom_load(char *fname, int bank, int banksize) {
   return 0;
 }
 
+static int rom_find_and_load(const char *fname, int bank, int banksize) {
+
+const char *p_dir;
+char *path=NULL;
+int result=-1, len;
+
+p_dir=strtok(rompath, ":");
+while (p_dir)
+{
+	len=strlen(p_dir) + strlen(fname) + 10;
+	path=(char *) realloc((void *) path, len);
+	sprintf(path, "%s/%s", p_dir, fname);
+	result=rom_load(path, bank, banksize);
+	if (result==0) break;
+	p_dir=strtok(NULL, ":");
+}
+
+if (path) free(path);
+return(result);
+}
+
+
+
 static int spec_rom_load(char *fname, int bank) {
-  return rom_load(fname,bank,0x4000);
+  return rom_find_and_load(fname,bank,0x4000);
 }
 
 #ifdef USE_GPU
