@@ -554,9 +554,12 @@ int main(int argc, char **argv) {
   int argi;
   timer frmt;
   uint8_t tape_smp;
+	const char *ptr;
   wkey_t k;
 
-  rompath_set("roms/");
+	ptr=getenv("GZX_ROMPATH");	
+  if (ptr && strlen(ptr)) rompath_set(ptr);
+	rompath_set("roms/");
 
   if (0) tzx_tape_test();
   

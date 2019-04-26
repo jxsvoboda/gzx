@@ -103,6 +103,7 @@ Supported command-line options:
   -dl              | Enable double-scanline mode
   -midi <device>   | Output to specified MIDI device
   <snapshot-file>  | Load snapshot file at startup
+  -rp <path>       | "Rompath" colon separated list of directories
 
 `gzx-g` and `gzx-g.exe` are variants with GPU/Spec256 support enabled
 

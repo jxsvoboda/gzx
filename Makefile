@@ -10,7 +10,16 @@ CC_w32		= i686-w64-mingw32-gcc
 CC_helenos	= helenos-cc
 LD_helenos	= helenos-ld
 
-CFLAGS		= -O2 -Wall -Werror -Wmissing-prototypes -I/opt/SDL/include/SDL -DWITH_MIDI
+#change this to wherever you stor SDL includes. e.g. SDL_INCLUDE	=	/opt/SDL/include/SDL 
+SDL_INCLUDE	=	/usr/include/SDL
+
+#change this to whereever you stor SDL libraries. e.g.  SDL_LIBDIR	=	/opt/SDL/lib
+SDL_LIBDIR	=	/usr/lib
+
+#TODO probs a good idea to use pkg-config for this
+SDL_LIBS= -lSDL -lasound -lm -ldl -lpthread
+
+CFLAGS		= -O2 -Wall -Werror -Wmissing-prototypes -I$(SDL_INCLUDE) -DWITH_MIDI
 CFLAGS_g	= $(CFLAGS) -DUSE_GPU
 CFLAGS_w32	= -O2 -Wall -Werror -Wmissing-prototypes
 CFLAGS_w32_g	= $(CFLAGS_w32) -DUSE_GPU
@@ -21,7 +30,7 @@ CFLAGS_helenos_g = $(CFLAGS_helenos) -DUSE_GPU
 PREFIX_hos	= `helenos-bld-config --install-dir`
 INSTALL		= install
 
-LIBS		= -L/opt/SDL/lib -lSDL -lasound -lm -ldl -lpthread
+LIBS		= -L$(SDL_LIBDIR) $(SDL_LIBS)
 LIBS_w32	= -lgdi32 -lwinmm
 LIBS_helenos	=  `helenos-pkg-config --libs libgui libdraw libmath libpcm libhound`
 
