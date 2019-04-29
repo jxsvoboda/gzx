@@ -46,8 +46,8 @@ enum {
 	/** Since MIDI baud rate is 31250 and it takes 8+2 bits to
 	 * transfer a character, there can be at most 3125 messages per second
 	 * received from the Spectrum MIDI port. A buffer is good for up
-	 * to 1 PAL frame (1/50 s) */
-	buf_len = 31250 / 50,
+	 * to 1 PAL frame (1/50 s). Buffer length is in DWORDs */
+	buf_len = 3 * 31250 / 50,
 	/** Z80 T states per MIDI tick */
 	ts_midi_tick = 3500,
 	/** MIDI ticks per PAL frame */
@@ -59,7 +59,7 @@ static HMIDISTRM mstrm;
 /** Header for each buffer */
 static MIDIHDR mhdr[num_buf];
 /** MIDI buffer */
-static MIDIEVENT mbuf[num_buf][buf_len];
+static DWORD mbuf[num_buf][buf_len];
 /** Index of first submitted buffer */
 static int sbufn;
 /** Index of first available buffer */
@@ -110,7 +110,7 @@ int sysmidi_init(const char *dev)
 
 	for (i = 0; i < num_buf; i++) {
 		mhdr[i].lpData = (LPSTR)mbuf[i];
-		mhdr[i].dwBufferLength = sizeof(mbuf[i]);
+		mhdr[i].dwBufferLength = buf_len * sizeof(DWORD);
 		mhdr[i].dwFlags = MHDR_ISSTRM;
 
 		mmrc = midiOutPrepareHeader((HMIDIOUT)mstrm,
@@ -155,6 +155,7 @@ void sysmidi_send_msg(uint32_t t32, midi_msg_t *msg)
 {
 	uint64_t t;
 	uint64_t tdelta;
+	MIDIEVENT *ev;
 
 	t = lframe_t + (t32 - lframe_t32);
 	tdelta = (t - last_t) / ts_midi_tick;
@@ -166,7 +167,7 @@ void sysmidi_send_msg(uint32_t t32, midi_msg_t *msg)
 	}
 
 	/* Add message to current buffer */
-	if (bwi >= buf_len) {
+	if (bwi + 3 > buf_len) {
 		/* This should not happen */
 		printf("Note: MIDI buffer full, event dropped.\n");
 		return;
@@ -174,14 +175,15 @@ void sysmidi_send_msg(uint32_t t32, midi_msg_t *msg)
 
 //	printf("enlist message in buffer %d, deltatime=%lu\n",
 //	    abufn, (unsigned long)tdelta);
-	mbuf[abufn][bwi].dwDeltaTime = tdelta;
-	mbuf[abufn][bwi].dwStreamID = 0;
-	mbuf[abufn][bwi].dwEvent = ((DWORD)MEVT_F_SHORT << 24) |
+	ev = (MIDIEVENT *) &mbuf[abufn][bwi];
+	ev->dwDeltaTime = tdelta;
+	ev->dwStreamID = 0;
+	ev->dwEvent = ((DWORD)MEVT_F_SHORT << 24) |
 	    (DWORD)msg->sb |
 	    ((DWORD)msg->db1 << 8) |
 	    ((DWORD)msg->db2 << 16);
-	++bwi;
-	bdur += mbuf[abufn][bwi].dwDeltaTime;
+	bwi += 3;
+	bdur += tdelta;
 	if (bdur > frame_midi_tick) {
 		printf("Buffer duration is too long. This should not happen.\n");
 	}
@@ -193,6 +195,7 @@ void sysmidi_send_msg(uint32_t t32, midi_msg_t *msg)
 static int sysmidi_submit_buf(void)
 {
 	MMRESULT mmrc;
+	MIDIEVENT *ev;
 
 	if (na < 1) {
 		printf("Note: No available MIDI buffer, frame submit failed.\n");
@@ -200,7 +203,7 @@ static int sysmidi_submit_buf(void)
 	}
 
 	/* Add a NOP event to fill up the buffer duration up to 1/50 s */
-	if (bwi >= buf_len) {
+	if (bwi + 3 > buf_len) {
 		/* This should not happen */
 		printf("Note: MIDI buffer full, event dropped.\n");
 		bwi--;
@@ -209,19 +212,20 @@ static int sysmidi_submit_buf(void)
 	if (bdur < frame_midi_tick) {
 //		printf("Adding NOP event with deltatime %d\n",
 //		    frame_midi_tick - bdur);
-		mbuf[abufn][bwi].dwDeltaTime = frame_midi_tick - bdur;
-		mbuf[abufn][bwi].dwStreamID = 0;
-		mbuf[abufn][bwi].dwEvent = ((DWORD)MEVT_F_SHORT << 24) | MEVT_NOP;
-		++bwi;
+		ev = (MIDIEVENT *) &mbuf[abufn][bwi];
+		ev->dwDeltaTime = frame_midi_tick - bdur;
+		ev->dwStreamID = 0;
+		ev->dwEvent = ((DWORD)MEVT_F_SHORT << 24) | MEVT_NOP;
+		bwi += 3;
 	}
 
-	mhdr[abufn].dwBytesRecorded = bwi * sizeof(MIDIEVENT);
+	mhdr[abufn].dwBytesRecorded = bwi * sizeof(DWORD);
 
 	/* Submit the buffer */
 //	printf("Submitting buffer %d, bytes=%lu\n", abufn, mhdr[abufn].dwBytesRecorded);
 	mmrc = midiStreamOut(mstrm, &mhdr[abufn], sizeof(mhdr[abufn]));
 	if (mmrc != MMSYSERR_NOERROR) {
-		printf("Error submitting MIDI buffer.\n");
+		printf("Error submitting MIDI buffer %d. (%d)\n", abufn, mmrc);
 		return -1;
 	}
 
