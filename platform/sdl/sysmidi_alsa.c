@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * ALSA sequencer MIDI interface
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -159,6 +159,9 @@ void sysmidi_send_msg(uint32_t t32, midi_msg_t *msg)
 	uint8_t ch;
 	uint64_t usec;
 	uint64_t t;
+
+	if (!seq)
+		return;
 
 	t = lframe_t + (t32 - lframe_t32);
 

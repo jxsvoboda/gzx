@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Windows MIDI interface
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -157,6 +157,9 @@ void sysmidi_send_msg(uint32_t t32, midi_msg_t *msg)
 	uint64_t tdelta;
 	MIDIEVENT *ev;
 
+	if (!mstrm)
+		return;
+
 	t = lframe_t + (t32 - lframe_t32);
 	tdelta = (t - last_t) / ts_midi_tick;
 
@@ -196,6 +199,9 @@ static int sysmidi_submit_buf(void)
 {
 	MMRESULT mmrc;
 	MIDIEVENT *ev;
+
+	if (!mstrm)
+		return -1;
 
 	if (na < 1) {
 		printf("Note: No available MIDI buffer, frame submit failed.\n");
