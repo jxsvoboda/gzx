@@ -548,6 +548,29 @@ static void tzx_tape_test(void)
 	exit(0);
 }
 
+#include "tape/tap.h"
+static void tap_tape_test(void)
+{
+	tape_t *tape = NULL;
+	int rc;
+
+	rc = tap_tape_load("test.tap", &tape);
+	if (rc != 0) {
+		printf("tap_tape_load -> %d\n", rc);
+		exit(1);
+	}
+
+	rc = tap_tape_save(tape, "test-out.tap");
+	if (rc != 0) {
+		printf("tap_tape_save -> %d\n", rc);
+		exit(1);
+	}
+
+	printf("destroy tape..\n");
+	tape_destroy(tape);
+	exit(0);
+}
+
 int main(int argc, char **argv) {
   int ic;
   int frmno=0;
@@ -557,6 +580,7 @@ int main(int argc, char **argv) {
   wkey_t k;
 
   if (0) tzx_tape_test();
+  if (0) tap_tape_test();
   
   //printf("start\n");
   argi = 1;

@@ -1,8 +1,8 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * TZX file format support
+ * Gerton Lunter's TAP file format support
  *
- * Copyright (c) 1999-2018 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,15 +30,15 @@
  */
 
 /**
- * @file TZX file format support
+ * @file Gerton Lunter's TAP file format support
  */
 
-#ifndef TAPE_TZX_H
-#define TAPE_TZX_H
+#ifndef TAPE_TAP_H
+#define TAPE_TAP_H
 
 #include "../types/tape/tape.h"
 
-extern int tzx_tape_load(const char *, tape_t **);
-extern int tzx_tape_save(tape_t *, const char *);
+extern int tap_tape_load(const char *, tape_t **);
+extern int tap_tape_save(tape_t *, const char *);
 
 #endif

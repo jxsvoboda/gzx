@@ -131,7 +131,7 @@ static int tzx_load_data(FILE *f, tape_t *tape)
 	data->pause_after = uint16_t_le2host(block.pause_after);
 	data->data_len = uint16_t_le2host(block.data_len);
 
-	data->data = calloc(block.data_len, 1);
+	data->data = calloc(data->data_len, 1);
 	if (data->data == NULL) {
 		rc = ENOMEM;
 		goto error;

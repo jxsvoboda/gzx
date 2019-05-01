@@ -427,7 +427,7 @@ int zx_tape_selectfile(char *name) {
     return -1;
   }
   
-  if(strcmpci(ext,".tap")==0) tfr=&tfr_tap;
+  if(strcmpci(ext,".tap")==0) tfr=&tfr_ng;
     else if(strcmpci(ext,".tzx")==0) tfr=&tfr_tzx; // &tfr_ng;
     else if(strcmpci(ext,".wav")==0) tfr=&tfr_wav;
     else {

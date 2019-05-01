@@ -34,6 +34,7 @@
 #include <string.h>
 #include "intdef.h"
 #include "gzx.h"
+#include "tape/tap.h"
 #include "tape/tape.h"
 #include "tape/tzx.h"
 #include "zx_tape.h"
@@ -91,7 +92,7 @@ static int ng_open_file(char *filename)
 
 	printf("ng_open_file\n");
 
-	rc = tzx_tape_load(filename, &tape);
+	rc = tap_tape_load(filename, &tape);
 	if (rc != 0)
 		return -1;
 
