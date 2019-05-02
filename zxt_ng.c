@@ -34,9 +34,11 @@
 #include <string.h>
 #include "intdef.h"
 #include "gzx.h"
+#include "strutil.h"
 #include "tape/tap.h"
 #include "tape/tape.h"
 #include "tape/tzx.h"
+#include "tape/wav.h"
 #include "zx_tape.h"
 #include "zxt_fif.h"
 
@@ -82,17 +84,35 @@ static uint8_t *block_data;
 static int block_type;
 static int block_dlen;
 static int block_doff;
+static int block_lbbits;
 
-//static u8 voice_byte;
-//static int voice_bbits;
+static u8 voice_byte;
+static int voice_bbits;
 
 static int ng_open_file(char *filename)
 {
 	int rc;
+	char *ext;
 
 	printf("ng_open_file\n");
 
-	rc = tap_tape_load(filename, &tape);
+	ext = strrchr(filename, '.');
+	if (ext == NULL) {
+		printf("File '%s' has no extension.\n", filename);
+		return -1;
+	}
+
+	if (strcmpci(ext, ".tap") == 0) {
+		rc = tap_tape_load(filename, &tape);
+	} else if (strcmpci(ext, ".tzx") == 0) {
+		rc = tzx_tape_load(filename, &tape);
+	} else if (strcmpci(ext, ".wav") == 0) {
+		rc = wav_tape_load(filename, &tape);
+	} else {
+		printf("Uknown extension '%s'.\n", ext);
+		return -1;
+	}
+
 	if (rc != 0)
 		return -1;
 
@@ -226,33 +246,24 @@ static int ng_get_b_data_info(tb_data_info_t *info)
 	return 0;
 }
 
-static int ng_get_b_voice_info(tb_voice_info_t *info) {
+static int ng_get_b_voice_info(tb_voice_info_t *info)
+{
+	tblock_direct_rec_t *drec;
+
 	printf("ng_get_b_voice_info\n");
-/*  unsigned bstart,btype;
-  int used_bits,data_len;
 
-  if(block_open) return -1;
+	if (block_open)
+		return -1;
 
-  bstart=ftell(tapf);
-  btype=fgetu8(tapf);
+	if (tblock->btype != tb_direct_rec)
+		return -1;
 
-  if(btype!=0x15) {
-    fseek(tapf,bstart,SEEK_SET);
-    return -1;
-  }
+	drec = (tblock_direct_rec_t *) tblock->ext;
+	info->smp_len = drec->smp_dur;
+	info->pause_after_len = drec->pause_after;
+	info->samples = drec->data_len * 8 - 8 + drec->lb_bits;
 
-  fprintf(logfi,"ng_get_b_voice_info: bstart=%d btype=0x%02x\n",
-    bstart,btype);
-
-  info->smp_len=fgetu16le(tapf);
-  info->pause_after_len=fgetu16le(tapf);
-  used_bits=fgetu8(tapf);
-  data_len=fgetu24le(tapf);
-  info->samples=data_len*8 + (used_bits-8);
-
-  fseek(tapf,bstart,SEEK_SET);
-  return 0;*/
-  return -1;
+	return 0;
 }
 
 static int ng_skip_block(void)
@@ -272,6 +283,7 @@ static int ng_open_block(void)
 	tblock_data_t *data;
 	tblock_turbo_data_t *tdata;
 	tblock_pure_data_t *pdata;
+	tblock_direct_rec_t *drec;
 
 	printf("ng_open_block\n");
 	if (block_open)
@@ -308,23 +320,24 @@ static int ng_open_block(void)
 //      block_dlen =2*fgetu8(tapf);
 //      break;
 
-    case tb_pure_data:
-	    /* Pure data block */
+	case tb_pure_data:
+		/* Pure data block */
 		pdata = (tblock_pure_data_t *) tblock->ext;
 		block_data = pdata->data;
 		block_type = BT_DATA;
 		block_dlen = pdata->data_len;
 		block_doff = 0;
 		break;
-//    case 0x15: /* direct recording */
-//      block_dstart=block_start+9;
-//      block_type=BT_VOICE;
-
-//      fseek(tapf,5,SEEK_CUR);
-//      block_dlen =fgetu24le(tapf);
-
-//      voice_bbits=0;
-//      break;
+	case tb_direct_rec:
+		/* Direct recording */
+		drec = (tblock_direct_rec_t *) tblock->ext;
+		block_data = drec->data;
+		block_type = BT_VOICE;
+		block_dlen = drec->data_len;
+		block_doff = 0;
+		block_lbbits = drec->lb_bits;
+		voice_bbits = 0;
+		break;
 
 	default:
 		return -1;
@@ -366,30 +379,40 @@ static int ng_b_data_getbytes(int n, u8 *dst)
 	return 0;
 }
 
-static int ng_b_voice_getsmps(int n, unsigned *dst) {
-/*  int smpleft;
-  int i;
+static int ng_b_voice_getsmps(int n, unsigned *dst)
+{
+	int smpleft;
+	int i;
 
-//  printf("ng_b_voice_getsmps\n");
+//	printf("ng_b_voice_getsmps: block_doff=%d, block_dlen=%d\n", block_doff,
+//	block_dlen);
 
-  if(!block_open) return -1;
-  if(block_type!=BT_VOICE) return -1;
-    */
-  /* zatim ignorujeme used_bits *//*
-  smpleft=(block_end-ftell(tapf))*8 + voice_bbits;
-  if(smpleft<n) return -1;
+	if (!block_open)
+		return -1;
 
-  for(i=0;i<n;i++) {
-    if(!voice_bbits) {
-      voice_byte=fgetu8(tapf);
-      voice_bbits=8;
-    }
-    dst[i]=(voice_byte & 0x80) ? 1 : 0;
-    voice_byte<<=1;
-  }
+	if (tblock->btype != tb_direct_rec)
+		return -1;
 
-  return 0;*/
-  return -1;
+	/* Number of samples left */
+	smpleft = (block_dlen - block_doff) * 8 - 8 + block_lbbits +
+	    voice_bbits;
+
+	if (smpleft < n)
+		return -1;
+
+	for (i = 0; i < n; i++) {
+		if (voice_bbits == 0) {
+			/* Get next byte */
+			voice_byte = block_data[block_doff++];
+			voice_bbits = 8;
+		}
+
+		dst[i] = (voice_byte & 0x80) ? 1 : 0;
+		voice_byte <<= 1;
+		--voice_bbits;
+	}
+
+	return 0;
 }
 
 static int ng_b_tones_gettone(int *pnum, int *plen) {
@@ -419,9 +442,7 @@ static int ng_b_tones_gettone(int *pnum, int *plen) {
 static int ng_b_moredata(void)
 {
 	printf("ng_b_moredata\n");
-	if (!block_open)
-		return -1;
-
-	assert(block_type == BT_DATA); // XXX Other block types
-	return block_doff < block_dlen;
+	/* This is not really used */
+	assert(false);
+	return -1;
 }

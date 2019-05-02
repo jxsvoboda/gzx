@@ -429,7 +429,7 @@ int zx_tape_selectfile(char *name) {
   
   if(strcmpci(ext,".tap")==0) tfr=&tfr_ng;
     else if(strcmpci(ext,".tzx")==0) tfr=&tfr_tzx; // &tfr_ng;
-    else if(strcmpci(ext,".wav")==0) tfr=&tfr_wav;
+    else if(strcmpci(ext,".wav")==0) tfr=&tfr_ng;
     else {
       printf("uknown extension '%s'\n",ext);
       return -1;

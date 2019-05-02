@@ -571,6 +571,29 @@ static void tap_tape_test(void)
 	exit(0);
 }
 
+#include "tape/wav.h"
+static void wav_tape_test(void)
+{
+	tape_t *tape = NULL;
+	int rc;
+
+	rc = wav_tape_load("test.wav", &tape);
+	if (rc != 0) {
+		printf("tap_tape_load -> %d\n", rc);
+		exit(1);
+	}
+
+	rc = wav_tape_save(tape, "test-out.wav");
+	if (rc != 0) {
+		printf("tap_tape_save -> %d\n", rc);
+		exit(1);
+	}
+
+	printf("destroy tape..\n");
+	tape_destroy(tape);
+	exit(0);
+}
+
 int main(int argc, char **argv) {
   int ic;
   int frmno=0;
@@ -581,6 +604,7 @@ int main(int argc, char **argv) {
 
   if (0) tzx_tape_test();
   if (0) tap_tape_test();
+  if (0) wav_tape_test();
   
   //printf("start\n");
   argi = 1;

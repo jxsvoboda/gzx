@@ -211,6 +211,9 @@ void tape_block_destroy(tape_block_t *block)
 	case tb_data:
 		tblock_data_destroy((tblock_data_t *) block->ext);
 		break;
+	case tb_direct_rec:
+		tblock_direct_rec_destroy((tblock_direct_rec_t *) block->ext);
+		break;
 	case tb_archive_info:
 		tblock_archive_info_destroy((tblock_archive_info_t *)
 		    block->ext);
@@ -269,6 +272,53 @@ void tblock_data_destroy(tblock_data_t *data)
 
 	tape_block_destroy_base(data->block);
 	free(data);
+}
+
+/** Create direct recording.
+ *
+ * @param rdata Place to store pointer to new archive info
+ * @return Zero on success or error code
+ */
+int tblock_direct_rec_create(tblock_direct_rec_t **rdrec)
+{
+	tblock_direct_rec_t *drec;
+	tape_block_t *block = NULL;
+	int rc;
+
+	drec = calloc(1, sizeof(tblock_direct_rec_t));
+	if (drec == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	rc = tape_block_create(tb_direct_rec, drec, &block);
+	if (rc != 0)
+		goto error;
+
+	drec->block = block;
+
+	*rdrec = drec;
+	return 0;
+error:
+	if (drec != NULL)
+		free(drec);
+	return rc;
+}
+
+/** Destroy direct recording.
+ *
+ * @param drec Direct recording
+ */
+void tblock_direct_rec_destroy(tblock_direct_rec_t *drec)
+{
+	if (drec == NULL)
+		return;
+
+	if (drec->data != NULL)
+		free(drec->data);
+
+	tape_block_destroy_base(drec->block);
+	free(drec);
 }
 
 /** Create archive info.

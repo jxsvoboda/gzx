@@ -36,6 +36,7 @@ sources_generic = \
     tape/tap.c \
     tape/tape.c \
     tape/tzx.c \
+    tape/wav.c \
     wav/chunk.c \
     wav/rwave.c \
     fileutil.c \

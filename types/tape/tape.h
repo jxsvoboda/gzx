@@ -202,6 +202,11 @@ typedef struct {
 	uint8_t *data;
 } tblock_pure_data_t;
 
+enum {
+	/** Maximum allowed value of tblock_direct_rec.data_len */
+	tb_drec_data_len_max = 0xffffff
+};
+
 /** Direct recording */
 typedef struct {
 	/** Containing tape block */
