@@ -39,6 +39,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../byteorder.h"
+#include "../clock.h"
 #include "../wav/rwave.h"
 #include "../zx_tape.h"
 #include "tape.h"
@@ -89,9 +90,6 @@ static int wav_load_direct_rec(rwaver_t *wr, rwave_params_t *params,
 		return ENOTSUP;
 	}
 
-	if (params->smp_freq != 28000)
-		printf("warning: smp_freq != 28000\n");
-
 	printf("load direct recording block\n");
 	buf = calloc(1, wav_buf_size);
 	if (buf == NULL) {
@@ -103,7 +101,17 @@ static int wav_load_direct_rec(rwaver_t *wr, rwave_params_t *params,
 	if (rc != 0)
 		goto error;
 
-	drec->smp_dur = 125; /* XXX 28000 Hz !!!!! */
+	if (params->smp_freq < Z80_CLOCK / 0xffff) {
+		rc = ENOTSUP;
+		goto error;
+	}
+
+	if (Z80_CLOCK / params->smp_freq < 1) {
+		rc = ENOTSUP;
+		goto error;
+	}
+
+	drec->smp_dur = Z80_CLOCK / params->smp_freq;
 	drec->pause_after = 0;
 	drec->data = NULL;
 	drec->data_len = 0;
@@ -300,13 +308,42 @@ int wav_tape_save(tape_t *tape, const char *fname)
 	rwavew_t *ww;
 	rwave_params_t params;
 	tape_block_t *block;
+	tblock_direct_rec_t *drec;
+	uint16_t smp_dur = 0;
 	int rc;
 	int rv;
+
+	/* Determine sample rate */
+
+	block = tape_first(tape);
+	while (block != NULL) {
+		switch (block->btype) {
+		case tb_direct_rec:
+			drec = (tblock_direct_rec_t *) block->ext;
+			if (smp_dur == 0) {
+				smp_dur = drec->smp_dur;
+			} else if (smp_dur != drec->smp_dur) {
+				rc = ENOTSUP;
+				goto error;
+			}
+			break;
+		default:
+			rc = ENOTSUP;
+			goto error;
+		}
+
+		block = tape_next(block);
+	}
+
+	if (smp_dur == 0) {
+		rc = ENOTSUP;
+		goto error;
+	}
 
 	/* Initialize params */
 	params.channels = 1;
 	params.bits_smp = 8;
-	params.smp_freq = 28000;
+	params.smp_freq = Z80_CLOCK / smp_dur;
 
 	rc = rwave_wopen(fname, &params, &ww);
 	if (rc != 0)
