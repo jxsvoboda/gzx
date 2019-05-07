@@ -70,12 +70,15 @@ static int wav_load_direct_rec(rwaver_t *wr, rwave_params_t *params,
 	uint32_t data_len;
 	int lb_bits;
 	uint8_t *buf = NULL;
+	int16_t *bp16;
 	uint8_t *dptr;
 	size_t nread;
 	size_t smp_read;
 	size_t to_read;
 	size_t i;
 	size_t di;
+	size_t bytes_smp;
+	size_t wb_obytes;
 	int dbitn;
 	uint8_t bit;
 	int rc;
@@ -85,10 +88,12 @@ static int wav_load_direct_rec(rwaver_t *wr, rwave_params_t *params,
 		return ENOTSUP;
 	}
 
-	if (params->bits_smp != 8) {
-		printf("WAV file bits/smp != 8\n");
+	if (params->bits_smp != 8 && params->bits_smp != 16) {
+		printf("WAV file bits/smp != 8 or 16\n");
 		return ENOTSUP;
 	}
+
+	bytes_smp = params->bits_smp / 8;
 
 	printf("load direct recording block\n");
 	buf = calloc(1, wav_buf_size);
@@ -96,6 +101,8 @@ static int wav_load_direct_rec(rwaver_t *wr, rwave_params_t *params,
 		rc = ENOMEM;
 		goto error;
 	}
+
+	bp16 = (int16_t *) buf;
 
 	rc = tblock_direct_rec_create(&drec);
 	if (rc != 0)
@@ -120,10 +127,13 @@ static int wav_load_direct_rec(rwaver_t *wr, rwave_params_t *params,
 	lb_bits = 0;
 	while (true) {
 		/* Prevent exceeding maximum direct rec. block size */
-		if (data_len + wav_buf_size <= tb_drec_data_len_max)
+		wb_obytes = (wav_buf_size / bytes_smp + 7) / 8;
+		if (data_len + wb_obytes <= tb_drec_data_len_max) {
 			to_read = wav_buf_size;
-		else
-			to_read = tb_drec_data_len_max - data_len;
+		} else {
+			to_read = (tb_drec_data_len_max - data_len) * 8 *
+			    bytes_smp;
+		}
 
 		rc = rwave_read_samples(wr, buf, to_read, &nread);
 		if (rc != 0)
@@ -132,7 +142,7 @@ static int wav_load_direct_rec(rwaver_t *wr, rwave_params_t *params,
 		if (nread == 0)
 			break;
 
-		smp_read = nread;
+		smp_read = nread / bytes_smp;
 
 		di = drec->data_len;
 
@@ -156,7 +166,11 @@ static int wav_load_direct_rec(rwaver_t *wr, rwave_params_t *params,
 
 		/* Pack in new bits */
 		for (i = 0; i < smp_read; i++) {
-			bit = buf[i] > 0x7f;
+			if (bytes_smp == 1)
+				bit = buf[i] > 0x7f;
+			else
+				bit = (int16_t) uint16_t_le2host(bp16[i]) > 0;
+
 			drec->data[di] &= ~(1 << (7 - dbitn));
 			drec->data[di] |= bit << (7 - dbitn);
 
