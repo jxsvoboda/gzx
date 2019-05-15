@@ -64,5 +64,6 @@ extern int tape_text_create(tape_text_t **);
 extern void tape_text_destroy(tape_text_t *);
 extern int tblock_unknown_create(tblock_unknown_t **);
 extern void tblock_unknown_destroy(tblock_unknown_t *);
+extern const char *tape_btype_str(tape_btype_t);
 
 #endif

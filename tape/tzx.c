@@ -118,8 +118,6 @@ static int tzx_load_data(FILE *f, tape_t *tape)
 	size_t nread;
 	int rc;
 
-	printf("load standard speed data block\n");
-
 	nread = fread(&block, 1, sizeof(tzx_block_data_t), f);
 	if (nread != sizeof(tzx_block_data_t))
 		return EIO;
@@ -136,9 +134,6 @@ static int tzx_load_data(FILE *f, tape_t *tape)
 		rc = ENOMEM;
 		goto error;
 	}
-
-	printf("pause after:%u\n", (unsigned) data->pause_after);
-	printf("data len:%u\n", (unsigned) data->data_len);
 
 	nread = fread(data->data, 1, data->data_len, f);
 	if (nread != data->data_len) {
@@ -164,8 +159,6 @@ static int tzx_save_data(tblock_data_t *data, FILE *f)
 {
 	tzx_block_data_t block;
 	size_t nwr;
-
-	printf("save standard speed data block\n");
 
 	block.pause_after = host2uint16_t_le(data->pause_after);
 	block.data_len = host2uint16_t_le(data->data_len);
@@ -198,8 +191,6 @@ static int tzx_load_text(FILE *f, size_t *bremain, tape_text_t **rtext)
 	size_t nread;
 	int rc;
 
-	printf("load text\n");
-
 	if (*bremain < sizeof(tzx_text_t)) {
 		rc = EIO;
 		goto error;
@@ -211,8 +202,6 @@ static int tzx_load_text(FILE *f, size_t *bremain, tape_text_t **rtext)
 		goto error;
 	}
 
-	printf("text type:0x%x length=%u\n", tzxtext.text_type,
-	    tzxtext.text_len);
 	*bremain -= nread;
 
 	rc = tape_text_create(&text);
@@ -261,8 +250,6 @@ static int tzx_save_text(tape_text_t *text, FILE *f)
 	size_t nwr;
 	size_t slen;
 
-	printf("save text\n");
-
 	slen = strlen(text->text);
 	if (slen > 0xff)
 		return EINVAL;
@@ -298,15 +285,11 @@ static int tzx_load_archive_info(FILE *f, tape_t *tape)
 	uint8_t i;
 	int rc;
 
-	printf("load archive info\n");
 	nread = fread(&block, 1, sizeof(tzx_block_archive_info_t), f);
 	if (nread != sizeof(tzx_block_archive_info_t))
 		return EIO;
 
 	blen = uint16_t_le2host(block.block_len);
-	printf("block size:%u\n", (unsigned) blen);
-	printf("size of block header:%u\n", (unsigned) sizeof(tzx_block_archive_info_t));
-	printf("# of strings:%u\n", (unsigned) block.nstrings);
 
 	rc = tblock_archive_info_create(&ainfo);
 	if (rc != 0)
@@ -315,12 +298,10 @@ static int tzx_load_archive_info(FILE *f, tape_t *tape)
 	bremain = blen;
 
 	for (i = 0; i < block.nstrings; i++) {
-		printf("loading string %d\n", i);
 		rc = tzx_load_text(f, &bremain, &ttext);
 		if (rc != 0)
 			goto error;
 
-		printf("text is %d/'%s'\n", ttext->text_type, ttext->text);
 		ttext->ainfo = ainfo;
 		list_append(&ttext->lainfo, &ainfo->texts);
 	}
@@ -350,7 +331,6 @@ static int tzx_save_archive_info(tblock_archive_info_t *ainfo, FILE *f)
 	size_t slen;
 	int rc;
 
-	printf("save archive info\n");
 	ntexts = list_count(&ainfo->texts);
 	if (ntexts > 0xff)
 		return EINVAL;
@@ -371,7 +351,6 @@ static int tzx_save_archive_info(tblock_archive_info_t *ainfo, FILE *f)
 	if (bsize > 0xffff)
 		return EINVAL;
 
-	printf("block size: %u\n", (unsigned)bsize);
 	block.block_len = host2uint16_t_le(bsize);
 	block.nstrings = ntexts;
 
@@ -453,8 +432,6 @@ static int tzx_save_unknown(tblock_unknown_t *unknown, FILE *f)
 	tzx_block_unknown_t block;
 	size_t nwr;
 
-	printf("save unknown block\n");
-
 	block.block_len = host2uint16_t_le(unknown->block_len);
 
 	nwr = fwrite(&block, 1, sizeof(tzx_block_unknown_t), f);
@@ -498,7 +475,6 @@ int tzx_tape_load(const char *fname, tape_t **rtape)
 		goto error;
 	}
 
-	printf("validate header\n");
 	rc = tzx_header_validate(&header);
 	if (rc != 0) {
 		rc = EIO;
@@ -508,9 +484,7 @@ int tzx_tape_load(const char *fname, tape_t **rtape)
 	tape->version.major = header.major;
 	tape->version.minor = header.minor;
 
-	printf("read blocks\n");
 	while (true) {
-		printf("read block type\n");
 		/* Read block type */
 		nread = fread(&btype, 1, sizeof(uint8_t), f);
 		if (nread != sizeof(uint8_t)) {
@@ -521,7 +495,6 @@ int tzx_tape_load(const char *fname, tape_t **rtape)
 			goto error;
 		}
 
-		printf("process block\n");
 		switch (btype) {
 		case tzxb_data:
 			rc = tzx_load_data(f, tape);

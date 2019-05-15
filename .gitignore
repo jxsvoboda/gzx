@@ -1,4 +1,5 @@
 *.o
+/gtap
 /gzx
 /gzx-g
 /gzx-hos

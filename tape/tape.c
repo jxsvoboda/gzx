@@ -49,7 +49,6 @@
  * @param rtape Place to store pointer to new tape
  * @return Zero on success or error code
  */
-#include <stdio.h>
 int tape_create(tape_t **rtape)
 {
 	tape_t *tape;
@@ -60,7 +59,6 @@ int tape_create(tape_t **rtape)
 
 	list_initialize(&tape->blocks);
 
-	printf("Allocated tape=%p\n", tape);
 	*rtape = tape;
 	return 0;
 }
@@ -73,7 +71,6 @@ void tape_destroy(tape_t *tape)
 {
 	tape_block_t *block;
 
-	printf("Freeing tape=%p\n", tape);
 	if (tape == NULL)
 		return;
 
@@ -83,7 +80,6 @@ void tape_destroy(tape_t *tape)
 		block = tape_first(tape);
 	}
 
-	printf("Freeing tape=%p\n", tape);
 	free(tape);
 }
 
@@ -514,4 +510,80 @@ void tblock_unknown_destroy(tblock_unknown_t *unknown)
 
 	tape_block_destroy_base(unknown->block);
 	free(unknown);
+}
+
+/** Get short text description of block type.
+ *
+ * @param btype Block type
+ * @return Short string description
+ */
+const char *tape_btype_str(tape_btype_t btype)
+{
+	switch (btype) {
+	case tb_data:
+		return "Data";
+	case tb_turbo_data:
+		return "Turbo data";
+	case tb_tone:
+		return "Tone";
+	case tb_pulses:
+		return "Pulses";
+	case tb_pure_data:
+		return "Pure data";
+	case tb_direct_rec:
+		return "Direct recording";
+	case tb_csw_rec:
+		return "CSW recording";
+	case tb_gen_data:
+		return "Generalized data";
+	case tb_pause:
+		return "Pause (silence)";
+	case tb_stop:
+		return "Stop the tape";
+	case tb_group_start:
+		return "Group start";
+	case tb_group_end:
+		return "Group end";
+	case tb_jump:
+		return "Jump";
+	case tb_loop_start:
+		return "Loop start";
+	case tb_loop_end:
+		return "Loop end";
+	case tb_call_seq:
+		return "Call sequence";
+	case tb_return:
+		return "Return";
+	case tb_select:
+		return "Select";
+	case tb_stop_48k:
+		return "Stop if 48K";
+	case tb_set_lvl:
+		return "Set level";
+	case tb_text_desc:
+		return "Text description";
+	case tb_message:
+		return "Message";
+	case tb_archive_info:
+		return "Archive info";
+	case tb_hw_type:
+		return "Hardware type";
+	case tb_custom_info:
+		return "Custom info";
+	case tb_glue:
+		return "Glue";
+	case tb_c64_rom_data:
+		return "C64 ROM data";
+	case tb_c64_turbo_data:
+		return "C64 turbo data";
+	case tb_emu_info:
+		return "Emulation info";
+	case tb_snapshot:
+		return "Snapshot";
+	case tb_unknown:
+		return "Unknown";
+	}
+
+	assert(false);
+	return "Invalid";
 }

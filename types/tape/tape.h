@@ -64,7 +64,7 @@ typedef enum {
 	tb_data,
 	/** Turbo speed data block */
 	tb_turbo_data,
-	/** Pure tone data block */
+	/** Pure tone block */
 	tb_tone,
 	/** Sequence of pulses of various lenghts */
 	tb_pulses,

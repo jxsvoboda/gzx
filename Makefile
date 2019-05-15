@@ -65,6 +65,12 @@ sources_generic = \
     disasm.c \
     iorec.c
 
+sources_gtap_generic = \
+    adt/list.c \
+    tape/tape.c \
+    tape/tzx.c \
+    gtap.c
+
 sources = \
     $(sources_generic) \
     platform/sdl/byteorder.c \
@@ -76,6 +82,10 @@ sources = \
 sources_g = \
     $(sources) \
     z80g.c
+
+sources_gtap = \
+    $(sources_gtap_generic) \
+    platform/sdl/byteorder.c
 
 sources_w32 = \
     $(sources_generic) \
@@ -89,6 +99,10 @@ sources_w32_g = \
     $(sources_w32) \
     z80g.c
 
+sources_w32_gtap = \
+    $(sources_gtap_generic) \
+    platform/win/byteorder.c
+
 sources_helenos = \
     $(sources_generic) \
     platform/helenos/gfx.c \
@@ -99,34 +113,46 @@ sources_helenos_g = \
     $(sources_helenos) \
     z80g.c
 
+sources_helenos_gtap = \
+    $(sources_gtap)
+
 binary = gzx
 binary_g = gzx-g
+binary_gtap = gtap
 binary_w32 = gzx.exe
 binary_w32_g = gzx-g.exe
+binary_w32_gtap = gtap.exe
 binary_helenos = gzx-hos
 binary_helenos_g = gzx-g-hos
+binary_helenos_gtap = gtap-hos
 
 objects = $(sources:.c=.o)
 objects_g = $(sources_g:.c=.g.o)
+objects_gtap = $(sources_gtap:.c=.o)
 objects_w32 = $(sources_w32:.c=.w32.o)
 objects_w32_g = $(sources_w32_g:.c=.g.w32.o)
+objects_w32_gtap = $(sources_w32_gtap:.c=.g.w32.o)
 objects_helenos = $(sources_helenos:.c=.hos.o)
 objects_helenos_g = $(sources_helenos_g:.c=.g.hos.o)
+objects_helenos_gtap = $(sources_helenos_gtap:.c=.g.hos.o)
+
 headers = $(wildcard *.h */*.h */*/*.h)
 
 # Default target
-default: $(binary)
+default: $(binary) $(binary_gtap)
 
-all: $(binary) $(binary_g) $(binary_w32) $(binary_w32_g) $(binary_helenos) \
-    $(binary_helenos_g)
+all: $(binary) $(binary_g) $(binary_gtap) $(binary_w32) $(binary_w32_g) \
+    $(binary_w32_gtap) $(binary_helenos) $(binary_helenos_g) \
+    $(binary_helenos_gtap)
 
-w32: $(binary_w32) $(binary_w32_g)
-hos: $(binary_helenos) $(binary_helenos_g)
+w32: $(binary_w32) $(binary_w32_g) $(binary_w32_gtap)
+hos: $(binary_helenos) $(binary_helenos_g) $(binary_helenos_gtap)
 
 install-hos: hos
 	$(INSTALL) -d $(PREFIX_hos)/gzx
 	$(INSTALL) -T $(binary_helenos) $(PREFIX_hos)/gzx/gzx
-	$(INSTALL) -T $(binary_helenos_g) $(PREFIX_hos)/gzx/gzx_g
+	$(INSTALL) -T $(binary_helenos_g) $(PREFIX_hos)/gzx/gzx-g
+	$(INSTALL) -T $(binary_helenos_gtap) $(PREFIX_hos)/gzx/gtap
 	$(INSTALL) -T font.bin $(PREFIX_hos)/gzx/font.bin
 	$(INSTALL) -d $(PREFIX_hos)/gzx/roms
 	$(INSTALL) -T roms/zx48.rom $(PREFIX_hos)/gzx/roms/zx48.rom
@@ -139,14 +165,16 @@ uninstall-hos:
 	rm -f $(PREFIX_hos)/gzx/roms/zx128_1.rom
 	rmdir $(PREFIX_hos)/gzx/roms
 	rm -f $(PREFIX_hos)/gzx/gzx
-	rm -f $(PREFIX_hos)/gzx/gzx_g
+	rm -f $(PREFIX_hos)/gzx/gzx-g
+	rm -f $(PREFIX_hos)/gzx/gtap
 	rm -f $(PREFIX_hos)/gzx/font.bin
 	rmdir $(PREFIX_hos)/gzx
 
 test-hos: install-hos
 	helenos-test
 
-dist: $(binary) $(binary_g) $(binary_w32) $(binary_w32_g)
+dist: $(binary) $(binary_g) $(binary_gtap) $(binary_w32) $(binary_w32_g) \
+     $(binary_w32_gtap)
 	mkdir -p $(distdir)
 	cp -t $(distdir) $^
 	cp -r -t $(distdir) roms
@@ -162,16 +190,25 @@ $(binary): $(objects)
 $(binary_g): $(objects_g)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
+$(binary_gtap): $(objects_gtap)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+
 $(binary_w32): $(objects_w32)
-	$(CC_w32) $(CFLAGS) -o $@ $^ $(LIBS_w32)
+	$(CC_w32) $(CFLAGS_w32) -o $@ $^ $(LIBS_w32)
 
 $(binary_w32_g): $(objects_w32_g)
-	$(CC_w32) $(CFLAGS) -o $@ $^ $(LIBS_w32)
+	$(CC_w32) $(CFLAGS_w32) -o $@ $^ $(LIBS_w32)
+
+$(binary_w32_gtap): $(objects_w32_gtap)
+	$(CC_w32) $(CFLAGS_w32) -o $@ $^ $(LIBS_w32)
 
 $(binary_helenos): $(objects_helenos)
 	$(LD_helenos) -o $@ $^ $(LIBS_helenos)
 
 $(binary_helenos_g): $(objects_helenos_g)
+	$(LD_helenos) -o $@ $^ $(LIBS_helenos)
+
+$(binary_helenos_gtap): $(objects_helenos_gtap)
 	$(LD_helenos) -o $@ $^ $(LIBS_helenos)
 
 $(objects): $(headers)
@@ -192,7 +229,9 @@ $(objects): $(headers)
 	$(CC_helenos) -c $(CFLAGS_helenos_g) -o $@ $<
 
 clean:
-	rm -f *.o */*.o */*/*.o $(binary) $(binary_g) $(binary_w32) $(binary_w32_g)
+	rm -f *.o */*.o */*/*.o $(binary) $(binary_g) $(binary_gtap) \
+	    $(binary_w32) $(binary_w32_g) $(binary_w32_gtap) $(binary_helenos) \
+	    $(binary_helenos_g) $(binary_helenos_gtap)
 	rm -rf distrib
 
 backup: clean
