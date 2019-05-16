@@ -207,6 +207,9 @@ void tape_block_destroy(tape_block_t *block)
 	case tb_data:
 		tblock_data_destroy((tblock_data_t *) block->ext);
 		break;
+	case tb_turbo_data:
+		tblock_turbo_data_destroy((tblock_turbo_data_t *) block->ext);
+		break;
 	case tb_direct_rec:
 		tblock_direct_rec_destroy((tblock_direct_rec_t *) block->ext);
 		break;
@@ -225,7 +228,7 @@ void tape_block_destroy(tape_block_t *block)
 
 /** Create standard speed data.
  *
- * @param rdata Place to store pointer to new archive info
+ * @param rdata Place to store pointer to new standard speed data
  * @return Zero on success or error code
  */
 int tblock_data_create(tblock_data_t **rdata)
@@ -270,9 +273,56 @@ void tblock_data_destroy(tblock_data_t *data)
 	free(data);
 }
 
+/** Create turbo speed data.
+ *
+ * @param rdata Place to store pointer to new turbo speed data
+ * @return Zero on success or error code
+ */
+int tblock_turbo_data_create(tblock_turbo_data_t **rtdata)
+{
+	tblock_turbo_data_t *tdata;
+	tape_block_t *block = NULL;
+	int rc;
+
+	tdata = calloc(1, sizeof(tblock_turbo_data_t));
+	if (tdata == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	rc = tape_block_create(tb_turbo_data, tdata, &block);
+	if (rc != 0)
+		goto error;
+
+	tdata->block = block;
+
+	*rtdata = tdata;
+	return 0;
+error:
+	if (tdata != NULL)
+		free(tdata);
+	return rc;
+}
+
+/** Destroy turbo speed data.
+ *
+ * @param data Turbo speed data
+ */
+void tblock_turbo_data_destroy(tblock_turbo_data_t *tdata)
+{
+	if (tdata == NULL)
+		return;
+
+	if (tdata->data != NULL)
+		free(tdata->data);
+
+	tape_block_destroy_base(tdata->block);
+	free(tdata);
+}
+
 /** Create direct recording.
  *
- * @param rdata Place to store pointer to new archive info
+ * @param rdata Place to store pointer to new direct recording
  * @return Zero on success or error code
  */
 int tblock_direct_rec_create(tblock_direct_rec_t **rdrec)

@@ -120,6 +120,28 @@ typedef struct {
 	uint16_t data_len;
 } __attribute__((packed)) tzx_block_data_t;
 
+/** Turbo speed data header */
+typedef struct {
+	/** Length of pilot pulse (T) */
+	uint16_t pilot_len;
+	/** Length of first sync pulse (T) */
+	uint16_t sync1_len;
+	/** Length of second sync pulse (T) */
+	uint16_t sync2_len;
+	/** Length of zero bit pulse (T) */
+	uint16_t zero_len;
+	/** Length of one bit pulse (T) */
+	uint16_t one_len;
+	/** Number of pulses in pilot tone */
+	uint16_t pilot_pulses;
+	/** Used bits in last byte */
+	uint8_t lb_bits;
+	/** Pause after this block in ms */
+	uint16_t pause_after;
+	/** Data length in bytes */
+	uint8_t data_len[3];
+} __attribute__((packed)) tzx_block_turbo_data_t;
+
 /** Text structure */
 typedef struct {
 	/** Text identification */

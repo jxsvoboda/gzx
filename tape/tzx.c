@@ -59,6 +59,8 @@ static uint8_t tzx_block_type(tape_block_t *block)
 	switch (block->btype) {
 	case tb_data:
 		return tzxb_data;
+	case tb_turbo_data:
+		return tzxb_turbo_data;
 	case tb_archive_info:
 		return tzxb_archive_info;
 	case tb_unknown:
@@ -169,6 +171,95 @@ static int tzx_save_data(tblock_data_t *data, FILE *f)
 
 	nwr = fwrite(data->data, 1, data->data_len, f);
 	if (nwr != data->data_len)
+		return EIO;
+
+	return 0;
+}
+
+/** Load turbo speed data block.
+ *
+ * @param f File to read from
+ * @param tape to add block to
+ * @return Zero on success or error code
+ */
+static int tzx_load_turbo_data(FILE *f, tape_t *tape)
+{
+	tzx_block_turbo_data_t block;
+	tblock_turbo_data_t *tdata;
+	size_t nread;
+	int rc;
+
+	nread = fread(&block, 1, sizeof(tzx_block_turbo_data_t), f);
+	if (nread != sizeof(tzx_block_turbo_data_t))
+		return EIO;
+
+	rc = tblock_turbo_data_create(&tdata);
+	if (rc != 0)
+		goto error;
+
+	tdata->pilot_len = uint16_t_le2host(block.pilot_len);
+	tdata->sync1_len = uint16_t_le2host(block.sync1_len);
+	tdata->sync2_len = uint16_t_le2host(block.sync2_len);
+	tdata->zero_len = uint16_t_le2host(block.zero_len);
+	tdata->one_len = uint16_t_le2host(block.one_len);
+	tdata->pilot_pulses = uint16_t_le2host(block.pilot_pulses);
+	tdata->lb_bits = block.lb_bits;
+
+	tdata->pause_after = uint16_t_le2host(block.pause_after);
+	tdata->data_len = block.data_len[0] +
+	    ((uint32_t) block.data_len[1] << 8) +
+	    ((uint32_t) block.data_len[2] << 16);
+
+	tdata->data = calloc(tdata->data_len, 1);
+	if (tdata->data == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	nread = fread(tdata->data, 1, tdata->data_len, f);
+	if (nread != tdata->data_len) {
+		rc = EIO;
+		goto error;
+	}
+
+	tape_append(tape, tdata->block);
+	return 0;
+error:
+	if (tdata != NULL)
+		tblock_turbo_data_destroy(tdata);
+	return rc;
+}
+
+/** Save turbo speed data block.
+ *
+ * @param tdata Turbo speed data
+ * @param f File to write to
+ * @return Zero on success or error code
+ */
+static int tzx_save_turbo_data(tblock_turbo_data_t *tdata, FILE *f)
+{
+	tzx_block_turbo_data_t block;
+	size_t nwr;
+	int i;
+
+	block.pilot_len = host2uint16_t_le(tdata->pilot_len);
+	block.sync1_len = host2uint16_t_le(tdata->sync1_len);
+	block.sync2_len = host2uint16_t_le(tdata->sync2_len);
+	block.zero_len = host2uint16_t_le(tdata->zero_len);
+	block.one_len = host2uint16_t_le(tdata->one_len);
+	block.pilot_pulses = host2uint16_t_le(tdata->pilot_pulses);
+	block.lb_bits = tdata->lb_bits;
+
+	block.pause_after = host2uint16_t_le(tdata->pause_after);
+	for (i = 0; i < 3; i++)
+		block.data_len[i] = (tdata->data_len >> (8 * i)) & 0xff;
+
+	nwr = fwrite(&block, 1, sizeof(tzx_block_turbo_data_t), f);
+	if (nwr != sizeof(tzx_block_turbo_data_t))
+		return EIO;
+
+	nwr = fwrite(tdata->data, 1, tdata->data_len, f);
+	if (nwr != tdata->data_len)
 		return EIO;
 
 	return 0;
@@ -499,6 +590,9 @@ int tzx_tape_load(const char *fname, tape_t **rtape)
 		case tzxb_data:
 			rc = tzx_load_data(f, tape);
 			break;
+		case tzxb_turbo_data:
+			rc = tzx_load_turbo_data(f, tape);
+			break;
 		case tzxb_archive_info:
 			rc = tzx_load_archive_info(f, tape);
 			break;
@@ -571,6 +665,10 @@ int tzx_tape_save(tape_t *tape, const char *fname)
 		switch (block->btype) {
 		case tb_data:
 			rc = tzx_save_data((tblock_data_t *) block->ext, f);
+			break;
+		case tb_turbo_data:
+			rc = tzx_save_turbo_data(
+			    (tblock_turbo_data_t *) block->ext, f);
 			break;
 		case tb_archive_info:
 			rc = tzx_save_archive_info((tblock_archive_info_t *)

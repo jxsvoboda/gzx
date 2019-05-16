@@ -52,6 +52,8 @@ extern void tape_append(tape_t *, tape_block_t *);
 extern void tape_block_destroy(tape_block_t *);
 extern int tblock_data_create(tblock_data_t **);
 extern void tblock_data_destroy(tblock_data_t *);
+extern int tblock_turbo_data_create(tblock_turbo_data_t **);
+extern void tblock_turbo_data_destroy(tblock_turbo_data_t *);
 extern int tblock_direct_rec_create(tblock_direct_rec_t **);
 extern void tblock_direct_rec_destroy(tblock_direct_rec_t *);
 extern int tblock_archive_info_create(tblock_archive_info_t **);
