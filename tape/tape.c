@@ -213,6 +213,12 @@ void tape_block_destroy(tape_block_t *block)
 	case tb_direct_rec:
 		tblock_direct_rec_destroy((tblock_direct_rec_t *) block->ext);
 		break;
+	case tb_pause:
+		tblock_pause_destroy((tblock_pause_t *) block->ext);
+		break;
+	case tb_stop:
+		tblock_stop_destroy((tblock_stop_t *) block->ext);
+		break;
 	case tb_archive_info:
 		tblock_archive_info_destroy((tblock_archive_info_t *)
 		    block->ext);
@@ -365,6 +371,94 @@ void tblock_direct_rec_destroy(tblock_direct_rec_t *drec)
 
 	tape_block_destroy_base(drec->block);
 	free(drec);
+}
+
+/** Create pause (silence).
+ *
+ * @param rpause Place to store pointer to new pause (silence)
+ * @return Zero on success or error code
+ */
+int tblock_pause_create(tblock_pause_t **rpause)
+{
+	tblock_pause_t *pause;
+	tape_block_t *block = NULL;
+	int rc;
+
+	pause = calloc(1, sizeof(tblock_pause_t));
+	if (pause == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	rc = tape_block_create(tb_pause, pause, &block);
+	if (rc != 0)
+		goto error;
+
+	pause->block = block;
+
+	*rpause = pause;
+	return 0;
+error:
+	if (pause != NULL)
+		free(pause);
+	return rc;
+}
+
+/** Destroy pause (silence).
+ *
+ * @param pause Pause (silence)
+ */
+void tblock_pause_destroy(tblock_pause_t *pause)
+{
+	if (pause == NULL)
+		return;
+
+	tape_block_destroy_base(pause->block);
+	free(pause);
+}
+
+/** Create 'Stop the Tape'.
+ *
+ * @param rstop Place to store pointer to new 'Stop the Tape'
+ * @return Zero on success or error code
+ */
+int tblock_stop_create(tblock_stop_t **rstop)
+{
+	tblock_stop_t *stop;
+	tape_block_t *block = NULL;
+	int rc;
+
+	stop = calloc(1, sizeof(tblock_stop_t));
+	if (stop == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	rc = tape_block_create(tb_stop, stop, &block);
+	if (rc != 0)
+		goto error;
+
+	stop->block = block;
+
+	*rstop = stop;
+	return 0;
+error:
+	if (stop != NULL)
+		free(stop);
+	return rc;
+}
+
+/** Destroy 'Stop the Tape'.
+ *
+ * @param stop Archive info
+ */
+void tblock_stop_destroy(tblock_stop_t *stop)
+{
+	if (stop == NULL)
+		return;
+
+	tape_block_destroy_base(stop->block);
+	free(stop);
 }
 
 /** Create archive info.
@@ -587,7 +681,7 @@ const char *tape_btype_str(tape_btype_t btype)
 	case tb_gen_data:
 		return "Generalized data";
 	case tb_pause:
-		return "Pause (silence)";
+		return "Pause";
 	case tb_stop:
 		return "Stop the tape";
 	case tb_group_start:

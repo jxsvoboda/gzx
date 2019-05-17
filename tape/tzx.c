@@ -61,6 +61,10 @@ static uint8_t tzx_block_type(tape_block_t *block)
 		return tzxb_data;
 	case tb_turbo_data:
 		return tzxb_turbo_data;
+	case tb_pause:
+		return tzxb_pause_stop;
+	case tb_stop:
+		return tzxb_pause_stop;
 	case tb_archive_info:
 		return tzxb_archive_info;
 	case tb_unknown:
@@ -260,6 +264,92 @@ static int tzx_save_turbo_data(tblock_turbo_data_t *tdata, FILE *f)
 
 	nwr = fwrite(tdata->data, 1, tdata->data_len, f);
 	if (nwr != tdata->data_len)
+		return EIO;
+
+	return 0;
+}
+
+/** Load pause (silence) or 'Stop the Tape'.
+ *
+ * @param f File to read from
+ * @param tape to add block to
+ * @return Zero on success or error code
+ */
+static int tzx_load_pause_stop(FILE *f, tape_t *tape)
+{
+	tzx_block_pause_t block;
+	tblock_pause_t *pause;
+	tblock_stop_t *stop;
+	uint16_t pause_len;
+	size_t nread;
+	int rc;
+
+	printf("Load pause/stop\n");
+	nread = fread(&block, 1, sizeof(tzx_block_pause_t), f);
+	if (nread != sizeof(tzx_block_pause_t))
+		return EIO;
+
+	pause_len = uint16_t_le2host(block.pause_len);
+	if (pause_len != 0) {
+		rc = tblock_pause_create(&pause);
+		if (rc != 0)
+			goto error;
+
+		pause->pause_len = pause_len;
+		tape_append(tape, pause->block);
+	} else {
+		rc = tblock_stop_create(&stop);
+		if (rc != 0)
+			goto error;
+
+		tape_append(tape, stop->block);
+	}
+
+	return 0;
+error:
+	if (pause != NULL)
+		tblock_pause_destroy(pause);
+	if (stop != NULL)
+		tblock_stop_destroy(stop);
+	return rc;
+}
+
+/** Save pause (silence).
+ *
+ * @param data Standard speed data
+ * @param f File to write to
+ * @return Zero on success or error code
+ */
+static int tzx_save_pause(tblock_pause_t *pause, FILE *f)
+{
+	tzx_block_pause_t block;
+	size_t nwr;
+
+	block.pause_len = host2uint16_t_le(pause->pause_len);
+
+	nwr = fwrite(&block, 1, sizeof(tzx_block_pause_t), f);
+	if (nwr != sizeof(tzx_block_pause_t))
+		return EIO;
+
+	return 0;
+}
+
+
+/** Save 'Stop the tape'.
+ *
+ * @param stop 'Stop the tape'
+ * @param f File to write to
+ * @return Zero on success or error code
+ */
+static int tzx_save_stop(tblock_stop_t *stop, FILE *f)
+{
+	tzx_block_pause_t block;
+	size_t nwr;
+
+	block.pause_len = 0;
+
+	nwr = fwrite(&block, 1, sizeof(tzx_block_pause_t), f);
+	if (nwr != sizeof(tzx_block_pause_t))
 		return EIO;
 
 	return 0;
@@ -593,6 +683,9 @@ int tzx_tape_load(const char *fname, tape_t **rtape)
 		case tzxb_turbo_data:
 			rc = tzx_load_turbo_data(f, tape);
 			break;
+		case tzxb_pause_stop:
+			rc = tzx_load_pause_stop(f, tape);
+			break;
 		case tzxb_archive_info:
 			rc = tzx_load_archive_info(f, tape);
 			break;
@@ -669,6 +762,12 @@ int tzx_tape_save(tape_t *tape, const char *fname)
 		case tb_turbo_data:
 			rc = tzx_save_turbo_data(
 			    (tblock_turbo_data_t *) block->ext, f);
+			break;
+		case tb_pause:
+			rc = tzx_save_pause((tblock_pause_t *) block->ext, f);
+			break;
+		case tb_stop:
+			rc = tzx_save_stop((tblock_stop_t *) block->ext, f);
 			break;
 		case tb_archive_info:
 			rc = tzx_save_archive_info((tblock_archive_info_t *)
