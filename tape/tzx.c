@@ -65,6 +65,8 @@ static uint8_t tzx_block_type(tape_block_t *block)
 		return tzxb_pause_stop;
 	case tb_stop:
 		return tzxb_pause_stop;
+	case tb_text_desc:
+		return tzxb_text_desc;
 	case tb_archive_info:
 		return tzxb_archive_info;
 	case tb_unknown:
@@ -284,7 +286,6 @@ static int tzx_load_pause_stop(FILE *f, tape_t *tape)
 	size_t nread;
 	int rc;
 
-	printf("Load pause/stop\n");
 	nread = fread(&block, 1, sizeof(tzx_block_pause_t), f);
 	if (nread != sizeof(tzx_block_pause_t))
 		return EIO;
@@ -350,6 +351,78 @@ static int tzx_save_stop(tblock_stop_t *stop, FILE *f)
 
 	nwr = fwrite(&block, 1, sizeof(tzx_block_pause_t), f);
 	if (nwr != sizeof(tzx_block_pause_t))
+		return EIO;
+
+	return 0;
+}
+
+/** Load text description.
+ *
+ * @param f File to read from
+ * @param tape to add block to
+ * @return Zero on success or an error code
+ */
+static int tzx_load_text_desc(FILE *f, tape_t *tape)
+{
+	tblock_text_desc_t *tdesc = NULL;
+	tzx_block_text_desc_t block;
+	size_t nread;
+	int rc;
+
+	nread = fread(&block, 1, sizeof(tzx_block_text_desc_t), f);
+	if (nread != sizeof(tzx_block_text_desc_t)) {
+		rc = EIO;
+		goto error;
+	}
+
+	rc = tblock_text_desc_create(&tdesc);
+	if (rc != 0)
+		goto error;
+
+	tdesc->text = calloc(block.text_len + 1, 1);
+	if (tdesc->text == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	nread = fread(tdesc->text, 1, block.text_len, f);
+	if (nread != block.text_len)
+		goto error;
+
+	tdesc->text[block.text_len] = '\0';
+
+	tape_append(tape, tdesc->block);
+	return 0;
+error:
+	if (tdesc != NULL)
+		tblock_text_desc_destroy(tdesc);
+	return rc;
+}
+
+/** Save text description.
+ *
+ * @param tdesc Text description
+ * @param f File to write to
+ * @return Zero on success, EIO on I/O error, EINVAL if text is not valid
+ */
+static int tzx_save_text_desc(tblock_text_desc_t *tdesc, FILE *f)
+{
+	tzx_block_text_desc_t block;
+	size_t nwr;
+	size_t slen;
+
+	slen = strlen(tdesc->text);
+	if (slen > 0xff)
+		return EINVAL;
+
+	block.text_len = slen;
+
+	nwr = fwrite(&block, 1, sizeof(tzx_block_text_desc_t), f);
+	if (nwr != sizeof(tzx_block_text_desc_t))
+		return EIO;
+
+	nwr = fwrite(tdesc->text, 1, slen, f);
+	if (nwr != slen)
 		return EIO;
 
 	return 0;
@@ -686,6 +759,9 @@ int tzx_tape_load(const char *fname, tape_t **rtape)
 		case tzxb_pause_stop:
 			rc = tzx_load_pause_stop(f, tape);
 			break;
+		case tzxb_text_desc:
+			rc = tzx_load_text_desc(f, tape);
+			break;
 		case tzxb_archive_info:
 			rc = tzx_load_archive_info(f, tape);
 			break;
@@ -768,6 +844,10 @@ int tzx_tape_save(tape_t *tape, const char *fname)
 			break;
 		case tb_stop:
 			rc = tzx_save_stop((tblock_stop_t *) block->ext, f);
+			break;
+		case tb_text_desc:
+			rc = tzx_save_text_desc((tblock_text_desc_t *)
+			    block->ext, f);
 			break;
 		case tb_archive_info:
 			rc = tzx_save_archive_info((tblock_archive_info_t *)

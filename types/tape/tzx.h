@@ -150,11 +150,17 @@ typedef struct {
 	uint8_t text_len;
 } __attribute__((packed)) tzx_text_t;
 
-/** Pause (silence) or 'Stop the Tape' */
+/** Pause (silence) or 'Stop the Tape' header */
 typedef struct {
 	/** Pause duration in ms or zero to stop the tape */
 	uint16_t pause_len;
 } __attribute__((packed)) tzx_block_pause_t;
+
+/** Text description header */
+typedef struct {
+	/** Length of text string */
+	uint8_t text_len;
+} __attribute__((packed)) tzx_block_text_desc_t;
 
 /** Archive info header */
 typedef struct {

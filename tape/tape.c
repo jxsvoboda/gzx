@@ -219,6 +219,9 @@ void tape_block_destroy(tape_block_t *block)
 	case tb_stop:
 		tblock_stop_destroy((tblock_stop_t *) block->ext);
 		break;
+	case tb_text_desc:
+		tblock_text_desc_destroy((tblock_text_desc_t *) block->ext);
+		break;
 	case tb_archive_info:
 		tblock_archive_info_destroy((tblock_archive_info_t *)
 		    block->ext);
@@ -459,6 +462,53 @@ void tblock_stop_destroy(tblock_stop_t *stop)
 
 	tape_block_destroy_base(stop->block);
 	free(stop);
+}
+
+/** Create text description.
+ *
+ * @param rtdesc Place to store pointer to new text description
+ * @return Zero on success or error code
+ */
+int tblock_text_desc_create(tblock_text_desc_t **rtdesc)
+{
+	tblock_text_desc_t *tdesc;
+	tape_block_t *block = NULL;
+	int rc;
+
+	tdesc = calloc(1, sizeof(tblock_text_desc_t));
+	if (tdesc == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	rc = tape_block_create(tb_text_desc, tdesc, &block);
+	if (rc != 0)
+		goto error;
+
+	tdesc->block = block;
+
+	*rtdesc = tdesc;
+	return 0;
+error:
+	if (tdesc != NULL)
+		free(tdesc);
+	return rc;
+}
+
+/** Destroy text description.
+ *
+ * @param tdesc Text description
+ */
+void tblock_text_desc_destroy(tblock_text_desc_t *tdesc)
+{
+	if (tdesc == NULL)
+		return;
+
+	if (tdesc->text != NULL)
+		free(tdesc->text);
+
+	tape_block_destroy_base(tdesc->block);
+	free(tdesc);
 }
 
 /** Create archive info.
