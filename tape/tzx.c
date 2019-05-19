@@ -69,6 +69,8 @@ static uint8_t tzx_block_type(tape_block_t *block)
 		return tzxb_text_desc;
 	case tb_archive_info:
 		return tzxb_archive_info;
+	case tb_hw_type:
+		return tzxb_hw_type;
 	case tb_unknown:
 		unknown = (tblock_unknown_t *) block->ext;
 		return unknown->block_type;
@@ -624,6 +626,144 @@ static int tzx_save_archive_info(tblock_archive_info_t *ainfo, FILE *f)
 	return 0;
 }
 
+/** Load hardware info.
+ *
+ * This is part of hardware type.
+ *
+ * @param f File to read from
+ * @param rhwinfo Place to store pointer to new hardware info
+ * @return Zero on success or an error code
+ */
+static int tzx_load_hwinfo(FILE *f, tape_hwinfo_t **rhwinfo)
+{
+	tape_hwinfo_t *hwinfo = NULL;
+	tzx_hwinfo_t tzxhwinfo;
+	size_t nread;
+	int rc;
+
+	printf("Load hardware info\n");
+	nread = fread(&tzxhwinfo, 1, sizeof(tzx_hwinfo_t), f);
+	if (nread != sizeof(tzx_hwinfo_t)) {
+		rc = EIO;
+		goto error;
+	}
+
+	rc = tape_hwinfo_create(&hwinfo);
+	if (rc != 0)
+		goto error;
+
+	hwinfo->hwtype = tzxhwinfo.hw_type;
+	hwinfo->hwid = tzxhwinfo.hw_id;
+	hwinfo->hwinfo = tzxhwinfo.hw_info;
+
+	*rhwinfo = hwinfo;
+	return 0;
+error:
+	if (hwinfo != NULL)
+		tape_hwinfo_destroy(hwinfo);
+	return rc;
+}
+
+/** Save hardware info.
+ *
+ * This is part of hardware type.
+ *
+ * @param hwinfo Hardware info
+ * @param f File to write to
+ * @return Zero on success, EIO on I/O error, EINVAL if text is not valid
+ */
+static int tzx_save_hwinfo(tape_hwinfo_t *hwinfo, FILE *f)
+{
+	tzx_hwinfo_t tzxhwinfo;
+	size_t nwr;
+
+	tzxhwinfo.hw_type = hwinfo->hwtype;
+	tzxhwinfo.hw_id = hwinfo->hwid;
+	tzxhwinfo.hw_info = hwinfo->hwinfo;
+
+	nwr = fwrite(&tzxhwinfo, 1, sizeof(tzx_hwinfo_t), f);
+	if (nwr != sizeof(tzx_hwinfo_t))
+		return EIO;
+
+	return 0;
+}
+
+/** Load hardware type.
+ *
+ * @param f File to read from
+ * @param tape to add block to
+ * @return Zero on success or error code
+ */
+static int tzx_load_hw_type(FILE *f, tape_t *tape)
+{
+	tzx_block_hw_type_t block;
+	tblock_hw_type_t *hwtype;
+	tape_hwinfo_t *hwinfo = NULL;
+	size_t nread;
+	uint8_t i;
+	int rc;
+
+	nread = fread(&block, 1, sizeof(tzx_block_hw_type_t), f);
+	if (nread != sizeof(tzx_block_hw_type_t))
+		return EIO;
+
+	rc = tblock_hw_type_create(&hwtype);
+	if (rc != 0)
+		goto error;
+
+	for (i = 0; i < block.ninfos; i++) {
+		rc = tzx_load_hwinfo(f, &hwinfo);
+		if (rc != 0)
+			goto error;
+
+		hwinfo->hw_type = hwtype;
+		list_append(&hwinfo->lhw_type, &hwtype->hwinfos);
+	}
+
+	tape_append(tape, hwtype->block);
+
+	return 0;
+error:
+	if (hwtype != NULL)
+		tblock_hw_type_destroy(hwtype);
+	return rc;
+}
+
+/** Save hardware type.
+ *
+ * @param hwtype Hardware type
+ * @param f File to write to
+ * @return Zero on success or error code
+ */
+static int tzx_save_hw_type(tblock_hw_type_t *hwtype, FILE *f)
+{
+	tzx_block_hw_type_t block;
+	tape_hwinfo_t *hwinfo;
+	size_t nwr;
+	unsigned long ninfos;
+	int rc;
+
+	ninfos = list_count(&hwtype->hwinfos);
+	if (ninfos > 0xff)
+		return EINVAL;
+
+	block.ninfos = ninfos;
+
+	nwr = fwrite(&block, 1, sizeof(tzx_block_hw_type_t), f);
+	if (nwr != sizeof(tzx_block_hw_type_t))
+		return EIO;
+
+	hwinfo = tblock_hw_type_first(hwtype);
+	while (hwinfo != NULL) {
+		rc = tzx_save_hwinfo(hwinfo, f);
+		if (rc != 0)
+			return rc;
+
+		hwinfo = tblock_hw_type_next(hwinfo);
+	}
+
+	return 0;
+}
 
 /** Load unknown block conforming to the extension rule.
  *
@@ -765,6 +905,9 @@ int tzx_tape_load(const char *fname, tape_t **rtape)
 		case tzxb_archive_info:
 			rc = tzx_load_archive_info(f, tape);
 			break;
+		case tzxb_hw_type:
+			rc = tzx_load_hw_type(f, tape);
+			break;
 		default:
 			rc = tzx_load_unknown(f, btype, tape);
 			break;
@@ -851,6 +994,10 @@ int tzx_tape_save(tape_t *tape, const char *fname)
 			break;
 		case tb_archive_info:
 			rc = tzx_save_archive_info((tblock_archive_info_t *)
+			    block->ext, f);
+			break;
+		case tb_hw_type:
+			rc = tzx_save_hw_type((tblock_hw_type_t *)
 			    block->ext, f);
 			break;
 		default:

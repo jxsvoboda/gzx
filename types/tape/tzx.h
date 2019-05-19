@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * TZX file format types
  *
- * Copyright (c) 1999-2018 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -142,14 +142,6 @@ typedef struct {
 	uint8_t data_len[3];
 } __attribute__((packed)) tzx_block_turbo_data_t;
 
-/** Text structure */
-typedef struct {
-	/** Text identification */
-	uint8_t text_type;
-	/** Length of text string */
-	uint8_t text_len;
-} __attribute__((packed)) tzx_text_t;
-
 /** Pause (silence) or 'Stop the Tape' header */
 typedef struct {
 	/** Pause duration in ms or zero to stop the tape */
@@ -162,6 +154,14 @@ typedef struct {
 	uint8_t text_len;
 } __attribute__((packed)) tzx_block_text_desc_t;
 
+/** Text structure */
+typedef struct {
+	/** Text identification */
+	uint8_t text_type;
+	/** Length of text string */
+	uint8_t text_len;
+} __attribute__((packed)) tzx_text_t;
+
 /** Archive info header */
 typedef struct {
 	/** Block length */
@@ -169,6 +169,22 @@ typedef struct {
 	/** Number of strings */
 	uint8_t nstrings;
 } __attribute__((packed)) tzx_block_archive_info_t;
+
+/** Hardware info */
+typedef struct {
+	/** Hardware type */
+	uint8_t hw_type;
+	/** Hardware ID */
+	uint8_t hw_id;
+	/** Hardware information */
+	uint8_t hw_info;
+} __attribute__((packed)) tzx_hwinfo_t;
+
+/** Hardware type */
+typedef struct {
+	/** Number of hardware info structures */
+	uint8_t ninfos;
+} __attribute__((packed)) tzx_block_hw_type_t;
 
 /** Unkown block header (conforming to the extension rule) */
 typedef struct {

@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Spectrum tape
  *
- * Copyright (c) 1999-2018 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -225,6 +225,9 @@ void tape_block_destroy(tape_block_t *block)
 	case tb_archive_info:
 		tblock_archive_info_destroy((tblock_archive_info_t *)
 		    block->ext);
+		break;
+	case tb_hw_type:
+		tblock_hw_type_destroy((tblock_hw_type_t *) block->ext);
 		break;
 	case tb_unknown:
 		tblock_unknown_destroy((tblock_unknown_t *) block->ext);
@@ -663,6 +666,155 @@ void tape_text_destroy(tape_text_t *text)
 	free(text);
 }
 
+/** Create hardware type.
+ *
+ * @param rhwtype Place to store pointer to new hardware type
+ * @return Zero on success or error code
+ */
+int tblock_hw_type_create(tblock_hw_type_t **rhwtype)
+{
+	tblock_hw_type_t *hwtype;
+	tape_block_t *block = NULL;
+	int rc;
+
+	hwtype = calloc(1, sizeof(tblock_hw_type_t));
+	if (hwtype == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	rc = tape_block_create(tb_hw_type, hwtype, &block);
+	if (rc != 0)
+		goto error;
+
+	hwtype->block = block;
+	list_initialize(&hwtype->hwinfos);
+
+	*rhwtype = hwtype;
+	return 0;
+error:
+	if (hwtype != NULL)
+		free(hwtype);
+	return rc;
+}
+
+/** Destroy hardware type.
+ *
+ * @param hwtype Hardware type
+ */
+void tblock_hw_type_destroy(tblock_hw_type_t *hwtype)
+{
+	tape_hwinfo_t *hwinfo;
+
+	if (hwtype == NULL)
+		return;
+
+	hwinfo = tblock_hw_type_first(hwtype);
+	while (hwinfo != NULL) {
+		tape_hwinfo_destroy(hwinfo);
+		hwinfo = tblock_hw_type_first(hwtype);
+	}
+
+	tape_block_destroy_base(hwtype->block);
+	free(hwtype);
+}
+
+/** Get first hardware info of hardware type.
+ *
+ * @param hwtype Hardware type
+ * @return First hardware info or @c NULL
+ */
+tape_hwinfo_t *tblock_hw_type_first(tblock_hw_type_t *hwtype)
+{
+	link_t *link;
+
+	link = list_first(&hwtype->hwinfos);
+	if (link == NULL)
+		return NULL;
+
+	return list_get_instance(link, tape_hwinfo_t, lhw_type);
+}
+
+/** Get last hardware info of hardware type.
+ *
+ * @param hwtype Hardware type
+ * @return Last hardware info or @c NULL
+ */
+tape_hwinfo_t *tblock_hw_type_last(tblock_hw_type_t *hwtype)
+{
+	link_t *link;
+
+	link = list_last(&hwtype->hwinfos);
+	if (link == NULL)
+		return NULL;
+
+	return list_get_instance(link, tape_hwinfo_t, lhw_type);
+}
+
+/** Get next hardware info of hardware type.
+ *
+ * @param cur Current hardware info
+ * @return Next hardware info or @c NULL
+ */
+tape_hwinfo_t *tblock_hw_type_next(tape_hwinfo_t *cur)
+{
+	link_t *link;
+
+	link = list_next(&cur->lhw_type, &cur->hw_type->hwinfos);
+	if (link == NULL)
+		return NULL;
+
+	return list_get_instance(link, tape_hwinfo_t, lhw_type);
+}
+
+/** Get previous hardware info of hardware type.
+ *
+ * @param cur Current hardware info
+ * @return Previous hardware info or @c NULL
+ */
+tape_hwinfo_t *tblock_hw_type_prev(tape_hwinfo_t *cur)
+{
+	link_t *link;
+
+	link = list_prev(&cur->lhw_type, &cur->hw_type->hwinfos);
+	if (link == NULL)
+		return NULL;
+
+	return list_get_instance(link, tape_hwinfo_t, lhw_type);
+}
+
+/** Create hardware info.
+ *
+ * @param rhwinfo Place to store pointer to new hardware info
+ * @return Zero on success or error code
+ */
+int tape_hwinfo_create(tape_hwinfo_t **rhwinfo)
+{
+	tape_hwinfo_t *hwinfo;
+
+	hwinfo = calloc(1, sizeof(tape_hwinfo_t));
+	if (hwinfo == NULL)
+		return ENOMEM;
+
+	*rhwinfo = hwinfo;
+	return 0;
+}
+
+/** Destroy tape hardware info.
+ *
+ * @param text Tape hardware info
+ */
+void tape_hwinfo_destroy(tape_hwinfo_t *hwinfo)
+{
+	if (hwinfo == NULL)
+		return;
+
+	if (link_used(&hwinfo->lhw_type))
+		list_remove(&hwinfo->lhw_type);
+
+	free(hwinfo);
+}
+
 /** Create unknown block.
  *
  * @param runknown Place to store pointer to new unknown block
@@ -680,7 +832,7 @@ int tblock_unknown_create(tblock_unknown_t **runknown)
 		goto error;
 	}
 
-	rc = tape_block_create(tb_archive_info, unknown, &block);
+	rc = tape_block_create(tb_hw_type, unknown, &block);
 	if (rc != 0)
 		goto error;
 

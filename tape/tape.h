@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Spectrum tape
  *
- * Copyright (c) 1999-2018 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,6 +70,14 @@ extern tape_text_t *tblock_archive_info_next(tape_text_t *);
 extern tape_text_t *tblock_archive_info_prev(tape_text_t *);
 extern int tape_text_create(tape_text_t **);
 extern void tape_text_destroy(tape_text_t *);
+extern int tblock_hw_type_create(tblock_hw_type_t **);
+extern void tblock_hw_type_destroy(tblock_hw_type_t *);
+extern tape_hwinfo_t *tblock_hw_type_first(tblock_hw_type_t *);
+extern tape_hwinfo_t *tblock_hw_type_last(tblock_hw_type_t *);
+extern tape_hwinfo_t *tblock_hw_type_next(tape_hwinfo_t *);
+extern tape_hwinfo_t *tblock_hw_type_prev(tape_hwinfo_t *);
+extern int tape_hwinfo_create(tape_hwinfo_t **);
+extern void tape_hwinfo_destroy(tape_hwinfo_t *);
 extern int tblock_unknown_create(tblock_unknown_t **);
 extern void tblock_unknown_destroy(tblock_unknown_t *);
 extern const char *tape_btype_str(tape_btype_t);

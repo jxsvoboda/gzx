@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Spectrum tape types
  *
- * Copyright (c) 1999-2018 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -371,7 +371,7 @@ typedef struct {
 	struct tape_block *block;
 	/** Signal level */
 	tape_lvl_t lvl;
-} tblock_set_lvl__t;
+} tblock_set_lvl_t;
 
 /** Text description */
 typedef struct {
@@ -416,7 +416,7 @@ typedef struct {
 	/** Containing hardware type block */
 	struct tblock_hw_type *hw_type;
 	/** Link to hw_type->hwinfos */
-	link_t lhwinfos;
+	link_t lhw_type;
 	/** Hardware type */
 	uint8_t hwtype;
 	/** Hardware ID */
