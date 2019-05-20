@@ -219,6 +219,12 @@ void tape_block_destroy(tape_block_t *block)
 	case tb_stop:
 		tblock_stop_destroy((tblock_stop_t *) block->ext);
 		break;
+	case tb_group_start:
+		tblock_group_start_destroy((tblock_group_start_t *) block->ext);
+		break;
+	case tb_group_end:
+		tblock_group_end_destroy((tblock_group_end_t *) block->ext);
+		break;
 	case tb_text_desc:
 		tblock_text_desc_destroy((tblock_text_desc_t *) block->ext);
 		break;
@@ -465,6 +471,97 @@ void tblock_stop_destroy(tblock_stop_t *stop)
 
 	tape_block_destroy_base(stop->block);
 	free(stop);
+}
+
+/** Create group start.
+ *
+ * @param rgstart Place to store pointer to new group start
+ * @return Zero on success or error code
+ */
+int tblock_group_start_create(tblock_group_start_t **rgstart)
+{
+	tblock_group_start_t *gstart;
+	tape_block_t *block = NULL;
+	int rc;
+
+	gstart = calloc(1, sizeof(tblock_group_start_t));
+	if (gstart == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	rc = tape_block_create(tb_group_start, gstart, &block);
+	if (rc != 0)
+		goto error;
+
+	gstart->block = block;
+
+	*rgstart = gstart;
+	return 0;
+error:
+	if (gstart != NULL)
+		free(gstart);
+	return rc;
+}
+
+/** Destroy group start.
+ *
+ * @param gstart Group start
+ */
+void tblock_group_start_destroy(tblock_group_start_t *gstart)
+{
+	if (gstart == NULL)
+		return;
+
+	if (gstart->name != NULL)
+		free(gstart->name);
+
+	tape_block_destroy_base(gstart->block);
+	free(gstart);
+}
+
+/** Create group end.
+ *
+ * @param rgend Place to store pointer to new group end
+ * @return Zero on success or error code
+ */
+int tblock_group_end_create(tblock_group_end_t **rgend)
+{
+	tblock_group_end_t *gend;
+	tape_block_t *block = NULL;
+	int rc;
+
+	gend = calloc(1, sizeof(tblock_group_end_t));
+	if (gend == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	rc = tape_block_create(tb_group_end, gend, &block);
+	if (rc != 0)
+		goto error;
+
+	gend->block = block;
+
+	*rgend = gend;
+	return 0;
+error:
+	if (gend != NULL)
+		free(gend);
+	return rc;
+}
+
+/** Destroy group end.
+ *
+ * @param gend Group send
+ */
+void tblock_group_end_destroy(tblock_group_end_t *gend)
+{
+	if (gend == NULL)
+		return;
+
+	tape_block_destroy_base(gend->block);
+	free(gend);
 }
 
 /** Create text description.

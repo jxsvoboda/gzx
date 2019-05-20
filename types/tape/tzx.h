@@ -148,6 +148,12 @@ typedef struct {
 	uint16_t pause_len;
 } __attribute__((packed)) tzx_block_pause_t;
 
+/** Group start header */
+typedef struct {
+	/** Length of the group name string */
+	uint8_t name_len;
+} __attribute__((packed)) tzx_block_group_start_t;
+
 /** Text description header */
 typedef struct {
 	/** Length of text string */

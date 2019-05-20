@@ -63,6 +63,10 @@ static uint8_t tzx_block_type(tape_block_t *block)
 		return tzxb_turbo_data;
 	case tb_pause:
 		return tzxb_pause_stop;
+	case tb_group_start:
+		return tzxb_group_start;
+	case tb_group_end:
+		return tzxb_group_end;
 	case tb_stop:
 		return tzxb_pause_stop;
 	case tb_text_desc:
@@ -337,7 +341,6 @@ static int tzx_save_pause(tblock_pause_t *pause, FILE *f)
 	return 0;
 }
 
-
 /** Save 'Stop the tape'.
  *
  * @param stop 'Stop the tape'
@@ -355,6 +358,111 @@ static int tzx_save_stop(tblock_stop_t *stop, FILE *f)
 	if (nwr != sizeof(tzx_block_pause_t))
 		return EIO;
 
+	return 0;
+}
+
+/** Load group start.
+ *
+ * @param f File to read from
+ * @param tape to add block to
+ * @return Zero on success or error code
+ */
+static int tzx_load_group_start(FILE *f, tape_t *tape)
+{
+	tzx_block_group_start_t block;
+	tblock_group_start_t *gstart;
+	size_t nread;
+	int rc;
+
+	nread = fread(&block, 1, sizeof(tzx_block_group_start_t), f);
+	if (nread != sizeof(tzx_block_group_start_t))
+		return EIO;
+
+	rc = tblock_group_start_create(&gstart);
+	if (rc != 0)
+		goto error;
+
+	gstart->name = malloc(block.name_len + 1);
+	if (gstart->name == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	nread = fread(gstart->name, 1, block.name_len, f);
+	if (nread != block.name_len)
+		return EIO;
+
+	gstart->name[block.name_len] = '\0';
+	tape_append(tape, gstart->block);
+
+	return 0;
+error:
+	if (gstart != NULL)
+		tblock_group_start_destroy(gstart);
+	return rc;
+}
+
+/** Save group start.
+ *
+ * @param gstart Group start
+ * @param f File to write to
+ * @return Zero on success or error code
+ */
+static int tzx_save_group_start(tblock_group_start_t *gstart, FILE *f)
+{
+	tzx_block_group_start_t block;
+	size_t nwr;
+	size_t name_len;
+
+	name_len = strlen(gstart->name);
+	if (name_len > 0xff)
+		return EINVAL;
+
+	block.name_len = name_len;;
+
+	nwr = fwrite(&block, 1, sizeof(tzx_block_group_start_t), f);
+	if (nwr != sizeof(tzx_block_group_start_t))
+		return EIO;
+
+	nwr = fwrite(gstart->name, 1, name_len, f);
+	if (nwr != name_len)
+		return EIO;
+
+	return 0;
+}
+
+/** Load group end.
+ *
+ * @param f File to read from
+ * @param tape to add block to
+ * @return Zero on success or error code
+ */
+static int tzx_load_group_end(FILE *f, tape_t *tape)
+{
+	tblock_group_end_t *gend;
+	int rc;
+
+	/* This block has an empty body */
+
+	rc = tblock_group_end_create(&gend);
+	if (rc != 0)
+		goto error;
+
+	tape_append(tape, gend->block);
+	return 0;
+error:
+	return rc;
+}
+
+/** Save group end.
+ *
+ * @param gend Group end
+ * @param f File to write to
+ * @return Zero on success or error code
+ */
+static int tzx_save_group_end(tblock_group_end_t *gend, FILE *f)
+{
+	/* This block has an empty body */
 	return 0;
 }
 
@@ -899,6 +1007,12 @@ int tzx_tape_load(const char *fname, tape_t **rtape)
 		case tzxb_pause_stop:
 			rc = tzx_load_pause_stop(f, tape);
 			break;
+		case tzxb_group_start:
+			rc = tzx_load_group_start(f, tape);
+			break;
+		case tzxb_group_end:
+			rc = tzx_load_group_end(f, tape);
+			break;
 		case tzxb_text_desc:
 			rc = tzx_load_text_desc(f, tape);
 			break;
@@ -987,6 +1101,14 @@ int tzx_tape_save(tape_t *tape, const char *fname)
 			break;
 		case tb_stop:
 			rc = tzx_save_stop((tblock_stop_t *) block->ext, f);
+			break;
+		case tb_group_start:
+			rc = tzx_save_group_start((tblock_group_start_t *)
+			    block->ext, f);
+			break;
+		case tb_group_end:
+			rc = tzx_save_group_end((tblock_group_end_t *)
+			    block->ext, f);
 			break;
 		case tb_text_desc:
 			rc = tzx_save_text_desc((tblock_text_desc_t *)
