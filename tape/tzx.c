@@ -61,6 +61,10 @@ static uint8_t tzx_block_type(tape_block_t *block)
 		return tzxb_data;
 	case tb_turbo_data:
 		return tzxb_turbo_data;
+	case tb_tone:
+		return tzxb_tone;
+	case tb_pulses:
+		return tzxb_pulses;
 	case tb_pause:
 		return tzxb_pause_stop;
 	case tb_group_start:
@@ -122,19 +126,21 @@ static void tzx_header_init(tape_t *tape, tzx_header_t *header)
 /** Load standard speed data block.
  *
  * @param f File to read from
- * @param tape to add block to
+ * @param tape Tape to add block to
  * @return Zero on success or error code
  */
 static int tzx_load_data(FILE *f, tape_t *tape)
 {
 	tzx_block_data_t block;
-	tblock_data_t *data;
+	tblock_data_t *data = NULL;
 	size_t nread;
 	int rc;
 
 	nread = fread(&block, 1, sizeof(tzx_block_data_t), f);
-	if (nread != sizeof(tzx_block_data_t))
-		return EIO;
+	if (nread != sizeof(tzx_block_data_t)) {
+		rc = EIO;
+		goto error;
+	}
 
 	rc = tblock_data_create(&data);
 	if (rc != 0)
@@ -191,19 +197,21 @@ static int tzx_save_data(tblock_data_t *data, FILE *f)
 /** Load turbo speed data block.
  *
  * @param f File to read from
- * @param tape to add block to
+ * @param tape Tape to add block to
  * @return Zero on success or error code
  */
 static int tzx_load_turbo_data(FILE *f, tape_t *tape)
 {
 	tzx_block_turbo_data_t block;
-	tblock_turbo_data_t *tdata;
+	tblock_turbo_data_t *tdata = NULL;
 	size_t nread;
 	int rc;
 
 	nread = fread(&block, 1, sizeof(tzx_block_turbo_data_t), f);
-	if (nread != sizeof(tzx_block_turbo_data_t))
-		return EIO;
+	if (nread != sizeof(tzx_block_turbo_data_t)) {
+		rc = EIO;
+		goto error;
+	}
 
 	rc = tblock_turbo_data_create(&tdata);
 	if (rc != 0)
@@ -277,24 +285,168 @@ static int tzx_save_turbo_data(tblock_turbo_data_t *tdata, FILE *f)
 	return 0;
 }
 
+/** Load pure tone block.
+ *
+ * @param f File to read from
+ * @param tape Tape to add block to
+ * @return Zero on success or error code
+ */
+static int tzx_load_tone(FILE *f, tape_t *tape)
+{
+	tzx_block_tone_t block;
+	tblock_tone_t *tone = NULL;
+	size_t nread;
+	int rc;
+
+	nread = fread(&block, 1, sizeof(tzx_block_tone_t), f);
+	if (nread != sizeof(tzx_block_tone_t)) {
+		rc = EIO;
+		goto error;
+	}
+
+	rc = tblock_tone_create(&tone);
+	if (rc != 0)
+		goto error;
+
+	tone->pulse_len = uint16_t_le2host(block.pulse_len);
+	tone->num_pulses = uint16_t_le2host(block.num_pulses);
+
+	tape_append(tape, tone->block);
+	return 0;
+error:
+	if (tone != NULL)
+		tblock_tone_destroy(tone);
+	return rc;
+}
+
+/** Save pure tone block.
+ *
+ * @param tone Pure tone
+ * @param f File to write to
+ * @return Zero on success or error code
+ */
+static int tzx_save_tone(tblock_tone_t *tone, FILE *f)
+{
+	tzx_block_tone_t block;
+	size_t nwr;
+
+	block.pulse_len = host2uint16_t_le(tone->pulse_len);
+	block.num_pulses = host2uint16_t_le(tone->num_pulses);
+
+	nwr = fwrite(&block, 1, sizeof(tzx_block_tone_t), f);
+	if (nwr != sizeof(tzx_block_tone_t))
+		return EIO;
+
+	return 0;
+}
+
+/** Load pulse sequence block.
+ *
+ * @param f File to read from
+ * @param tape Tape to add block to
+ * @return Zero on success or error code
+ */
+static int tzx_load_pulses(FILE *f, tape_t *tape)
+{
+	tzx_block_pulses_t block;
+	tblock_pulses_t *pulses = NULL;
+	size_t nread;
+	size_t i;
+	int rc;
+
+	nread = fread(&block, 1, sizeof(tzx_block_pulses_t), f);
+	if (nread != sizeof(tzx_block_pulses_t)) {
+		rc = EIO;
+		goto error;
+	}
+
+	rc = tblock_pulses_create(&pulses);
+	if (rc != 0)
+		goto error;
+
+	pulses->num_pulses = uint16_t_le2host(block.num_pulses);
+	pulses->pulse_len = calloc(pulses->num_pulses, sizeof(uint16_t));
+	if (pulses->pulse_len == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	nread = fread(pulses->pulse_len, sizeof(uint16_t),
+	    pulses->num_pulses, f);
+	if (nread != pulses->num_pulses) {
+		rc = EIO;
+		goto error;
+	}
+
+	/* Convert to host endianness */
+	for (i = 0; i < pulses->num_pulses; i++)
+		pulses->pulse_len[i] = uint16_t_le2host(pulses->pulse_len[i]);
+
+	tape_append(tape, pulses->block);
+	return 0;
+error:
+	if (pulses != NULL)
+		tblock_pulses_destroy(pulses);
+	return rc;
+}
+
+/** Save pulse sequence block.
+ *
+ * @param pulses Pulse sequence
+ * @param f File to write to
+ * @return Zero on success or error code
+ */
+static int tzx_save_pulses(tblock_pulses_t *pulses, FILE *f)
+{
+	tzx_block_pulses_t block;
+	size_t nwr;
+	uint16_t *pulse_len;
+	size_t i;
+
+	block.num_pulses = host2uint16_t_le(pulses->num_pulses);
+
+	nwr = fwrite(&block, 1, sizeof(tzx_block_pulses_t), f);
+	if (nwr != sizeof(tzx_block_pulses_t))
+		return EIO;
+
+	pulse_len = calloc(pulses->num_pulses, sizeof(uint16_t));
+	if (pulse_len == NULL)
+		return ENOMEM;
+
+	/* Convert to little endian */
+	for (i = 0; i < pulses->num_pulses; i++)
+		pulse_len[i] = host2uint16_t_le(pulses->pulse_len[i]);
+
+	nwr = fwrite(pulse_len, pulses->num_pulses, sizeof(uint16_t), f);
+	if (nwr != pulses->num_pulses) {
+		free(pulse_len);
+		return EIO;
+	}
+
+	free(pulse_len);
+	return 0;
+}
+
 /** Load pause (silence) or 'Stop the Tape'.
  *
  * @param f File to read from
- * @param tape to add block to
+ * @param tape Tape to add block to
  * @return Zero on success or error code
  */
 static int tzx_load_pause_stop(FILE *f, tape_t *tape)
 {
 	tzx_block_pause_t block;
-	tblock_pause_t *pause;
-	tblock_stop_t *stop;
+	tblock_pause_t *pause = NULL;
+	tblock_stop_t *stop = NULL;
 	uint16_t pause_len;
 	size_t nread;
 	int rc;
 
 	nread = fread(&block, 1, sizeof(tzx_block_pause_t), f);
-	if (nread != sizeof(tzx_block_pause_t))
-		return EIO;
+	if (nread != sizeof(tzx_block_pause_t)) {
+		rc = EIO;
+		goto error;
+	}
 
 	pause_len = uint16_t_le2host(block.pause_len);
 	if (pause_len != 0) {
@@ -364,19 +516,21 @@ static int tzx_save_stop(tblock_stop_t *stop, FILE *f)
 /** Load group start.
  *
  * @param f File to read from
- * @param tape to add block to
+ * @param tape Tape to add block to
  * @return Zero on success or error code
  */
 static int tzx_load_group_start(FILE *f, tape_t *tape)
 {
 	tzx_block_group_start_t block;
-	tblock_group_start_t *gstart;
+	tblock_group_start_t *gstart = NULL;
 	size_t nread;
 	int rc;
 
 	nread = fread(&block, 1, sizeof(tzx_block_group_start_t), f);
-	if (nread != sizeof(tzx_block_group_start_t))
-		return EIO;
+	if (nread != sizeof(tzx_block_group_start_t)) {
+		rc = EIO;
+		goto error;
+	}
 
 	rc = tblock_group_start_create(&gstart);
 	if (rc != 0)
@@ -389,8 +543,10 @@ static int tzx_load_group_start(FILE *f, tape_t *tape)
 	}
 
 	nread = fread(gstart->name, 1, block.name_len, f);
-	if (nread != block.name_len)
-		return EIO;
+	if (nread != block.name_len) {
+		rc = EIO;
+		goto error;
+	}
 
 	gstart->name[block.name_len] = '\0';
 	tape_append(tape, gstart->block);
@@ -434,12 +590,12 @@ static int tzx_save_group_start(tblock_group_start_t *gstart, FILE *f)
 /** Load group end.
  *
  * @param f File to read from
- * @param tape to add block to
+ * @param tape Tape to add block to
  * @return Zero on success or error code
  */
 static int tzx_load_group_end(FILE *f, tape_t *tape)
 {
-	tblock_group_end_t *gend;
+	tblock_group_end_t *gend = NULL;
 	int rc;
 
 	/* This block has an empty body */
@@ -469,7 +625,7 @@ static int tzx_save_group_end(tblock_group_end_t *gend, FILE *f)
 /** Load text description.
  *
  * @param f File to read from
- * @param tape to add block to
+ * @param tape Tape to add block to
  * @return Zero on success or an error code
  */
 static int tzx_load_text_desc(FILE *f, tape_t *tape)
@@ -635,13 +791,13 @@ static int tzx_save_text(tape_text_t *text, FILE *f)
 /** Load archive info.
  *
  * @param f File to read from
- * @param tape to add block to
+ * @param tape Tape to add block to
  * @return Zero on success or error code
  */
 static int tzx_load_archive_info(FILE *f, tape_t *tape)
 {
 	tzx_block_archive_info_t block;
-	tblock_archive_info_t *ainfo;
+	tblock_archive_info_t *ainfo = NULL;
 	tape_text_t *ttext = NULL;
 	size_t nread;
 	size_t bremain;
@@ -650,8 +806,10 @@ static int tzx_load_archive_info(FILE *f, tape_t *tape)
 	int rc;
 
 	nread = fread(&block, 1, sizeof(tzx_block_archive_info_t), f);
-	if (nread != sizeof(tzx_block_archive_info_t))
-		return EIO;
+	if (nread != sizeof(tzx_block_archive_info_t)) {
+		rc = EIO;
+		goto error;
+	}
 
 	blen = uint16_t_le2host(block.block_len);
 
@@ -799,21 +957,23 @@ static int tzx_save_hwinfo(tape_hwinfo_t *hwinfo, FILE *f)
 /** Load hardware type.
  *
  * @param f File to read from
- * @param tape to add block to
+ * @param tape Tape to add block to
  * @return Zero on success or error code
  */
 static int tzx_load_hw_type(FILE *f, tape_t *tape)
 {
 	tzx_block_hw_type_t block;
-	tblock_hw_type_t *hwtype;
+	tblock_hw_type_t *hwtype = NULL;
 	tape_hwinfo_t *hwinfo = NULL;
 	size_t nread;
 	uint8_t i;
 	int rc;
 
 	nread = fread(&block, 1, sizeof(tzx_block_hw_type_t), f);
-	if (nread != sizeof(tzx_block_hw_type_t))
-		return EIO;
+	if (nread != sizeof(tzx_block_hw_type_t)) {
+		rc = EIO;
+		goto error;
+	}
 
 	rc = tblock_hw_type_create(&hwtype);
 	if (rc != 0)
@@ -877,7 +1037,7 @@ static int tzx_save_hw_type(tblock_hw_type_t *hwtype, FILE *f)
  *
  * @param f File to read from
  * @param btype Unkown block type
- * @param tape to add block to
+ * @param tape Tape to add block to
  * @return Zero on success or error code
  */
 static int tzx_load_unknown(FILE *f, uint8_t btype, tape_t *tape)
@@ -1004,6 +1164,12 @@ int tzx_tape_load(const char *fname, tape_t **rtape)
 		case tzxb_turbo_data:
 			rc = tzx_load_turbo_data(f, tape);
 			break;
+		case tzxb_tone:
+			rc = tzx_load_tone(f, tape);
+			break;
+		case tzxb_pulses:
+			rc = tzx_load_pulses(f, tape);
+			break;
 		case tzxb_pause_stop:
 			rc = tzx_load_pause_stop(f, tape);
 			break;
@@ -1095,6 +1261,12 @@ int tzx_tape_save(tape_t *tape, const char *fname)
 		case tb_turbo_data:
 			rc = tzx_save_turbo_data(
 			    (tblock_turbo_data_t *) block->ext, f);
+			break;
+		case tb_tone:
+			rc = tzx_save_tone((tblock_tone_t *) block->ext, f);
+			break;
+		case tb_pulses:
+			rc = tzx_save_pulses((tblock_pulses_t *) block->ext, f);
 			break;
 		case tb_pause:
 			rc = tzx_save_pause((tblock_pause_t *) block->ext, f);

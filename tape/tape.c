@@ -210,6 +210,12 @@ void tape_block_destroy(tape_block_t *block)
 	case tb_turbo_data:
 		tblock_turbo_data_destroy((tblock_turbo_data_t *) block->ext);
 		break;
+	case tb_tone:
+		tblock_tone_destroy((tblock_tone_t *) block->ext);
+		break;
+	case tb_pulses:
+		tblock_pulses_destroy((tblock_pulses_t *) block->ext);
+		break;
 	case tb_direct_rec:
 		tblock_direct_rec_destroy((tblock_direct_rec_t *) block->ext);
 		break;
@@ -293,7 +299,7 @@ void tblock_data_destroy(tblock_data_t *data)
 
 /** Create turbo speed data.
  *
- * @param rdata Place to store pointer to new turbo speed data
+ * @param rtdata Place to store pointer to new turbo speed data
  * @return Zero on success or error code
  */
 int tblock_turbo_data_create(tblock_turbo_data_t **rtdata)
@@ -324,7 +330,7 @@ error:
 
 /** Destroy turbo speed data.
  *
- * @param data Turbo speed data
+ * @param tdata Turbo speed data
  */
 void tblock_turbo_data_destroy(tblock_turbo_data_t *tdata)
 {
@@ -336,6 +342,97 @@ void tblock_turbo_data_destroy(tblock_turbo_data_t *tdata)
 
 	tape_block_destroy_base(tdata->block);
 	free(tdata);
+}
+
+/** Create pure tone.
+ *
+ * @param rtone Place to store pointer to new pure tone
+ * @return Zero on success or error code
+ */
+int tblock_tone_create(tblock_tone_t **rtone)
+{
+	tblock_tone_t *tone;
+	tape_block_t *block = NULL;
+	int rc;
+
+	tone = calloc(1, sizeof(tblock_tone_t));
+	if (tone == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	rc = tape_block_create(tb_tone, tone, &block);
+	if (rc != 0)
+		goto error;
+
+	tone->block = block;
+
+	*rtone = tone;
+	return 0;
+error:
+	if (tone != NULL)
+		free(tone);
+	return rc;
+}
+
+/** Destroy pure tone.
+ *
+ * @param tone Pure tone
+ */
+void tblock_tone_destroy(tblock_tone_t *tone)
+{
+	if (tone == NULL)
+		return;
+
+	tape_block_destroy_base(tone->block);
+	free(tone);
+}
+
+/** Create pulse sequence.
+ *
+ * @param rpulses Place to store pointer to new pulse sequence
+ * @return Zero on success or error code
+ */
+int tblock_pulses_create(tblock_pulses_t **rpulses)
+{
+	tblock_pulses_t *pulses;
+	tape_block_t *block = NULL;
+	int rc;
+
+	pulses = calloc(1, sizeof(tblock_pulses_t));
+	if (pulses == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	rc = tape_block_create(tb_pulses, pulses, &block);
+	if (rc != 0)
+		goto error;
+
+	pulses->block = block;
+
+	*rpulses = pulses;
+	return 0;
+error:
+	if (pulses != NULL)
+		free(pulses);
+	return rc;
+}
+
+/** Destroy pulse sequence.
+ *
+ * @param pulses Pulse sequence
+ */
+void tblock_pulses_destroy(tblock_pulses_t *pulses)
+{
+	if (pulses == NULL)
+		return;
+
+	if (pulses->pulse_len != NULL)
+		free(pulses->pulse_len);
+
+	tape_block_destroy_base(pulses->block);
+	free(pulses);
 }
 
 /** Create direct recording.

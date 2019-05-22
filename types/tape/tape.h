@@ -170,8 +170,6 @@ typedef struct {
 	uint16_t pulse_len;
 	/** Number of pulses */
 	uint16_t num_pulses;
-	/** Data */
-	uint8_t *data;
 } tblock_tone_t;
 
 /** Pulse sequence */

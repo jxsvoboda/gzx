@@ -142,6 +142,20 @@ typedef struct {
 	uint8_t data_len[3];
 } __attribute__((packed)) tzx_block_turbo_data_t;
 
+/** Pure tone */
+typedef struct {
+	/** Pulse duration (T) */
+	uint16_t pulse_len;
+	/** Number of pulses */
+	uint16_t num_pulses;
+} __attribute__((packed)) tzx_block_tone_t;
+
+/** Pulse sequence */
+typedef struct {
+	/** Number of pulses */
+	uint8_t num_pulses;
+} __attribute__((packed)) tzx_block_pulses_t;
+
 /** Pause (silence) or 'Stop the Tape' header */
 typedef struct {
 	/** Pause duration in ms or zero to stop the tape */
