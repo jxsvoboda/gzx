@@ -234,6 +234,12 @@ void tape_block_destroy(tape_block_t *block)
 	case tb_group_end:
 		tblock_group_end_destroy((tblock_group_end_t *) block->ext);
 		break;
+	case tb_loop_start:
+		tblock_loop_start_destroy((tblock_loop_start_t *) block->ext);
+		break;
+	case tb_loop_end:
+		tblock_loop_end_destroy((tblock_loop_end_t *) block->ext);
+		break;
 	case tb_text_desc:
 		tblock_text_desc_destroy((tblock_text_desc_t *) block->ext);
 		break;
@@ -709,6 +715,94 @@ void tblock_group_end_destroy(tblock_group_end_t *gend)
 
 	tape_block_destroy_base(gend->block);
 	free(gend);
+}
+
+/** Create loop start.
+ *
+ * @param rlstart Place to store pointer to new loop start
+ * @return Zero on success or error code
+ */
+int tblock_loop_start_create(tblock_loop_start_t **rlstart)
+{
+	tblock_loop_start_t *lstart;
+	tape_block_t *block = NULL;
+	int rc;
+
+	lstart = calloc(1, sizeof(tblock_loop_start_t));
+	if (lstart == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	rc = tape_block_create(tb_loop_start, lstart, &block);
+	if (rc != 0)
+		goto error;
+
+	lstart->block = block;
+
+	*rlstart = lstart;
+	return 0;
+error:
+	if (lstart != NULL)
+		free(lstart);
+	return rc;
+}
+
+/** Destroy loop start.
+ *
+ * @param lstart loop start
+ */
+void tblock_loop_start_destroy(tblock_loop_start_t *lstart)
+{
+	if (lstart == NULL)
+		return;
+
+	tape_block_destroy_base(lstart->block);
+	free(lstart);
+}
+
+/** Create loop end.
+ *
+ * @param rlend Place to store pointer to new loop end
+ * @return Zero on success or error code
+ */
+int tblock_loop_end_create(tblock_loop_end_t **rlend)
+{
+	tblock_loop_end_t *lend;
+	tape_block_t *block = NULL;
+	int rc;
+
+	lend = calloc(1, sizeof(tblock_loop_end_t));
+	if (lend == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	rc = tape_block_create(tb_loop_end, lend, &block);
+	if (rc != 0)
+		goto error;
+
+	lend->block = block;
+
+	*rlend = lend;
+	return 0;
+error:
+	if (lend != NULL)
+		free(lend);
+	return rc;
+}
+
+/** Destroy loop end.
+ *
+ * @param lend loop send
+ */
+void tblock_loop_end_destroy(tblock_loop_end_t *lend)
+{
+	if (lend == NULL)
+		return;
+
+	tape_block_destroy_base(lend->block);
+	free(lend);
 }
 
 /** Create text description.

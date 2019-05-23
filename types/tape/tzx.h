@@ -182,6 +182,12 @@ typedef struct {
 	uint8_t name_len;
 } __attribute__((packed)) tzx_block_group_start_t;
 
+/** Loop start header */
+typedef struct {
+	/** Number of repetitions (> 1) */
+	uint16_t num_rep;
+} __attribute__((packed)) tzx_block_loop_start_t;
+
 /** Text description header */
 typedef struct {
 	/** Length of text string */

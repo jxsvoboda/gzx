@@ -310,7 +310,7 @@ typedef struct {
 	/** Containing tape block */
 	struct tape_block *block;
 	/** Number of repetitions (> 1) */
-	uint16_t nrep;
+	uint16_t num_rep;
 } tblock_loop_start_t;
 
 /** Loop end */

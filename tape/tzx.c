@@ -73,6 +73,10 @@ static uint8_t tzx_block_type(tape_block_t *block)
 		return tzxb_group_start;
 	case tb_group_end:
 		return tzxb_group_end;
+	case tb_loop_start:
+		return tzxb_loop_start;
+	case tb_loop_end:
+		return tzxb_loop_end;
 	case tb_stop:
 		return tzxb_pause_stop;
 	case tb_text_desc:
@@ -707,6 +711,94 @@ static int tzx_save_group_end(tblock_group_end_t *gend, FILE *f)
 	return 0;
 }
 
+/** Load loop start.
+ *
+ * @param f File to read from
+ * @param tape Tape to add block to
+ * @return Zero on success or error code
+ */
+static int tzx_load_loop_start(FILE *f, tape_t *tape)
+{
+	tzx_block_loop_start_t block;
+	tblock_loop_start_t *lstart = NULL;
+	size_t nread;
+	int rc;
+
+	nread = fread(&block, 1, sizeof(tzx_block_loop_start_t), f);
+	if (nread != sizeof(tzx_block_loop_start_t)) {
+		rc = EIO;
+		goto error;
+	}
+
+	rc = tblock_loop_start_create(&lstart);
+	if (rc != 0)
+		goto error;
+
+	lstart->num_rep = uint16_t_le2host(block.num_rep);
+	tape_append(tape, lstart->block);
+
+	return 0;
+error:
+	if (lstart != NULL)
+		tblock_loop_start_destroy(lstart);
+	return rc;
+}
+
+/** Save loop start.
+ *
+ * @param lstart loop start
+ * @param f File to write to
+ * @return Zero on success or error code
+ */
+static int tzx_save_loop_start(tblock_loop_start_t *lstart, FILE *f)
+{
+	tzx_block_loop_start_t block;
+	size_t nwr;
+
+	block.num_rep = host2uint16_t_le(lstart->num_rep);
+
+	nwr = fwrite(&block, 1, sizeof(tzx_block_loop_start_t), f);
+	if (nwr != sizeof(tzx_block_loop_start_t))
+		return EIO;
+
+	return 0;
+}
+
+/** Load loop end.
+ *
+ * @param f File to read from
+ * @param tape Tape to add block to
+ * @return Zero on success or error code
+ */
+static int tzx_load_loop_end(FILE *f, tape_t *tape)
+{
+	tblock_loop_end_t *lend = NULL;
+	int rc;
+
+	/* This block has an empty body */
+
+	rc = tblock_loop_end_create(&lend);
+	if (rc != 0)
+		goto error;
+
+	tape_append(tape, lend->block);
+	return 0;
+error:
+	return rc;
+}
+
+/** Save loop end.
+ *
+ * @param lend loop end
+ * @param f File to write to
+ * @return Zero on success or error code
+ */
+static int tzx_save_loop_end(tblock_loop_end_t *lend, FILE *f)
+{
+	/* This block has an empty body */
+	return 0;
+}
+
 /** Load text description.
  *
  * @param f File to read from
@@ -1267,6 +1359,12 @@ int tzx_tape_load(const char *fname, tape_t **rtape)
 		case tzxb_group_end:
 			rc = tzx_load_group_end(f, tape);
 			break;
+		case tzxb_loop_start:
+			rc = tzx_load_loop_start(f, tape);
+			break;
+		case tzxb_loop_end:
+			rc = tzx_load_loop_end(f, tape);
+			break;
 		case tzxb_text_desc:
 			rc = tzx_load_text_desc(f, tape);
 			break;
@@ -1372,6 +1470,14 @@ int tzx_tape_save(tape_t *tape, const char *fname)
 			break;
 		case tb_group_end:
 			rc = tzx_save_group_end((tblock_group_end_t *)
+			    block->ext, f);
+			break;
+		case tb_loop_start:
+			rc = tzx_save_loop_start((tblock_loop_start_t *)
+			    block->ext, f);
+			break;
+		case tb_loop_end:
+			rc = tzx_save_loop_end((tblock_loop_end_t *)
 			    block->ext, f);
 			break;
 		case tb_text_desc:
