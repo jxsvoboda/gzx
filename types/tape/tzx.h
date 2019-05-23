@@ -156,6 +156,20 @@ typedef struct {
 	uint8_t num_pulses;
 } __attribute__((packed)) tzx_block_pulses_t;
 
+/** Pure data header */
+typedef struct {
+	/** Length of zero bit pulse (T) */
+	uint16_t zero_len;
+	/** Length of one bit pulse (T) */
+	uint16_t one_len;
+	/** Used bits in last byte */
+	uint8_t lb_bits;
+	/** Pause after this block in ms */
+	uint16_t pause_after;
+	/** Data length in bytes */
+	uint8_t data_len[3];
+} __attribute__((packed)) tzx_block_pure_data_t;
+
 /** Pause (silence) or 'Stop the Tape' header */
 typedef struct {
 	/** Pause duration in ms or zero to stop the tape */

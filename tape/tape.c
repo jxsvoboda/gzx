@@ -216,6 +216,9 @@ void tape_block_destroy(tape_block_t *block)
 	case tb_pulses:
 		tblock_pulses_destroy((tblock_pulses_t *) block->ext);
 		break;
+	case tb_pure_data:
+		tblock_pure_data_destroy((tblock_pure_data_t *) block->ext);
+		break;
 	case tb_direct_rec:
 		tblock_direct_rec_destroy((tblock_direct_rec_t *) block->ext);
 		break;
@@ -433,6 +436,53 @@ void tblock_pulses_destroy(tblock_pulses_t *pulses)
 
 	tape_block_destroy_base(pulses->block);
 	free(pulses);
+}
+
+/** Create pure data.
+ *
+ * @param rpdata Place to store pointer to new pure data
+ * @return Zero on success or error code
+ */
+int tblock_pure_data_create(tblock_pure_data_t **rpdata)
+{
+	tblock_pure_data_t *pdata;
+	tape_block_t *block = NULL;
+	int rc;
+
+	pdata = calloc(1, sizeof(tblock_pure_data_t));
+	if (pdata == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	rc = tape_block_create(tb_pure_data, pdata, &block);
+	if (rc != 0)
+		goto error;
+
+	pdata->block = block;
+
+	*rpdata = pdata;
+	return 0;
+error:
+	if (pdata != NULL)
+		free(pdata);
+	return rc;
+}
+
+/** Destroy pure data.
+ *
+ * @param pdata Pure data
+ */
+void tblock_pure_data_destroy(tblock_pure_data_t *pdata)
+{
+	if (pdata == NULL)
+		return;
+
+	if (pdata->data != NULL)
+		free(pdata->data);
+
+	tape_block_destroy_base(pdata->block);
+	free(pdata);
 }
 
 /** Create direct recording.

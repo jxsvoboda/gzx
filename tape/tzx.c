@@ -65,6 +65,8 @@ static uint8_t tzx_block_type(tape_block_t *block)
 		return tzxb_tone;
 	case tb_pulses:
 		return tzxb_pulses;
+	case tb_pure_data:
+		return tzxb_pure_data;
 	case tb_pause:
 		return tzxb_pause_stop;
 	case tb_group_start:
@@ -417,13 +419,96 @@ static int tzx_save_pulses(tblock_pulses_t *pulses, FILE *f)
 	for (i = 0; i < pulses->num_pulses; i++)
 		pulse_len[i] = host2uint16_t_le(pulses->pulse_len[i]);
 
-	nwr = fwrite(pulse_len, pulses->num_pulses, sizeof(uint16_t), f);
+	nwr = fwrite(pulse_len, sizeof(uint16_t), pulses->num_pulses, f);
 	if (nwr != pulses->num_pulses) {
 		free(pulse_len);
 		return EIO;
 	}
 
 	free(pulse_len);
+	return 0;
+}
+
+/** Load pure data block.
+ *
+ * @param f File to read from
+ * @param tape Tape to add block to
+ * @return Zero on success or error code
+ */
+static int tzx_load_pure_data(FILE *f, tape_t *tape)
+{
+	tzx_block_pure_data_t block;
+	tblock_pure_data_t *pdata = NULL;
+	size_t nread;
+	int rc;
+
+	nread = fread(&block, 1, sizeof(tzx_block_pure_data_t), f);
+	if (nread != sizeof(tzx_block_pure_data_t)) {
+		rc = EIO;
+		goto error;
+	}
+
+	rc = tblock_pure_data_create(&pdata);
+	if (rc != 0)
+		goto error;
+
+	pdata->zero_len = uint16_t_le2host(block.zero_len);
+	pdata->one_len = uint16_t_le2host(block.one_len);
+	pdata->lb_bits = block.lb_bits;
+
+	pdata->pause_after = uint16_t_le2host(block.pause_after);
+	pdata->data_len = block.data_len[0] +
+	    ((uint32_t) block.data_len[1] << 8) +
+	    ((uint32_t) block.data_len[2] << 16);
+
+	pdata->data = calloc(pdata->data_len, 1);
+	if (pdata->data == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	nread = fread(pdata->data, 1, pdata->data_len, f);
+	if (nread != pdata->data_len) {
+		rc = EIO;
+		goto error;
+	}
+
+	tape_append(tape, pdata->block);
+	return 0;
+error:
+	if (pdata != NULL)
+		tblock_pure_data_destroy(pdata);
+	return rc;
+}
+
+/** Save pure data block.
+ *
+ * @param pdata Pure data
+ * @param f File to write to
+ * @return Zero on success or error code
+ */
+static int tzx_save_pure_data(tblock_pure_data_t *pdata, FILE *f)
+{
+	tzx_block_pure_data_t block;
+	size_t nwr;
+	int i;
+
+	block.zero_len = host2uint16_t_le(pdata->zero_len);
+	block.one_len = host2uint16_t_le(pdata->one_len);
+	block.lb_bits = pdata->lb_bits;
+
+	block.pause_after = host2uint16_t_le(pdata->pause_after);
+	for (i = 0; i < 3; i++)
+		block.data_len[i] = (pdata->data_len >> (8 * i)) & 0xff;
+
+	nwr = fwrite(&block, 1, sizeof(tzx_block_pure_data_t), f);
+	if (nwr != sizeof(tzx_block_pure_data_t))
+		return EIO;
+
+	nwr = fwrite(pdata->data, 1, pdata->data_len, f);
+	if (nwr != pdata->data_len)
+		return EIO;
+
 	return 0;
 }
 
@@ -1170,6 +1255,9 @@ int tzx_tape_load(const char *fname, tape_t **rtape)
 		case tzxb_pulses:
 			rc = tzx_load_pulses(f, tape);
 			break;
+		case tzxb_pure_data:
+			rc = tzx_load_pure_data(f, tape);
+			break;
 		case tzxb_pause_stop:
 			rc = tzx_load_pause_stop(f, tape);
 			break;
@@ -1243,10 +1331,10 @@ int tzx_tape_save(tape_t *tape, const char *fname)
 	printf("write blocks\n");
 	block = tape_first(tape);
 	while (block != NULL) {
-		printf("write block type\n");
-
 		/* Write block type */
 		btype = tzx_block_type(block);
+		printf("write block type (0x%x)\n", btype);
+
 		nwr = fwrite(&btype, 1, sizeof(uint8_t), f);
 		if (nwr != sizeof(uint8_t)) {
 			rc = EIO;
@@ -1267,6 +1355,10 @@ int tzx_tape_save(tape_t *tape, const char *fname)
 			break;
 		case tb_pulses:
 			rc = tzx_save_pulses((tblock_pulses_t *) block->ext, f);
+			break;
+		case tb_pure_data:
+			rc = tzx_save_pure_data(
+			    (tblock_pure_data_t *) block->ext, f);
 			break;
 		case tb_pause:
 			rc = tzx_save_pause((tblock_pause_t *) block->ext, f);

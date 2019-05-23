@@ -58,6 +58,8 @@ extern int tblock_tone_create(tblock_tone_t **);
 extern void tblock_tone_destroy(tblock_tone_t *);
 extern int tblock_pulses_create(tblock_pulses_t **);
 extern void tblock_pulses_destroy(tblock_pulses_t *);
+extern int tblock_pure_data_create(tblock_pure_data_t **);
+extern void tblock_pure_data_destroy(tblock_pure_data_t *);
 extern int tblock_direct_rec_create(tblock_direct_rec_t **);
 extern void tblock_direct_rec_destroy(tblock_direct_rec_t *);
 extern int tblock_pause_create(tblock_pause_t **);
