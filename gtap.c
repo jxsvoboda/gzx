@@ -58,6 +58,10 @@ static int gtap_list(const char *fname)
 	tape_block_t *tblock;
 	tblock_data_t *data;
 	tblock_turbo_data_t *tdata;
+	tblock_pure_data_t *pdata;
+	tblock_pause_t *pause;
+	tblock_group_start_t *gstart;
+	tblock_text_desc_t *tdesc;
 	unsigned bcount;
 	unsigned bidx;
 	int rc;
@@ -89,6 +93,18 @@ static int gtap_list(const char *fname)
 		} else if (tblock->btype == tb_turbo_data) {
 			tdata = (tblock_turbo_data_t *) tblock->ext;
 			printf(" %02Xh, %d B\n", tdata->data[0], tdata->data_len);
+		} else if (tblock->btype == tb_pure_data) {
+			pdata = (tblock_pure_data_t *) tblock->ext;
+			printf(" %02Xh, %d B\n", pdata->data[0], pdata->data_len);
+		} else if (tblock->btype == tb_pause) {
+			pause = (tblock_pause_t *) tblock->ext;
+			printf(" %u ms\n", (unsigned) pause->pause_len);
+		} else if (tblock->btype == tb_group_start) {
+			gstart = (tblock_group_start_t *) tblock->ext;
+			printf(" \"%s\"\n", gstart->name);
+		} else if (tblock->btype == tb_text_desc) {
+			tdesc = (tblock_text_desc_t *) tblock->ext;
+			printf(" \"%s\"\n", tdesc->text);
 		} else {
 			printf("\n");
 		}
