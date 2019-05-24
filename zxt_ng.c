@@ -282,6 +282,7 @@ static int ng_open_block(void)
 {
 	tblock_data_t *data;
 	tblock_turbo_data_t *tdata;
+	tblock_pulses_t *pulses;
 	tblock_pure_data_t *pdata;
 	tblock_direct_rec_t *drec;
 
@@ -299,7 +300,8 @@ static int ng_open_block(void)
 		block_doff = 0;
 		break;
 
-	case tb_turbo_data: /* turbo loading data block */
+	case tb_turbo_data:
+		/* turbo loading data block */
 		tdata = (tblock_turbo_data_t *) tblock->ext;
 		block_data = tdata->data;
 		block_type = BT_DATA;
@@ -307,18 +309,22 @@ static int ng_open_block(void)
 		block_doff = 0;
 		break;
 
-//    case 0x12: /* pure tone */
-//      block_dstart=block_start+1;
-//      block_type=BT_TONES;
-//      block_dlen =4;
-//      break;
+	case tb_tone:
+		/* pure tone */
+		block_data = NULL;
+		block_type = BT_TONES;
+		block_dlen = 1;
+		block_doff = 0;
+		break;
 
-//    case 0x13: /* sequence of pulses */
-//      block_dstart=block_start+2;
-//      block_type=BT_TONES;
-
-//      block_dlen =2*fgetu8(tapf);
-//      break;
+	case tb_pulses:
+		/* sequence of pulses */
+		pulses = (tblock_pulses_t *) tblock->ext;
+		block_data = NULL;
+		block_type = BT_TONES;
+		block_dlen = pulses->num_pulses;
+		block_doff = 0;
+		break;
 
 	case tb_pure_data:
 		/* Pure data block */
@@ -328,6 +334,7 @@ static int ng_open_block(void)
 		block_dlen = pdata->data_len;
 		block_doff = 0;
 		break;
+
 	case tb_direct_rec:
 		/* Direct recording */
 		drec = (tblock_direct_rec_t *) tblock->ext;
@@ -415,28 +422,37 @@ static int ng_b_voice_getsmps(int n, unsigned *dst)
 	return 0;
 }
 
-static int ng_b_tones_gettone(int *pnum, int *plen) {
-/*  unsigned pos;
+static int ng_b_tones_gettone(int *pnum, int *plen)
+{
+	tblock_tone_t *tone;
+	tblock_pulses_t *pulses;
 
-  if(block_type!=BT_TONES) return -1;
+	if (block_type != BT_TONES)
+		return -1;
 
-  pos=ftell(tapf);
-  if(pos>=block_end) return -1;
+	if (block_doff >= block_dlen)
+		return -1;
 
-  switch(block_ng_type) {
-     case 0x12:
-       *plen=fgetu16le(tapf);
-       *pnum=fgetu16le(tapf);
-       break;
+	switch (tblock->btype) {
+	case tb_tone:
+		tone = (tblock_tone_t *) tblock->ext;
+		*plen = tone->pulse_len;
+		*pnum = tone->num_pulses;
+		++block_doff;
+		break;
 
-     case 0x13:
-       *plen=fgetu16le(tapf);
-       *pnum=1;
-       break;
-  }
+	case tb_pulses:
+		pulses = (tblock_pulses_t *) tblock->ext;
+		*plen = pulses->pulse_len[block_doff];
+		*pnum = 1;
+		++block_doff;
+		break;
 
-  return 0;*/
-  return -1;
+	default:
+		return -1;
+	}
+
+	return 0;
 }
 
 static int ng_b_moredata(void)
