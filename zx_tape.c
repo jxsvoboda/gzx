@@ -44,10 +44,6 @@
 
 /* 0=LOW 1=HI */
 
-extern tfr_t tfr_tap;	/* defined in zxt_tap.c */
-extern tfr_t tfr_wav;	/* defined in zxt_wav.c */
-extern tfr_t tfr_tzx;	/* defined in zxt_tzx.c */
-
 static int cur_level;
 static int tape_delta_t;
 
