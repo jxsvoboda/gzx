@@ -371,6 +371,5 @@ int riff_rchunk_read(riffr_t *rr, riff_rchunk_t *rchunk, void *buf,
 	return 0;
 }
 
-
 /** @}
  */

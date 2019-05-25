@@ -135,6 +135,8 @@ objects_helenos_gtap = $(sources_helenos_gtap:.c=.g.hos.o)
 
 headers = $(wildcard *.h */*.h */*/*.h)
 
+ccheck_list = $(shell find . -name '*.[ch'] | grep -vxFf .ccheck_not)
+
 # Default target
 default: $(binary) $(binary_gtap)
 
@@ -180,6 +182,9 @@ dist: $(binary) $(binary_g) $(binary_gtap) $(binary_w32) $(binary_w32_g) \
 	echo $(version) > $(distdir)/VERSION
 	rm -rf $(distbase)/$(distname)/gzx.zip
 	cd $(distbase) && zip -r $(distname).zip $(distname)
+
+ccheck:
+	ccheck-run.sh $(ccheck_list)
 
 $(binary): $(objects)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)

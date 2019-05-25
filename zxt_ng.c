@@ -390,10 +390,10 @@ static int ng_b_voice_getsmps(int n, unsigned *dst)
 {
 	int smpleft;
 	int i;
-
-//	printf("ng_b_voice_getsmps: block_doff=%d, block_dlen=%d\n", block_doff,
-//	block_dlen);
-
+#if 0
+	printf("ng_b_voice_getsmps: block_doff=%d, block_dlen=%d\n", block_doff,
+	    block_dlen);
+#endif
 	if (!block_open)
 		return -1;
 

@@ -48,7 +48,6 @@ static void zx_keymtx_clear(zx_keymtx_t *km)
 		km->mask[i] = 0x00;
 }
 
-
 /** Logically OR keyboard matrix to another matrix.
  *
  * Performs @a dst <- @a dst OR @a src

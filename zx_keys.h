@@ -92,5 +92,4 @@ enum {
 #define ZX_KEY_SS	0x02
 #define ZX_KEY_SP	0x01
 
-
 #endif

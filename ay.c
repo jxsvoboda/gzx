@@ -44,10 +44,10 @@ static int const env_v_tab[4][16] = {
 
 /** Envelope shapes expressed as indices into @c env_v_tab */
 static int const env_shape_tab[16][3] = {
-	{ 2, 0, 0 }, { 2, 0, 0 }, { 2, 0, 0}, { 2, 0, 0 },
-	{ 1, 0, 0 }, { 1, 0, 0 }, { 1, 0, 0}, { 1, 0, 0 },
-	{ 2, 2, 2 }, { 2, 0, 0 }, { 2, 1, 2}, { 2, 3, 3 },
-	{ 1, 1, 1 }, { 1, 3, 3 }, { 1, 2, 1}, { 1, 0, 0 }
+	{ 2, 0, 0 }, { 2, 0, 0 }, { 2, 0, 0 }, { 2, 0, 0 },
+	{ 1, 0, 0 }, { 1, 0, 0 }, { 1, 0, 0 }, { 1, 0, 0 },
+	{ 2, 2, 2 }, { 2, 0, 0 }, { 2, 1, 2 }, { 2, 3, 3 },
+	{ 1, 1, 1 }, { 1, 3, 3 }, { 1, 2, 1 }, { 1, 0, 0 }
 };
 
 /** Select AY register.
@@ -94,8 +94,12 @@ static void ay_io_port_write(ay_t *ay, uint8_t val)
 void ay_reg_write(ay_t *ay, uint8_t val)
 {
 	switch (ay->cur_reg) {
-	case ay_rn_esccr: reset_env_gen(ay); break;
-	case ay_rn_io_a: ay_io_port_write(ay, val); break;
+	case ay_rn_esccr:
+		reset_env_gen(ay);
+		break;
+	case ay_rn_io_a:
+		ay_io_port_write(ay, val);
+		break;
 	}
 
 	ay->reg[ay->cur_reg] = val;
@@ -150,7 +154,7 @@ int ay_get_sample(ay_t *ay)
 	int eshape, eblk;
 
 	/* tone generator */
-	for(i = 0; i < ay_nchan; i++) {
+	for (i = 0; i < ay_nchan; i++) {
 		period = ay->reg[ay_rn_ctr_a + 2 * i] +
 		    ((unsigned)(ay->reg[ay_rn_ftr_a + 2 * i] & 0x0f) << 8);
 		if (period == 0)
@@ -165,7 +169,9 @@ int ay_get_sample(ay_t *ay)
 			} else {
 				ay->tone_cnt[i] = cnt;
 			}
-		} else ay->tone_cnt[i] = 0;
+		} else {
+			ay->tone_cnt[i] = 0;
+		}
 	}
 
 	/* envelope generator */
@@ -175,7 +181,7 @@ int ay_get_sample(ay_t *ay)
 		period = ((uint16_t)ay->reg[ay_rn_ectr]) |
 		    ((uint16_t)ay->reg[ay_rn_eftr] << 8);
 		if (period == 0)
-		    period = 1;
+			period = 1;
 		period <<= 4;
 		ay->env_cnt[i] += ay->d_clocks;
 
@@ -230,7 +236,7 @@ int ay_get_sample(ay_t *ay)
 	smp = 0;
 	for (i = 0; i < ay_nchan; i++) {
 		if (ay->reg[ay_rn_amp_a + i] & 0x10) {
-			 /* use envelope generator */
+			/* use envelope generator */
 			vol = ay->env_smp[i];
 		} else {
 			/* use direct value for volume */

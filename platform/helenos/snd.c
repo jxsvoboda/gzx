@@ -90,9 +90,9 @@ static void sndw_resample(uint8_t smp)
 		rsbuf[rsbuf_pos++] = smp;
 		if (rsbuf_pos >= rsbuf_size) {
 			rc = hound_write_main_stream(hound, rsbuf, rsbuf_size);
-		        if (rc != EOK) {
-	    			printf("Error writing audio stream.\n");
-    				exit(1);
+			if (rc != EOK) {
+				printf("Error writing audio stream.\n");
+				exit(1);
 			}
 
 			rsbuf_pos = 0;

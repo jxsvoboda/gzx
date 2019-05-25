@@ -42,7 +42,7 @@
 #include <stdint.h>
 #include "chunk.h"
 
-/** WAVE format chunk data 
+/** WAVE format chunk data
  *
  * Actual data structure in the RIFF file
  */

@@ -45,7 +45,7 @@ void timer_reset(timer *t)
 
 unsigned long timer_val(timer *t)
 {
-   return 0;
+	return 0;
 }
 
 int sys_chdir(const char *path)
@@ -76,7 +76,7 @@ int sys_isdir(char *filename)
 	int rc;
 
 	printf("sys_isdir('%s')?\n", filename);
-	rc = vfs_stat_path(filename,&statbuf);
+	rc = vfs_stat_path(filename, &statbuf);
 	printf("vfs_stat -> %d, is_dir=%d\n", rc, statbuf.is_directory);
 	return statbuf.is_directory;
 }

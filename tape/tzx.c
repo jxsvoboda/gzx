@@ -663,7 +663,7 @@ static int tzx_save_group_start(tblock_group_start_t *gstart, FILE *f)
 	if (name_len > 0xff)
 		return EINVAL;
 
-	block.name_len = name_len;;
+	block.name_len = name_len;
 
 	nwr = fwrite(&block, 1, sizeof(tzx_block_group_start_t), f);
 	if (nwr != sizeof(tzx_block_group_start_t))
@@ -1392,7 +1392,6 @@ error:
 	fclose(f);
 	return rc;
 }
-
 
 /** Save tape to TZX file.
  *

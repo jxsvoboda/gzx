@@ -84,6 +84,14 @@ type
 Now you need to go to root of your HelenOS workspace and type 'make' to re-build
 the OS image.
 
+Maintainance notes
+------------------
+To check ccstyle type
+
+    $ make ccheck
+
+This requires the `ccheck` tool from the [Sycek project][1]
+
 Running
 -------
 
@@ -141,3 +149,5 @@ Spectrum Key Mappings
   Ctrl         | Symbol Shift
   Shift+Arrows | Cursor Keys
   Backspace    | Delete
+
+[1]: https://github.com/jxsvoboda/sycek

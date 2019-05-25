@@ -56,8 +56,8 @@ static void rwave_encode_fmt(rwave_params_t *params, rwave_fmt_t *fmt)
 	fmt->format_tag = host2uint16_t_le(WFMT_PCM);
 	fmt->channels = host2uint16_t_le(params->channels);
 	fmt->smp_sec = host2uint32_t_le(params->smp_freq);
-	fmt->avg_bytes_sec = host2uint32_t_le(bytes_smp * params->smp_freq
-	    * params->channels);
+	fmt->avg_bytes_sec = host2uint32_t_le(bytes_smp * params->smp_freq *
+	    params->channels);
 	fmt->block_align = host2uint16_t_le(bytes_smp);
 	fmt->bits_smp = host2uint16_t_le(params->bits_smp);
 }
@@ -384,7 +384,6 @@ int rwave_rclose(rwaver_t *wr)
 error:
 	return rc;
 }
-
 
 /** @}
  */

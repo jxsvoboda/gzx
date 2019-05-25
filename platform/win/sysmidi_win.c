@@ -46,7 +46,8 @@ enum {
 	/** Since MIDI baud rate is 31250 and it takes 8+2 bits to
 	 * transfer a character, there can be at most 3125 messages per second
 	 * received from the Spectrum MIDI port. A buffer is good for up
-	 * to 1 PAL frame (1/50 s). Buffer length is in DWORDs */
+	 * to 1 PAL frame (1/50 s). Buffer length is in DWORDs
+	 */
 	buf_len = 3 * 31250 / 50,
 	/** Z80 T states per MIDI tick */
 	ts_midi_tick = 3500,
@@ -101,7 +102,7 @@ int sysmidi_init(const char *dev)
 	/* SMPTE 25 fps, 40 ticks/frame = 1 ms resolution */
 	prop.dwTimeDiv = 0x8000 | ((DWORD)(0x7f - 25) << 8) |
 	    ((DWORD) 40);
-	mmrc = midiStreamProperty(mstrm, (LPBYTE)&prop, MIDIPROP_SET | 
+	mmrc = midiStreamProperty(mstrm, (LPBYTE)&prop, MIDIPROP_SET |
 	    MIDIPROP_TIMEDIV);
 	if (mmrc != MMSYSERR_NOERROR) {
 		printf("Error setting MIDI time base.\n");
@@ -176,8 +177,10 @@ void sysmidi_send_msg(uint32_t t32, midi_msg_t *msg)
 		return;
 	}
 
-//	printf("enlist message in buffer %d, deltatime=%lu\n",
-//	    abufn, (unsigned long)tdelta);
+#if 0
+	printf("enlist message in buffer %d, deltatime=%lu\n",
+	    abufn, (unsigned long)tdelta);
+#endif
 	ev = (MIDIEVENT *) &mbuf[abufn][bwi];
 	ev->dwDeltaTime = tdelta;
 	ev->dwStreamID = 0;
@@ -216,8 +219,10 @@ static int sysmidi_submit_buf(void)
 	}
 
 	if (bdur < frame_midi_tick) {
-//		printf("Adding NOP event with deltatime %d\n",
-//		    frame_midi_tick - bdur);
+#if 0
+		printf("Adding NOP event with deltatime %d\n",
+		    frame_midi_tick - bdur);
+#endif
 		ev = (MIDIEVENT *) &mbuf[abufn][bwi];
 		ev->dwDeltaTime = frame_midi_tick - bdur;
 		ev->dwStreamID = 0;
@@ -228,14 +233,16 @@ static int sysmidi_submit_buf(void)
 	mhdr[abufn].dwBytesRecorded = bwi * sizeof(DWORD);
 
 	/* Submit the buffer */
-//	printf("Submitting buffer %d, bytes=%lu\n", abufn, mhdr[abufn].dwBytesRecorded);
+#if 0
+	printf("Submitting buffer %d, bytes=%lu\n", abufn, mhdr[abufn].dwBytesRecorded);
+#endif
 	mmrc = midiStreamOut(mstrm, &mhdr[abufn], sizeof(mhdr[abufn]));
 	if (mmrc != MMSYSERR_NOERROR) {
 		printf("Error submitting MIDI buffer %d. (%d)\n", abufn, mmrc);
 		return -1;
 	}
 
-	abufn = (abufn + 1 ) % num_buf;
+	abufn = (abufn + 1) % num_buf;
 	--na;
 	++ns;
 	bwi = 0;
@@ -254,7 +261,9 @@ void sysmidi_poll(uint32_t t32)
 	lframe_t32 = t32;
 
 	sysmidi_check_finished();
-//	printf("sysmidi_poll: after check, ns=%d na=%d\n", ns, na);
+#if 0
+	printf("sysmidi_poll: after check, ns=%d na=%d\n", ns, na);
+#endif
 	if (sysmidi_submit_buf() < 0)
 		return;
 
@@ -267,7 +276,9 @@ void sysmidi_poll(uint32_t t32)
 static void sysmidi_check_finished(void)
 {
 	while ((mhdr[sbufn].dwFlags & MHDR_DONE) != 0) {
-//		printf("Reclaiming buffer %d\n", sbufn);
+#if 0
+		printf("Reclaiming buffer %d\n", sbufn);
+#endif
 		mhdr[sbufn].dwFlags &= ~MHDR_DONE;
 		sbufn = (sbufn + 1) % num_buf;
 		++na;
@@ -294,7 +305,7 @@ static void sysmidi_check_start_stream(void)
 	mmrc = midiStreamRestart(mstrm);
 	if (mmrc != MMSYSERR_NOERROR) {
 		printf("Error (re)starting MIDI stream.\n");
-		return ;
+		return;
 	}
 
 	strm_run = true;
