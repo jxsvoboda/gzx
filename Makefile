@@ -115,6 +115,11 @@ sources_helenos_g = \
 sources_helenos_gtap = \
     $(sources_gtap)
 
+sources_test = \
+    tape/tonegen.c \
+    test/main.c \
+    test/tonegen.c
+
 binary = gzx
 binary_g = gzx-g
 binary_gtap = gtap
@@ -124,6 +129,7 @@ binary_w32_gtap = gtap.exe
 binary_helenos = gzx-hos
 binary_helenos_g = gzx-g-hos
 binary_helenos_gtap = gtap-hos
+binary_test = test-gzx
 
 objects = $(sources:.c=.o)
 objects_g = $(sources_g:.c=.g.o)
@@ -134,6 +140,7 @@ objects_w32_gtap = $(sources_w32_gtap:.c=.g.w32.o)
 objects_helenos = $(sources_helenos:.c=.hos.o)
 objects_helenos_g = $(sources_helenos_g:.c=.g.hos.o)
 objects_helenos_gtap = $(sources_helenos_gtap:.c=.g.hos.o)
+objects_test = $(sources_test:.c=.o)
 
 headers = $(wildcard *.h */*.h */*/*.h)
 
@@ -144,7 +151,7 @@ default: $(binary) $(binary_gtap)
 
 all: $(binary) $(binary_g) $(binary_gtap) $(binary_w32) $(binary_w32_g) \
     $(binary_w32_gtap) $(binary_helenos) $(binary_helenos_g) \
-    $(binary_helenos_gtap)
+    $(binary_helenos_gtap) $(binary_test)
 
 w32: $(binary_w32) $(binary_w32_g) $(binary_w32_gtap)
 hos: $(binary_helenos) $(binary_helenos_g) $(binary_helenos_gtap)
@@ -173,6 +180,9 @@ uninstall-hos:
 
 test-hos: install-hos
 	helenos-test
+
+test: $(binary_test)
+	./$(binary_test)
 
 dist: $(binary) $(binary_g) $(binary_gtap) $(binary_w32) $(binary_w32_g) \
      $(binary_w32_gtap)
@@ -215,6 +225,9 @@ $(binary_helenos_g): $(objects_helenos_g)
 $(binary_helenos_gtap): $(objects_helenos_gtap)
 	$(LD_helenos) -o $@ $^ $(LIBS_helenos)
 
+$(binary_test): $(objects_test)
+	$(CC) $(CFLAGS) -o $@ $^
+
 $(objects): $(headers)
 
 %.g.o: %.c
@@ -235,7 +248,7 @@ $(objects): $(headers)
 clean:
 	rm -f *.o */*.o */*/*.o $(binary) $(binary_g) $(binary_gtap) \
 	    $(binary_w32) $(binary_w32_g) $(binary_w32_gtap) $(binary_helenos) \
-	    $(binary_helenos_g) $(binary_helenos_gtap)
+	    $(binary_helenos_g) $(binary_helenos_gtap) $(binary_test)
 	rm -rf distrib
 
 backup: clean
