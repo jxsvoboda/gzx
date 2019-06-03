@@ -36,8 +36,12 @@
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "../tape/tonegen.h"
+#include "../../tape/tonegen.h"
 #include "tonegen.h"
+
+enum {
+	test_np = 6
+};
 
 /** Run tone generator unit tests.
  *
@@ -48,8 +52,8 @@ int test_tonegen(void)
 	tonegen_t tgen;
 	uint32_t delay;
 	tape_lvl_t lvl;
-	uint32_t delays[] = { 10, 10, 10, 20, 20, 30 };
-	tape_lvl_t lvls[] = { tlvl_high, tlvl_low, tlvl_high, tlvl_low,
+	uint32_t delays[test_np] = { 10, 10, 10, 20, 20, 30 };
+	tape_lvl_t lvls[test_np] = { tlvl_high, tlvl_low, tlvl_high, tlvl_low,
 	    tlvl_high, tlvl_low };
 	int i;
 
@@ -61,16 +65,22 @@ int test_tonegen(void)
 	tonegen_add_tone(&tgen, 30, 1);
 
 	for (i = 0; i < 6; i++) {
-		if (tonegen_is_end(&tgen))
+		if (tonegen_is_end(&tgen)) {
+			printf("Premature end of tone.\n");
 			return 1;
+		}
 
 		tonegen_get_next(&tgen, &delay, &lvl);
-		if (delay != delays[i] || lvl != lvls[i])
+		if (delay != delays[i] || lvl != lvls[i]) {
+			printf("Incorrect pulse length.\n");
 			return 1;
+		}
 	}
 
-	if (!tonegen_is_end(&tgen))
+	if (!tonegen_is_end(&tgen)) {
+		printf("Expected end of tone not found.\n");
 		return 1;
+	}
 
 	printf(" ... passed\n");
 

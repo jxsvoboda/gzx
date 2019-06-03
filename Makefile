@@ -116,9 +116,13 @@ sources_helenos_gtap = \
     $(sources_gtap)
 
 sources_test = \
+    adt/list.c \
+    tape/player.c \
+    tape/tape.c \
     tape/tonegen.c \
     test/main.c \
-    test/tonegen.c
+    test/tape/player.c \
+    test/tape/tonegen.c
 
 binary = gzx
 binary_g = gzx-g

@@ -103,6 +103,8 @@ tape_lvl_t tape_player_cur_lvl(tape_player_t *player)
 
 /** Make sure tone generator is programmed with next tones.
  *
+ * If there is nothing more to program, do nothing.
+ *
  * @param player Tape player
  * @param rdelay Place to store delay until next event
  * @param rlvl Place to store next signal level
@@ -111,10 +113,15 @@ static void tape_player_next(tape_player_t *player)
 {
 	while (true) {
 		if (!tonegen_is_end(&player->tgen))
-			return;
+			break;
 
 		if (player->cur_block == NULL) {
 			player->cur_block = player->next_block;
+			player->next_block = NULL;
+
+			if (player->cur_block == NULL)
+				break;
+
 			switch (player->cur_block->btype) {
 			case tb_tone:
 				tape_player_tone_init(player,
@@ -135,8 +142,8 @@ static void tape_player_next(tape_player_t *player)
 			    (tblock_tone_t *) player->cur_block->ext);
 			break;
 		case tb_pulses:
-			tape_player_tone_next(player,
-			    (tblock_tone_t *) player->cur_block->ext);
+			tape_player_pulses_next(player,
+			    (tblock_pulses_t *) player->cur_block->ext);
 			break;
 		default:
 			break;
@@ -157,6 +164,16 @@ void tape_player_get_next(tape_player_t *player, uint32_t *rdelay,
 	tonegen_get_next(&player->tgen, rdelay, rlvl);
 }
 
+/** End processing current block.
+ *
+ * @param player Tape player
+ */
+static void tape_player_end_block(tape_player_t *player)
+{
+	player->next_block = tape_next(player->cur_block);
+	player->cur_block = NULL;
+}
+
 /** Initialize playback of tone block.
  *
  * @param player Tape player
@@ -175,8 +192,7 @@ static void tape_player_tone_init(tape_player_t *player, tblock_tone_t *tone)
  */
 static void tape_player_tone_next(tape_player_t *player, tblock_tone_t *tone)
 {
-	/* End of current block */
-	player->cur_block = NULL;
+	tape_player_end_block(player);
 }
 
 /** Initialize playback of pulse sequence block.
@@ -201,11 +217,10 @@ static void tape_player_pulses_init(tape_player_t *player,
 static void tape_player_pulses_next(tape_player_t *player,
     tblock_pulses_t *pulses)
 {
-	if (player->cur_idx >= pulses->num_pulses) {
-		/* End of current block */
-		player->cur_block = NULL;
-	}
-
 	tonegen_add_tone(&player->tgen, pulses->pulse_len[player->cur_idx], 1);
 	++player->cur_idx;
+
+	if (player->cur_idx >= pulses->num_pulses) {
+		tape_player_end_block(player);
+	}
 }

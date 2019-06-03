@@ -1,6 +1,6 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Unit tests main
+ * Tape player unit tests
  *
  * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
@@ -30,30 +30,12 @@
  */
 
 /**
- * @file Unit tests main
+ * @file Tape player unit tests.
  */
 
-#include <stdio.h>
-#include "tape/player.h"
-#include "tape/tonegen.h"
+#ifndef TEST_TAPE_PLAYER_H
+#define TEST_TAPE_PLAYER_H
 
-int main(void)
-{
-	int rc;
+extern int test_tape_player(void);
 
-	rc = test_tape_player();
-	if (rc != 0)
-		goto error;
-
-
-	rc = test_tonegen();
-	if (rc != 0)
-		goto error;
-
-	printf("All tests passed.\n");
-
-	return 0;
-error:
-	printf("Some tests FAILED.\n");
-	return 1;
-}
+#endif
