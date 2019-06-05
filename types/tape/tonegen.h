@@ -36,10 +36,11 @@
 #ifndef TYPES_TAPE_TONEGEN_H
 #define TYPES_TAPE_TONEGEN_H
 
+#include <stdint.h>
 #include "tape.h"
 
 enum {
-	tonegen_max_tones = 8
+	tonegen_max_tones = 11
 };
 
 /** Tone generator */
@@ -47,7 +48,7 @@ typedef struct {
 	/** Number of programmed tones */
 	int num_tones;
 	/** Pulse length for each tone */
-	unsigned pulse_len[tonegen_max_tones];
+	uint32_t pulse_len[tonegen_max_tones];
 	/** Number of pulses for each tone */
 	unsigned num_pulses[tonegen_max_tones];
 
@@ -56,7 +57,7 @@ typedef struct {
 	/** Current level */
 	tape_lvl_t cur_lvl;
 	/** Pulse length for current tone */
-	unsigned cur_pulse_len;
+	uint32_t cur_pulse_len;
 	/** Remaining number of pulses in current tone */
 	unsigned rem_pulses;
 } tonegen_t;

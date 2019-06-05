@@ -44,6 +44,8 @@
 #define ROM_PPULSES_D 3220
 #define ROM_PAUSE_LEN 3500000
 
+#define TAPE_PAUSE_MULT 3500
+
 typedef struct {  
   unsigned data_bytes;
   unsigned used_bits;		/* in last byte */

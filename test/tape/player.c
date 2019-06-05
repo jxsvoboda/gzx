@@ -39,9 +39,11 @@
 #include <stdlib.h>
 #include "../../tape/player.h"
 #include "../../tape/tape.h"
+#include "../../zx_tape.h"
 #include "player.h"
 
 enum {
+	data_dbytes = 4,
 	tone_np = 3,
 	pulses_np = 3
 };
@@ -51,18 +53,19 @@ enum {
  * @param player Tape player
  * @param delays Array of pulse lengths
  * @param num_pulses Number of pulses
+ * @param start_lvl Starting level
  *
  * @return Zero on success, non-zero on mismatch or other failure
  */
 static int test_check_waveform(tape_player_t *player, uint32_t *delays,
-    int num_pulses)
+    int num_pulses, tape_lvl_t start_lvl)
 {
 	int i;
 	uint32_t delay;
 	tape_lvl_t lvl;
 	tape_lvl_t tlvl;
 
-	tlvl = tlvl_low;
+	tlvl = start_lvl;
 
 	for (i = 0; i < num_pulses; i++) {
 		if (tape_player_is_end(player)) {
@@ -92,10 +95,95 @@ static int test_check_waveform(tape_player_t *player, uint32_t *delays,
 		}
 	}
 
+	return 0;
+}
+
+/** Test tape player with standard speed data block.
+ *
+ * @return Zero on success, non-zero on failure
+ */
+static int test_tape_player_data(void)
+{
+	tape_t *tape;
+	tblock_data_t *data;
+	tape_player_t *player;
+	uint8_t dbytes[data_dbytes] = { 0xff, 10, 100, 200 };
+	uint32_t pilot_pulses[1] = { ROM_PILOT_LEN };
+	uint32_t sync_pulses[2] = { ROM_SYNC1_LEN, ROM_SYNC2_LEN };
+	uint32_t one_pulses[2] = { ROM_ONE_LEN, ROM_ONE_LEN };
+	uint32_t zero_pulses[2] = { ROM_ZERO_LEN, ROM_ZERO_LEN };
+	uint32_t pause_pulses[1] = { TAPE_PAUSE_MULT * 10 };
+	uint32_t *ppulses;
+	tape_lvl_t tlvl;
+	int i, j;
+	int rc;
+
+	printf("Test tape player with standard speed data block...\n");
+
+	rc = tape_create(&tape);
+	if (rc != 0)
+		return 1;
+
+	rc = tblock_data_create(&data);
+	if (rc != 0)
+		return 1;
+
+	data->pause_after = 10;
+	data->data = malloc(data_dbytes);
+	if (data->data == NULL)
+		return 1;
+
+	for (i = 0; i < data_dbytes; i++)
+		data->data[i] = dbytes[i];
+
+	data->data_len = data_dbytes;
+
+	tape_append(tape, data->block);
+
+	rc = tape_player_create(tape_first(tape), &player);
+	if (rc != 0)
+		return 1;
+
+	tlvl = tlvl_low;
+	for (i = 0; i < ROM_PPULSES_D; i++) {
+		rc = test_check_waveform(player, pilot_pulses, 1, tlvl);
+		if (rc != 0)
+			return 1;
+
+		tlvl = !tlvl;
+	}
+
+	rc = test_check_waveform(player, sync_pulses, 2, tlvl);
+	if (rc != 0)
+		return 1;
+
+	for (i = 0; i < data_dbytes; i++) {
+		printf("byte[%u]=0x%x\n", i, data->data[i]);
+		for (j = 0; j < 8; j++) {
+			if ((data->data[i] & (0x80 >> j)) != 0)
+				ppulses = one_pulses;
+			else
+				ppulses = zero_pulses;
+
+			rc = test_check_waveform(player, ppulses, 2, tlvl);
+			if (rc != 0)
+				return 1;
+		}
+	}
+
+	rc = test_check_waveform(player, pause_pulses, 1, tlvl);
+	if (rc != 0)
+		return 1;
+
 	if (!tape_player_is_end(player)) {
 		printf("Expected end of waveform not found.\n");
 		return 1;
 	}
+
+	tape_player_destroy(player);
+	tape_destroy(tape);
+
+	printf(" ... passed\n");
 
 	return 0;
 }
@@ -131,9 +219,14 @@ static int test_tape_player_tone(void)
 	if (rc != 0)
 		return 1;
 
-	rc = test_check_waveform(player, delays, tone_np);
+	rc = test_check_waveform(player, delays, tone_np, tlvl_low);
 	if (rc != 0)
 		return 1;
+
+	if (!tape_player_is_end(player)) {
+		printf("Expected end of waveform not found.\n");
+		return 1;
+	}
 
 	tape_player_destroy(player);
 	tape_destroy(tape);
@@ -180,9 +273,14 @@ static int test_tape_player_pulses(void)
 	if (rc != 0)
 		return 1;
 
-	rc = test_check_waveform(player, delays, pulses_np);
+	rc = test_check_waveform(player, delays, pulses_np, tlvl_low);
 	if (rc != 0)
 		return 1;
+
+	if (!tape_player_is_end(player)) {
+		printf("Expected end of waveform not found.\n");
+		return 1;
+	}
 
 	tape_player_destroy(player);
 	tape_destroy(tape);
@@ -199,6 +297,10 @@ static int test_tape_player_pulses(void)
 int test_tape_player(void)
 {
 	int rc;
+
+	rc = test_tape_player_data();
+	if (rc != 0)
+		return 1;
 
 	rc = test_tape_player_tone();
 	if (rc != 0)

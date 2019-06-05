@@ -45,7 +45,6 @@ int main(void)
 	if (rc != 0)
 		goto error;
 
-
 	rc = test_tonegen();
 	if (rc != 0)
 		goto error;

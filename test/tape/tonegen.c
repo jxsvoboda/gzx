@@ -49,13 +49,14 @@ enum {
  */
 int test_tonegen(void)
 {
+	int i;
 	tonegen_t tgen;
 	uint32_t delay;
 	tape_lvl_t lvl;
 	uint32_t delays[test_np] = { 10, 10, 10, 20, 20, 30 };
-	tape_lvl_t lvls[test_np] = { tlvl_high, tlvl_low, tlvl_high, tlvl_low,
-	    tlvl_high, tlvl_low };
-	int i;
+	tape_lvl_t lvls[test_np] = {
+		tlvl_high, tlvl_low, tlvl_high, tlvl_low, tlvl_high, tlvl_low
+	};
 
 	printf("Test tonegen...\n");
 

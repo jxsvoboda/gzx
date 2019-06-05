@@ -42,8 +42,11 @@
 #include "tape.h"
 #include "tonegen.h"
 #include "player.h"
+#include "../zx_tape.h"
 
 static void tape_player_next(tape_player_t *);
+static void tape_player_data_init(tape_player_t *, tblock_data_t *);
+static void tape_player_data_next(tape_player_t *, tblock_data_t *);
 static void tape_player_tone_init(tape_player_t *, tblock_tone_t *);
 static void tape_player_tone_next(tape_player_t *, tblock_tone_t *);
 static void tape_player_pulses_init(tape_player_t *, tblock_pulses_t *);
@@ -123,6 +126,10 @@ static void tape_player_next(tape_player_t *player)
 				break;
 
 			switch (player->cur_block->btype) {
+			case tb_data:
+				tape_player_data_init(player,
+				    (tblock_data_t *) player->cur_block->ext);
+				break;
 			case tb_tone:
 				tape_player_tone_init(player,
 				    (tblock_tone_t *) player->cur_block->ext);
@@ -137,6 +144,10 @@ static void tape_player_next(tape_player_t *player)
 		}
 
 		switch (player->cur_block->btype) {
+		case tb_data:
+			tape_player_data_next(player,
+			    (tblock_data_t *) player->cur_block->ext);
+			break;
 		case tb_tone:
 			tape_player_tone_next(player,
 			    (tblock_tone_t *) player->cur_block->ext);
@@ -172,6 +183,69 @@ static void tape_player_end_block(tape_player_t *player)
 {
 	player->next_block = tape_next(player->cur_block);
 	player->cur_block = NULL;
+}
+
+/** Initialize playback of standard speed data block.
+ *
+ * @param player Tape player
+ * @param data Standard speed data block
+ */
+static void tape_player_data_init(tape_player_t *player, tblock_data_t *data)
+{
+	tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+
+	/* Pilot tone */
+	tonegen_add_tone(&player->tgen, ROM_PILOT_LEN,
+	    data->data[0] == 0x00 ? ROM_PPULSES_H : ROM_PPULSES_D);
+
+	/* Sync pulses */
+	tonegen_add_tone(&player->tgen, ROM_SYNC1_LEN, 1);
+	tonegen_add_tone(&player->tgen, ROM_SYNC2_LEN, 1);
+
+	/* Index of next data byte to program */
+	player->cur_idx = 0;
+	player->pause_done = false;
+}
+
+/** Next step in playback of standard speed data block.
+ *
+ * @param player Tape player
+ * @param data Standard speed data block
+ */
+static void tape_player_data_next(tape_player_t *player, tblock_data_t *data)
+{
+	int i;
+	uint8_t b;
+	uint32_t plen;
+
+	if (!tonegen_is_end(&player->tgen))
+		return;
+
+	if (player->cur_idx < data->data_len) {
+		tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+
+		/* Program next 8 bits */
+		for (i = 0; i < 8; i++) {
+			b = data->data[player->cur_idx];
+
+			plen = (b & (0x80 >> i)) != 0 ? ROM_ONE_LEN :
+			    ROM_ZERO_LEN;
+
+			tonegen_add_tone(&player->tgen, plen, 2);
+		}
+
+		++player->cur_idx;
+	} else if (!player->pause_done) {
+		tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+
+		/* XXX Make sure we produce an edge!! */
+		tonegen_add_tone(&player->tgen,
+		    TAPE_PAUSE_MULT * data->pause_after, 1);
+
+		player->pause_done = true;
+	} else {
+		tape_player_end_block(player);
+	}
 }
 
 /** Initialize playback of tone block.
