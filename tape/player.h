@@ -43,7 +43,8 @@
 #include "../types/tape/player.h"
 #include "../types/tape/tape.h"
 
-extern int tape_player_create(tape_block_t *, tape_player_t **);
+extern int tape_player_create(tape_player_t **);
+extern void tape_player_init(tape_player_t *, tape_block_t *);
 extern void tape_player_destroy(tape_player_t *);
 extern bool tape_player_is_end(tape_player_t *);
 extern tape_lvl_t tape_player_cur_lvl(tape_player_t *);

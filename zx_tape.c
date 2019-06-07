@@ -41,8 +41,12 @@
 #include "z80.h"
 #include "zxt_fif.h"
 #include "zxt_ng.h"
+#include "tape/player.h"
+#include "tape/tape.h"
 
 /* 0=LOW 1=HI */
+
+static tape_player_t *player;
 
 static int cur_level;
 static int tape_delta_t;
@@ -408,6 +412,9 @@ void zx_tape_sabytes(void) {
   }
 }*/
 
+static tape_lvl_t cur_lvl;
+static uint32_t next_delay;
+static tape_lvl_t next_lvl;
 
 int zx_tape_selectfile(char *name) {
   char *ext;
@@ -431,23 +438,37 @@ int zx_tape_selectfile(char *name) {
     printf("error opening tape file\n");
     return -1;
   }
+  tape_player_init(player, tape_first(ng_get_tape()));
+  cur_lvl = tape_player_cur_lvl(player);
+  if (!tape_player_is_end(player))
+    tape_player_get_next(player, &next_delay, &next_lvl);
+  else
+    tape_playing = 0;
   return 0;
 }
 
 int zx_tape_init(int delta_t) {
+  int rc;
   tape_playing=0;
   tfr=NULL;
   cur_level=0;
   pb_type=-1;
   tape_delta_t=delta_t;
+  rc = tape_player_create(&player);
+  if (rc != 0)
+	return -1;
   return 0;
 }
 
 void zx_tape_done(void) {
   if(tfr) tfr->close_file();
+  if (player != NULL) {
+	tape_player_destroy(player);
+	player = NULL;
+  }
 }
 
-void zx_tape_getsmp(u8 *smp) {
+static void zx_tape_getsmp_old(u8 *smp) {
     
   if(tfr && tape_playing && !tape_paused) {
     if(pb_type<0) { /* no open block */
@@ -477,6 +498,35 @@ void zx_tape_getsmp(u8 *smp) {
   *smp=cur_level;
 }
 
+
+static void zx_tape_getsmp_new(u8 *smp) {
+  uint32_t td;
+
+  if (!tape_playing || tape_paused) {
+        *smp = cur_lvl;
+	return;
+  }
+
+  td = tape_delta_t;
+  while (next_delay <= td && !tape_player_is_end(player)) {
+    td -= next_delay;
+    cur_lvl = next_lvl;
+    tape_player_get_next(player, &next_delay, &next_lvl);
+  }
+
+  if (next_delay > td)
+    next_delay -= td;
+  *smp = cur_lvl;
+}
+
+
+void zx_tape_getsmp(u8 *smp) {
+  if (1)
+    zx_tape_getsmp_old(smp);
+  else
+    zx_tape_getsmp_new(smp);
+}
+
 void zx_tape_play(void) {
   tape_playing=1;
   tape_paused=0;
@@ -493,4 +543,11 @@ void zx_tape_stop(void) {
 void zx_tape_rewind(void) {
   if(tfr) tfr->rewind_file();
   pb_type=-1;
+
+  tape_player_init(player, tape_first(ng_get_tape()));
+  cur_lvl = tape_player_cur_lvl(player);
+  if (!tape_player_is_end(player))
+    tape_player_get_next(player, &next_delay, &next_lvl);
+  else
+    tape_playing = 0;
 }

@@ -32,8 +32,11 @@
 #ifndef ZXT_NG_H
 #define ZXT_NG_H
 
+#include "types/tape/tape.h"
 #include "zxt_fif.h"
 
 extern tfr_t tfr_ng;
+
+extern tape_t *ng_get_tape(void);
 
 #endif

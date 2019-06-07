@@ -140,9 +140,11 @@ static int test_tape_player_data(void)
 
 	tape_append(tape, data->block);
 
-	rc = tape_player_create(tape_first(tape), &player);
+	rc = tape_player_create(&player);
 	if (rc != 0)
 		return 1;
+
+	tape_player_init(player, tape_first(tape));
 
 	tlvl = tlvl_low;
 	for (i = 0; i < ROM_PPULSES_D; i++) {
@@ -215,9 +217,11 @@ static int test_tape_player_tone(void)
 
 	tape_append(tape, tone->block);
 
-	rc = tape_player_create(tape_first(tape), &player);
+	rc = tape_player_create(&player);
 	if (rc != 0)
 		return 1;
+
+	tape_player_init(player, tape_first(tape));
 
 	rc = test_check_waveform(player, delays, tone_np, tlvl_low);
 	if (rc != 0)
@@ -269,9 +273,11 @@ static int test_tape_player_pulses(void)
 
 	tape_append(tape, pulses->block);
 
-	rc = tape_player_create(tape_first(tape), &player);
+	rc = tape_player_create(&player);
 	if (rc != 0)
 		return 1;
+
+	tape_player_init(player, tape_first(tape));
 
 	rc = test_check_waveform(player, delays, pulses_np, tlvl_low);
 	if (rc != 0)

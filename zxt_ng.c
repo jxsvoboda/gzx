@@ -41,6 +41,7 @@
 #include "tape/wav.h"
 #include "zx_tape.h"
 #include "zxt_fif.h"
+#include "zxt_ng.h"
 
 static int ng_open_file(char *filename);
 static int ng_close_file(void);
@@ -88,6 +89,11 @@ static int block_lbbits;
 
 static u8 voice_byte;
 static int voice_bbits;
+
+tape_t *ng_get_tape(void)
+{
+	return tape;
+}
 
 static int ng_open_file(char *filename)
 {

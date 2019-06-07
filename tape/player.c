@@ -54,11 +54,10 @@ static void tape_player_pulses_next(tape_player_t *, tblock_pulses_t *);
 
 /** Create tape player.
  *
- * @param block Tape block to start playing at
  * @param rplayer Place to store pointer to new tape player
  * @return EOK on success, ENOMEM if out of memory
  */
-int tape_player_create(tape_block_t *block, tape_player_t **rplayer)
+int tape_player_create(tape_player_t **rplayer)
 {
 	tape_player_t *player;
 
@@ -66,12 +65,26 @@ int tape_player_create(tape_block_t *block, tape_player_t **rplayer)
 	if (player == NULL)
 		return ENOMEM;
 
-	tonegen_init(&player->tgen, tlvl_low);
 	player->cur_block = NULL;
-	player->next_block = block;
+	player->next_block = NULL;
 
 	*rplayer = player;
 	return 0;
+}
+
+/** Initialize tape player.
+ *
+ * @param player Tape player
+ * @param block Tape block to start playing at
+ * @return EOK on success, ENOMEM if out of memory
+ */
+void tape_player_init(tape_player_t *player, tape_block_t *block)
+{
+	tonegen_init(&player->tgen, tlvl_low);
+	player->cur_block = NULL;
+	player->cur_idx = 0;
+	player->pause_done = false;
+	player->next_block = block;
 }
 
 /** Destroy tape player.
