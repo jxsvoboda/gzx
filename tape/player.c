@@ -47,10 +47,14 @@
 static void tape_player_next(tape_player_t *);
 static void tape_player_data_init(tape_player_t *, tblock_data_t *);
 static void tape_player_data_next(tape_player_t *, tblock_data_t *);
+static void tape_player_turbo_data_init(tape_player_t *, tblock_turbo_data_t *);
+static void tape_player_turbo_data_next(tape_player_t *, tblock_turbo_data_t *);
 static void tape_player_tone_init(tape_player_t *, tblock_tone_t *);
 static void tape_player_tone_next(tape_player_t *, tblock_tone_t *);
 static void tape_player_pulses_init(tape_player_t *, tblock_pulses_t *);
 static void tape_player_pulses_next(tape_player_t *, tblock_pulses_t *);
+static void tape_player_pure_data_init(tape_player_t *, tblock_pure_data_t *);
+static void tape_player_pure_data_next(tape_player_t *, tblock_pure_data_t *);
 
 /** Create tape player.
  *
@@ -143,6 +147,11 @@ static void tape_player_next(tape_player_t *player)
 				tape_player_data_init(player,
 				    (tblock_data_t *) player->cur_block->ext);
 				break;
+			case tb_turbo_data:
+				tape_player_turbo_data_init(player,
+				    (tblock_turbo_data_t *)
+				    player->cur_block->ext);
+				break;
 			case tb_tone:
 				tape_player_tone_init(player,
 				    (tblock_tone_t *) player->cur_block->ext);
@@ -150,6 +159,11 @@ static void tape_player_next(tape_player_t *player)
 			case tb_pulses:
 				tape_player_pulses_init(player,
 				    (tblock_pulses_t *) player->cur_block->ext);
+				break;
+			case tb_pure_data:
+				tape_player_pure_data_init(player,
+				    (tblock_pure_data_t *)
+				    player->cur_block->ext);
 				break;
 			default:
 				break;
@@ -161,6 +175,10 @@ static void tape_player_next(tape_player_t *player)
 			tape_player_data_next(player,
 			    (tblock_data_t *) player->cur_block->ext);
 			break;
+		case tb_turbo_data:
+			tape_player_turbo_data_next(player,
+			    (tblock_turbo_data_t *) player->cur_block->ext);
+			break;
 		case tb_tone:
 			tape_player_tone_next(player,
 			    (tblock_tone_t *) player->cur_block->ext);
@@ -168,6 +186,10 @@ static void tape_player_next(tape_player_t *player)
 		case tb_pulses:
 			tape_player_pulses_next(player,
 			    (tblock_pulses_t *) player->cur_block->ext);
+			break;
+		case tb_pure_data:
+			tape_player_pure_data_next(player,
+			    (tblock_pure_data_t *) player->cur_block->ext);
 			break;
 		default:
 			break;
@@ -196,6 +218,46 @@ static void tape_player_end_block(tape_player_t *player)
 {
 	player->next_block = tape_next(player->cur_block);
 	player->cur_block = NULL;
+}
+
+/** Program playback of up to 8 bits.
+ *
+ * @param player Tape player
+ * @param b Byte containing the bits (starting with bit 7)
+ * @param nb Number of bits to play
+ * @param one_len Length of one pulse in T states
+ * @param zero_len Length of zero pulse in T states
+ */
+static void tape_player_program_bits(tape_player_t *player, uint8_t b,
+    int nb, uint16_t one_len, uint16_t zero_len)
+{
+	uint16_t plen;
+	int i;
+
+	for (i = 0; i < nb; i++) {
+		plen = (b & (0x80 >> i)) != 0 ? one_len : zero_len;
+
+		tonegen_add_tone(&player->tgen, plen, 2);
+	}
+}
+
+/** Program playback of pause.
+ *
+ * @param player Tape player
+ * @param pause_len Pause length in ms
+ */
+static void tape_player_program_pause(tape_player_t *player,
+    uint16_t pause_len)
+{
+	/*
+	 * XXX This is not correct
+	 *     - pause of zero duration is completely ignored, no level change
+	 *     - pause is always low level
+	 *     - if previous level was low, we start with 1 ms high level
+	 *     - current level stays low at the end of pause (so the next
+	 *     - pulse will not start with an edge)
+	 */
+	tonegen_add_tone(&player->tgen, TAPE_PAUSE_MULT * pause_len, 1);
 }
 
 /** Initialize playback of standard speed data block.
@@ -227,34 +289,73 @@ static void tape_player_data_init(tape_player_t *player, tblock_data_t *data)
  */
 static void tape_player_data_next(tape_player_t *player, tblock_data_t *data)
 {
-	int i;
-	uint8_t b;
-	uint32_t plen;
-
 	if (!tonegen_is_end(&player->tgen))
 		return;
 
 	if (player->cur_idx < data->data_len) {
 		tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
 
-		/* Program next 8 bits */
-		for (i = 0; i < 8; i++) {
-			b = data->data[player->cur_idx];
-
-			plen = (b & (0x80 >> i)) != 0 ? ROM_ONE_LEN :
-			    ROM_ZERO_LEN;
-
-			tonegen_add_tone(&player->tgen, plen, 2);
-		}
-
+		tape_player_program_bits(player, data->data[player->cur_idx],
+		    8, ROM_ONE_LEN, ROM_ZERO_LEN);
 		++player->cur_idx;
+
 	} else if (!player->pause_done) {
 		tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
 
-		/* XXX Make sure we produce an edge!! */
-		tonegen_add_tone(&player->tgen,
-		    TAPE_PAUSE_MULT * data->pause_after, 1);
+		tape_player_program_pause(player, data->pause_after);
+		player->pause_done = true;
+	} else {
+		tape_player_end_block(player);
+	}
+}
 
+/** Initialize playback of turbo speed data block.
+ *
+ * @param player Tape player
+ * @param tdata Turbo speed data block
+ */
+static void tape_player_turbo_data_init(tape_player_t *player,
+    tblock_turbo_data_t *tdata)
+{
+	tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+
+	/* Pilot tone */
+	tonegen_add_tone(&player->tgen, tdata->pilot_len, tdata->pilot_pulses);
+
+	/* Sync pulses */
+	tonegen_add_tone(&player->tgen, tdata->sync1_len, 1);
+	tonegen_add_tone(&player->tgen, tdata->sync2_len, 1);
+
+	/* Index of next data byte to program */
+	player->cur_idx = 0;
+	player->pause_done = false;
+}
+
+/** Next step in playback of turbo speed data block.
+ *
+ * @param player Tape player
+ * @param tdata Turbo speed data block
+ */
+static void tape_player_turbo_data_next(tape_player_t *player,
+    tblock_turbo_data_t *tdata)
+{
+	int nb;
+
+	if (!tonegen_is_end(&player->tgen))
+		return;
+
+	if (player->cur_idx < tdata->data_len) {
+		tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+
+		nb = player->cur_idx < tdata->data_len - 1 ? 8 : tdata->lb_bits;
+		tape_player_program_bits(player, tdata->data[player->cur_idx],
+		    nb, tdata->one_len, tdata->zero_len);
+		++player->cur_idx;
+
+	} else if (!player->pause_done) {
+		tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+
+		tape_player_program_pause(player, tdata->pause_after);
 		player->pause_done = true;
 	} else {
 		tape_player_end_block(player);
@@ -308,6 +409,52 @@ static void tape_player_pulses_next(tape_player_t *player,
 	++player->cur_idx;
 
 	if (player->cur_idx >= pulses->num_pulses) {
+		tape_player_end_block(player);
+	}
+}
+
+/** Initialize playback of pure data block.
+ *
+ * @param player Tape player
+ * @param pdata Pure data block
+ */
+static void tape_player_pure_data_init(tape_player_t *player,
+    tblock_pure_data_t *pdata)
+{
+	tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+
+	/* Index of next data byte to program */
+	player->cur_idx = 0;
+	player->pause_done = false;
+}
+
+/** Next step in playback of pure data block.
+ *
+ * @param player Tape player
+ * @param pdata Pure data block
+ */
+static void tape_player_pure_data_next(tape_player_t *player,
+    tblock_pure_data_t *pdata)
+{
+	int nb;
+
+	if (!tonegen_is_end(&player->tgen))
+		return;
+
+	if (player->cur_idx < pdata->data_len) {
+		tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+
+		nb = player->cur_idx < pdata->data_len - 1 ? 8 : pdata->lb_bits;
+		tape_player_program_bits(player, pdata->data[player->cur_idx],
+		    nb, pdata->one_len, pdata->zero_len);
+		++player->cur_idx;
+
+	} else if (!player->pause_done) {
+		tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+
+		tape_player_program_pause(player, pdata->pause_after);
+		player->pause_done = true;
+	} else {
 		tape_player_end_block(player);
 	}
 }

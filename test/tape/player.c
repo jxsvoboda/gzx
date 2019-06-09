@@ -160,9 +160,109 @@ static int test_tape_player_data(void)
 		return 1;
 
 	for (i = 0; i < data_dbytes; i++) {
-		printf("byte[%u]=0x%x\n", i, data->data[i]);
 		for (j = 0; j < 8; j++) {
 			if ((data->data[i] & (0x80 >> j)) != 0)
+				ppulses = one_pulses;
+			else
+				ppulses = zero_pulses;
+
+			rc = test_check_waveform(player, ppulses, 2, tlvl);
+			if (rc != 0)
+				return 1;
+		}
+	}
+
+	rc = test_check_waveform(player, pause_pulses, 1, tlvl);
+	if (rc != 0)
+		return 1;
+
+	if (!tape_player_is_end(player)) {
+		printf("Expected end of waveform not found.\n");
+		return 1;
+	}
+
+	tape_player_destroy(player);
+	tape_destroy(tape);
+
+	printf(" ... passed\n");
+
+	return 0;
+}
+
+/** Test tape player with turbo speed data block.
+ *
+ * @return Zero on success, non-zero on failure
+ */
+static int test_tape_player_turbo_data(void)
+{
+	tape_t *tape;
+	tblock_turbo_data_t *tdata;
+	tape_player_t *player;
+	uint8_t dbytes[data_dbytes] = { 0xff, 10, 100, 200 };
+	int lb_bits = 5;
+	uint32_t pilot_pulses[1] = { 2000 };
+	uint32_t sync_pulses[2] = { 600, 700 };
+	uint32_t one_pulses[2] = { 1000, 1000 };
+	uint32_t zero_pulses[2] = { 500, 500 };
+	uint32_t pause_pulses[1] = { TAPE_PAUSE_MULT * 10 };
+	uint32_t *ppulses;
+	tape_lvl_t tlvl;
+	int i, j;
+	int nb;
+	int rc;
+
+	printf("Test tape player with turbo speed data block...\n");
+
+	rc = tape_create(&tape);
+	if (rc != 0)
+		return 1;
+
+	rc = tblock_turbo_data_create(&tdata);
+	if (rc != 0)
+		return 1;
+
+	tdata->pilot_len = pilot_pulses[0];
+	tdata->sync1_len = sync_pulses[0];
+	tdata->sync2_len = sync_pulses[1];
+	tdata->zero_len = zero_pulses[0];
+	tdata->one_len = one_pulses[1];
+	tdata->pilot_pulses = 3000;
+	tdata->lb_bits = 8;
+	tdata->pause_after = 10;
+	tdata->data = malloc(data_dbytes);
+	if (tdata->data == NULL)
+		return 1;
+
+	for (i = 0; i < data_dbytes; i++)
+		tdata->data[i] = dbytes[i];
+
+	tdata->data_len = data_dbytes;
+
+	tape_append(tape, tdata->block);
+
+	rc = tape_player_create(&player);
+	if (rc != 0)
+		return 1;
+
+	tape_player_init(player, tape_first(tape));
+
+	tlvl = tlvl_low;
+	for (i = 0; i < tdata->pilot_pulses; i++) {
+		rc = test_check_waveform(player, pilot_pulses, 1, tlvl);
+		if (rc != 0)
+			return 1;
+
+		tlvl = !tlvl;
+	}
+
+	rc = test_check_waveform(player, sync_pulses, 2, tlvl);
+	if (rc != 0)
+		return 1;
+
+	for (i = 0; i < data_dbytes; i++) {
+		nb = i < data_dbytes ? 8 : lb_bits;
+		for (j = 0; j < nb; j++) {
+			if ((tdata->data[i] & (0x80 >> j)) != 0)
 				ppulses = one_pulses;
 			else
 				ppulses = zero_pulses;
@@ -296,6 +396,90 @@ static int test_tape_player_pulses(void)
 	return 0;
 }
 
+/** Test tape player with pure data block.
+ *
+ * @return Zero on success, non-zero on failure
+ */
+static int test_tape_player_pure_data(void)
+{
+	tape_t *tape;
+	tblock_pure_data_t *pdata;
+	tape_player_t *player;
+	uint8_t dbytes[data_dbytes] = { 0xff, 10, 100, 200 };
+	int lb_bits = 5;
+	uint32_t one_pulses[2] = { 1000, 1000 };
+	uint32_t zero_pulses[2] = { 500, 500 };
+	uint32_t pause_pulses[1] = { TAPE_PAUSE_MULT * 10 };
+	uint32_t *ppulses;
+	tape_lvl_t tlvl;
+	int i, j;
+	int nb;
+	int rc;
+
+	printf("Test tape player with pure data block...\n");
+
+	rc = tape_create(&tape);
+	if (rc != 0)
+		return 1;
+
+	rc = tblock_pure_data_create(&pdata);
+	if (rc != 0)
+		return 1;
+
+	pdata->zero_len = zero_pulses[0];
+	pdata->one_len = one_pulses[1];
+	pdata->lb_bits = 8;
+	pdata->pause_after = 10;
+	pdata->data = malloc(data_dbytes);
+	if (pdata->data == NULL)
+		return 1;
+
+	for (i = 0; i < data_dbytes; i++)
+		pdata->data[i] = dbytes[i];
+
+	pdata->data_len = data_dbytes;
+
+	tape_append(tape, pdata->block);
+
+	rc = tape_player_create(&player);
+	if (rc != 0)
+		return 1;
+
+	tape_player_init(player, tape_first(tape));
+
+	tlvl = tlvl_low;
+
+	for (i = 0; i < data_dbytes; i++) {
+		nb = i < data_dbytes ? 8 : lb_bits;
+		for (j = 0; j < nb; j++) {
+			if ((pdata->data[i] & (0x80 >> j)) != 0)
+				ppulses = one_pulses;
+			else
+				ppulses = zero_pulses;
+
+			rc = test_check_waveform(player, ppulses, 2, tlvl);
+			if (rc != 0)
+				return 1;
+		}
+	}
+
+	rc = test_check_waveform(player, pause_pulses, 1, tlvl);
+	if (rc != 0)
+		return 1;
+
+	if (!tape_player_is_end(player)) {
+		printf("Expected end of waveform not found.\n");
+		return 1;
+	}
+
+	tape_player_destroy(player);
+	tape_destroy(tape);
+
+	printf(" ... passed\n");
+
+	return 0;
+}
+
 /** Run tape player unit tests.
  *
  * @return Zero on success, non-zero on failure
@@ -308,11 +492,19 @@ int test_tape_player(void)
 	if (rc != 0)
 		return 1;
 
+	rc = test_tape_player_turbo_data();
+	if (rc != 0)
+		return 1;
+
 	rc = test_tape_player_tone();
 	if (rc != 0)
 		return 1;
 
 	rc = test_tape_player_pulses();
+	if (rc != 0)
+		return 1;
+
+	rc = test_tape_player_pure_data();
 	if (rc != 0)
 		return 1;
 
