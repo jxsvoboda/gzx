@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Main module
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,11 +29,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define TAP_NAME1 "/mnt/dos/ghost128.z80"
-#define TAP_NAME2 "/mnt/dos/jetpac.tap"
-#define TAP_NAME3 "/mnt/dos/stunt128.tzx"
-#define TAP_NAME4 "/mnt/dos/totalecl.tap"
-#define SNAP_CRASH "/mnt/dos/spcrash.z80"
 #undef LOG
 
 #include <stdbool.h>
@@ -74,12 +69,8 @@
 #define CLOCK_LT(a,b) ( (((a)-(b)) >> 31) != 0 )
 #define CLOCK_GE(a,b) ( (((a)-(b)) >> 31) == 0 )
 
-/* declarations */
-void zx_reset(void);
+static void zx_scr_save(void);
 
-int gfxram_load(char *fname);
-
-void zx_scr_save(void);
 int scr_no=0;
 
 FILE *logfi;
@@ -185,8 +176,10 @@ static void key_unmod(wkey_t *k)
       case WKEY_F1:
 	zx_load_snap("test.sna");
 	break;
-      case WKEY_F2: save_snap_dialog(); break;
-      // case WKEY_F2: zx_scr_save(); break;
+      case WKEY_F2:
+        save_snap_dialog();
+        if (0) zx_scr_save(); // XXX
+        break;
       case WKEY_F3: load_snap_dialog(); break;
 //      case WKEY_F5: z80_nmi(); break;
       case WKEY_F5: tape_menu(); break;
@@ -277,11 +270,10 @@ static void key_handler(wkey_t *k) {
   }
 }
 
-void zx_scr_save(void) {
+static void zx_scr_save(void) {
   FILE *f;
   char name[32];
 
-//  snprintf(name,31,"scr%04d.bin",scr_no++);
   snprintf(name, 32, "scr%04d.bin",scr_no++);
   f=fopen(name,"wb");
   fwrite(zxscr,1,0x1B00,f);
@@ -454,7 +446,6 @@ void zx_debug_mstep(void) {
 #ifdef LOG
     if(cpus.iff1) fprintf(logfi,"interrupt\n");
 #endif
-//    if(cpus.IFF1) printf("interrupt\n");
     z80_int(0xff);
 #ifdef USE_GPU
     z80_g_int(0xff);
@@ -490,7 +481,7 @@ void zx_debug_mstep(void) {
   xmap_mark();
 #endif
 
-#ifdef USE_GPU    
+#ifdef USE_GPU
   z80_g_execinstr();
 #else
   z80_execinstr();
@@ -581,7 +572,6 @@ int main(int argc, char **argv) {
   if (0) tap_tape_test();
   if (0) wav_tape_test();
   
-  //printf("start\n");
   argi = 1;
   
   dbl_ln=0;
