@@ -45,6 +45,7 @@
 #include "../zx_tape.h"
 
 static void tape_player_next(tape_player_t *);
+static void tape_player_end_block(tape_player_t *);
 static void tape_player_data_init(tape_player_t *, tblock_data_t *);
 static void tape_player_data_next(tape_player_t *, tblock_data_t *);
 static void tape_player_turbo_data_init(tape_player_t *, tblock_turbo_data_t *);
@@ -137,7 +138,7 @@ static void tape_player_next(tape_player_t *player)
 		if (!tonegen_is_end(&player->tgen))
 			break;
 
-		if (player->cur_block == NULL) {
+		while (player->cur_block == NULL) {
 			player->cur_block = player->next_block;
 			player->next_block = NULL;
 
@@ -173,10 +174,14 @@ static void tape_player_next(tape_player_t *player)
 				    player->cur_block->ext);
 				break;
 			default:
-				assert(false);
+				/* Skip other blocks */
+				tape_player_end_block(player);
 				break;
 			}
 		}
+
+		if (player->cur_block == NULL)
+			break;
 
 		switch (player->cur_block->btype) {
 		case tb_data:
