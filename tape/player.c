@@ -272,7 +272,6 @@ static void tape_player_program_dr_bits(tape_player_t *player, uint8_t b,
 	tape_lvl_t lvl;
 	int i;
 
-	printf("program_dr_bits b=0x%x nb=%d\n", b, nb);
 	for (i = 0; i < nb; i++) {
 		lvl = (b & (0x80 >> i)) != 0 ? tlvl_high : tlvl_low;
 		tonegen_add_dpulse(&player->tgen, lvl, smp_dur);
@@ -429,7 +428,6 @@ static void tape_player_tone_next(tape_player_t *player, tblock_tone_t *tone)
 static void tape_player_pulses_init(tape_player_t *player,
     tblock_pulses_t *pulses)
 {
-	tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
 	player->cur_idx = 0;
 
 	tape_player_pulses_next(player, pulses);
@@ -443,6 +441,10 @@ static void tape_player_pulses_init(tape_player_t *player,
 static void tape_player_pulses_next(tape_player_t *player,
     tblock_pulses_t *pulses)
 {
+	if (!tonegen_is_end(&player->tgen))
+		return;
+
+	tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
 	tonegen_add_tone(&player->tgen, pulses->pulse_len[player->cur_idx], 1);
 	++player->cur_idx;
 

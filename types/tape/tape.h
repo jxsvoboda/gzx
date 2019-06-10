@@ -177,7 +177,7 @@ typedef struct {
 	/** Containing tape block */
 	struct tape_block *block;
 	/** Number of pulses */
-	uint16_t num_pulses;
+	uint8_t num_pulses;
 	/** Pulse lengths */
 	uint16_t *pulse_len;
 } tblock_pulses_t;

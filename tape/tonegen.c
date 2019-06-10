@@ -95,12 +95,10 @@ void tonegen_add_tone(tonegen_t *tgen, uint32_t pulse_len,
  * @param lvl Pulse level
  * @param pulse_len Pulse length
  */
-#include <stdio.h>
 void tonegen_add_dpulse(tonegen_t *tgen, tape_lvl_t lvl, uint32_t pulse_len)
 {
 	assert(tgen->num_tones < tonegen_max_tones);
 
-	printf("tonegen_add_dpulse(lvl=%d pulse_len=%d)\n", lvl, pulse_len);
 	tgen->pulse_len[tgen->num_tones] = pulse_len;
 	tgen->num_pulses[tgen->num_tones] = 1;
 	tgen->direct[tgen->num_tones] = true;

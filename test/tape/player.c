@@ -567,7 +567,6 @@ static int test_tape_player_direct_rec(void)
 	for (i = 0; i < data_dbytes; i++) {
 		nb = i < data_dbytes - 1 ? 8 : lb_bits;
 		for (j = 0; j < nb; j++) {
-			printf("byte %d bit %d\n", i, j);
 			if ((drec->data[i] & (0x80 >> j)) != 0)
 				tlvl = tlvl_high;
 			else

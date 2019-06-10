@@ -370,7 +370,7 @@ static int tzx_load_pulses(FILE *f, tape_t *tape)
 	if (rc != 0)
 		goto error;
 
-	pulses->num_pulses = uint16_t_le2host(block.num_pulses);
+	pulses->num_pulses = block.num_pulses;
 	pulses->pulse_len = calloc(pulses->num_pulses, sizeof(uint16_t));
 	if (pulses->pulse_len == NULL) {
 		rc = ENOMEM;
@@ -409,7 +409,7 @@ static int tzx_save_pulses(tblock_pulses_t *pulses, FILE *f)
 	uint16_t *pulse_len;
 	size_t i;
 
-	block.num_pulses = host2uint16_t_le(pulses->num_pulses);
+	block.num_pulses = pulses->num_pulses;
 
 	nwr = fwrite(&block, 1, sizeof(tzx_block_pulses_t), f);
 	if (nwr != sizeof(tzx_block_pulses_t))
