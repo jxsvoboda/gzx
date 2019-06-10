@@ -55,6 +55,8 @@ static void tape_player_pulses_init(tape_player_t *, tblock_pulses_t *);
 static void tape_player_pulses_next(tape_player_t *, tblock_pulses_t *);
 static void tape_player_pure_data_init(tape_player_t *, tblock_pure_data_t *);
 static void tape_player_pure_data_next(tape_player_t *, tblock_pure_data_t *);
+static void tape_player_direct_rec_init(tape_player_t *, tblock_direct_rec_t *);
+static void tape_player_direct_rec_next(tape_player_t *, tblock_direct_rec_t *);
 
 /** Create tape player.
  *
@@ -165,7 +167,13 @@ static void tape_player_next(tape_player_t *player)
 				    (tblock_pure_data_t *)
 				    player->cur_block->ext);
 				break;
+			case tb_direct_rec:
+				tape_player_direct_rec_init(player,
+				    (tblock_direct_rec_t *)
+				    player->cur_block->ext);
+				break;
 			default:
+				assert(false);
 				break;
 			}
 		}
@@ -191,7 +199,12 @@ static void tape_player_next(tape_player_t *player)
 			tape_player_pure_data_next(player,
 			    (tblock_pure_data_t *) player->cur_block->ext);
 			break;
+		case tb_direct_rec:
+			tape_player_direct_rec_next(player,
+			    (tblock_direct_rec_t *) player->cur_block->ext);
+			break;
 		default:
+			assert(false);
 			break;
 		}
 	}
@@ -220,7 +233,7 @@ static void tape_player_end_block(tape_player_t *player)
 	player->cur_block = NULL;
 }
 
-/** Program playback of up to 8 bits.
+/** Program playback of up to 8 bits of data.
  *
  * @param player Tape player
  * @param b Byte containing the bits (starting with bit 7)
@@ -238,6 +251,26 @@ static void tape_player_program_bits(tape_player_t *player, uint8_t b,
 		plen = (b & (0x80 >> i)) != 0 ? one_len : zero_len;
 
 		tonegen_add_tone(&player->tgen, plen, 2);
+	}
+}
+
+/** Program playback of up to 8 bits of direct recording.
+ *
+ * @param player Tape player
+ * @param b Byte containing the bits (starting with bit 7)
+ * @param nb Number of bits to play
+ * @param smp_dur Sample duration
+ */
+static void tape_player_program_dr_bits(tape_player_t *player, uint8_t b,
+    int nb, uint16_t smp_dur)
+{
+	tape_lvl_t lvl;
+	int i;
+
+	printf("program_dr_bits b=0x%x nb=%d\n", b, nb);
+	for (i = 0; i < nb; i++) {
+		lvl = (b & (0x80 >> i)) != 0 ? tlvl_high : tlvl_low;
+		tonegen_add_dpulse(&player->tgen, lvl, smp_dur);
 	}
 }
 
@@ -453,6 +486,52 @@ static void tape_player_pure_data_next(tape_player_t *player,
 		tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
 
 		tape_player_program_pause(player, pdata->pause_after);
+		player->pause_done = true;
+	} else {
+		tape_player_end_block(player);
+	}
+}
+
+/** Initialize playback of direct recording block.
+ *
+ * @param player Tape player
+ * @param drec Direct recording block
+ */
+static void tape_player_direct_rec_init(tape_player_t *player,
+    tblock_direct_rec_t *drec)
+{
+	tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+
+	/* Index of next byte to program */
+	player->cur_idx = 0;
+	player->pause_done = false;
+}
+
+/** Next step in playback of direct recording block.
+ *
+ * @param player Tape player
+ * @param drec Direct recording block
+ */
+static void tape_player_direct_rec_next(tape_player_t *player,
+    tblock_direct_rec_t *drec)
+{
+	int nb;
+
+	if (!tonegen_is_end(&player->tgen))
+		return;
+
+	if (player->cur_idx < drec->data_len) {
+		tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+
+		nb = player->cur_idx < drec->data_len - 1 ? 8 : drec->lb_bits;
+		tape_player_program_dr_bits(player, drec->data[player->cur_idx],
+		    nb, drec->smp_dur);
+		++player->cur_idx;
+
+	} else if (!player->pause_done) {
+		tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+
+		tape_player_program_pause(player, drec->pause_after);
 		player->pause_done = true;
 	} else {
 		tape_player_end_block(player);

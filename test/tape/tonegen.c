@@ -40,14 +40,15 @@
 #include "tonegen.h"
 
 enum {
-	test_np = 6
+	test_np = 6,
+	testd_np = 9
 };
 
-/** Run tone generator unit tests.
+/** Test tone generator with normal tones.
  *
  * @return Zero on success, non-zero on failure
  */
-int test_tonegen(void)
+static int test_tonegen_normal(void)
 {
 	int i;
 	tonegen_t tgen;
@@ -58,22 +59,34 @@ int test_tonegen(void)
 		tlvl_high, tlvl_low, tlvl_high, tlvl_low, tlvl_high, tlvl_low
 	};
 
-	printf("Test tonegen...\n");
+	printf("Test tonegen with normal tones...\n");
 
 	tonegen_init(&tgen, tlvl_low);
 	tonegen_add_tone(&tgen, 10, 3);
 	tonegen_add_tone(&tgen, 20, 2);
 	tonegen_add_tone(&tgen, 30, 1);
 
-	for (i = 0; i < 6; i++) {
+	if (tonegen_cur_lvl(&tgen) != tlvl_low) {
+		printf("Incorrect initial level.\n");
+		return 1;
+	}
+
+	for (i = 0; i < test_np; i++) {
 		if (tonegen_is_end(&tgen)) {
 			printf("Premature end of tone.\n");
 			return 1;
 		}
 
 		tonegen_get_next(&tgen, &delay, &lvl);
-		if (delay != delays[i] || lvl != lvls[i]) {
-			printf("Incorrect pulse length.\n");
+		if (delay != delays[i]) {
+			printf("Incorrect pulse length %d != %d.\n",
+			    delay, delays[i]);
+			return 1;
+		}
+
+		if (lvl != lvls[i]) {
+			printf("Incorrect pulse level %d != %d.\n",
+			    lvl, lvls[i]);
 			return 1;
 		}
 	}
@@ -84,6 +97,89 @@ int test_tonegen(void)
 	}
 
 	printf(" ... passed\n");
+
+	return 0;
+}
+
+/** Run Test tone generator with direct pulses.
+ *
+ * @return Zero on success, non-zero on failure
+ */
+static int test_tonegen_direct(void)
+{
+	int i;
+	tonegen_t tgen;
+	uint32_t delay;
+	tape_lvl_t lvl;
+	uint32_t delays[testd_np] = { 10, 20, 30, 40, 50, 60, 70, 80, 90 };
+	tape_lvl_t lvls[testd_np] = {
+		tlvl_low, tlvl_low, tlvl_high, tlvl_high, tlvl_low, tlvl_low,
+		tlvl_high, tlvl_low
+	};
+
+	printf("Test tonegen with direct pulses...\n");
+
+	tonegen_init(&tgen, tlvl_low);
+	tonegen_add_dpulse(&tgen, tlvl_high, 10);
+	tonegen_add_dpulse(&tgen, tlvl_low, 20);
+	tonegen_add_dpulse(&tgen, tlvl_low, 30);
+	tonegen_add_dpulse(&tgen, tlvl_high, 40);
+	tonegen_add_dpulse(&tgen, tlvl_high, 50);
+	tonegen_add_dpulse(&tgen, tlvl_low, 60);
+	tonegen_add_tone(&tgen, 70, 1);
+	tonegen_add_tone(&tgen, 80, 1);
+	tonegen_add_dpulse(&tgen, tlvl_low, 90);
+
+	if (tonegen_cur_lvl(&tgen) != tlvl_high) {
+		printf("Incorrect initial level.\n");
+		return 1;
+	}
+
+	for (i = 0; i < testd_np; i++) {
+		if (tonegen_is_end(&tgen)) {
+			printf("Premature end of tone.\n");
+			return 1;
+		}
+
+		tonegen_get_next(&tgen, &delay, &lvl);
+		if (delay != delays[i]) {
+			printf("Incorrect pulse length %d != %d.\n",
+			    delay, delays[i]);
+			return 1;
+		}
+
+		if (lvl != lvls[i]) {
+			printf("Incorrect pulse level %d != %d.\n",
+			    lvl, lvls[i]);
+			return 1;
+		}
+	}
+
+	if (!tonegen_is_end(&tgen)) {
+		printf("Expected end of tone not found.\n");
+		return 1;
+	}
+
+	printf(" ... passed\n");
+
+	return 0;
+}
+
+/** Run tone generator unit tests.
+ *
+ * @return Zero on success, non-zero on failure
+ */
+int test_tonegen(void)
+{
+	int rc;
+
+	rc = test_tonegen_normal();
+	if (rc != 0)
+		return 1;
+
+	rc = test_tonegen_direct();
+	if (rc != 0)
+		return 1;
 
 	return 0;
 }

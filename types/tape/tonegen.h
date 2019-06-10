@@ -51,6 +51,10 @@ typedef struct {
 	uint32_t pulse_len[tonegen_max_tones];
 	/** Number of pulses for each tone */
 	unsigned num_pulses[tonegen_max_tones];
+	/** Level is directly specified for this tone/pulse */
+	bool direct[tonegen_max_tones];
+	/** Direct level (if direct[] is true) */
+	tape_lvl_t dlvl[tonegen_max_tones];
 
 	/** Next tone index */
 	int tidx;
@@ -60,6 +64,8 @@ typedef struct {
 	uint32_t cur_pulse_len;
 	/** Remaining number of pulses in current tone */
 	unsigned rem_pulses;
+	/** Current pulse is direct */
+	bool cur_is_direct;
 } tonegen_t;
 
 #endif

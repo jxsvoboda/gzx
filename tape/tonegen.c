@@ -62,9 +62,13 @@ void tonegen_init(tonegen_t *tgen, tape_lvl_t lvl)
 	tgen->cur_lvl = lvl;
 	tgen->rem_pulses = 0;
 	tgen->cur_pulse_len = 0;
+	tgen->cur_is_direct = false;
 }
 
 /** Program one tone into the tone generator.
+ *
+ * A tone is a series of pulses of the same duration. Each pulse is followed
+ * by an edge.
  *
  * @param tgen Tone generator
  * @param pulse_len Pulse length
@@ -77,6 +81,34 @@ void tonegen_add_tone(tonegen_t *tgen, uint32_t pulse_len,
 
 	tgen->pulse_len[tgen->num_tones] = pulse_len;
 	tgen->num_pulses[tgen->num_tones] = num_pulses;
+	tgen->direct[tgen->num_tones] = false;
+	++tgen->num_tones;
+}
+
+/** Program one direct pulse into the tone generator.
+ *
+ * A direct pulse starts by setting the level to a particular value and
+ * then a delay. The current level is unchanged at the end of a direct
+ * pulse.
+ *
+ * @param tgen Tone generator
+ * @param lvl Pulse level
+ * @param pulse_len Pulse length
+ */
+#include <stdio.h>
+void tonegen_add_dpulse(tonegen_t *tgen, tape_lvl_t lvl, uint32_t pulse_len)
+{
+	assert(tgen->num_tones < tonegen_max_tones);
+
+	printf("tonegen_add_dpulse(lvl=%d pulse_len=%d)\n", lvl, pulse_len);
+	tgen->pulse_len[tgen->num_tones] = pulse_len;
+	tgen->num_pulses[tgen->num_tones] = 1;
+	tgen->direct[tgen->num_tones] = true;
+	tgen->dlvl[tgen->num_tones] = lvl;
+
+	if (tgen->tidx == tgen->num_tones)
+		tgen->cur_lvl = lvl;
+
 	++tgen->num_tones;
 }
 
@@ -108,18 +140,32 @@ tape_lvl_t tonegen_cur_lvl(tonegen_t *tgen)
  */
 void tonegen_get_next(tonegen_t *tgen, uint32_t *rdelay, tape_lvl_t *rlvl)
 {
+	tape_lvl_t end_lvl;
+
 	/* Advance tones until we get one with non-zero number of pulses */
 	while (tgen->rem_pulses == 0) {
 		assert(tgen->tidx < tgen->num_tones);
 
 		tgen->rem_pulses = tgen->num_pulses[tgen->tidx];
 		tgen->cur_pulse_len = tgen->pulse_len[tgen->tidx];
+		tgen->cur_is_direct = tgen->direct[tgen->tidx];
+
+		/* For direct pulse set current level at the beginning */
+		if (tgen->cur_is_direct)
+			tgen->cur_lvl = tgen->dlvl[tgen->tidx];
 		++tgen->tidx;
 	}
 
-	*rdelay = tgen->cur_pulse_len;
-	*rlvl = !tgen->cur_lvl;
+	/* For normal pulse flip current level at the end */
+	end_lvl = tgen->cur_is_direct ? tgen->cur_lvl : !tgen->cur_lvl;
 
-	tgen->cur_lvl = !tgen->cur_lvl;
+	/* If the next pulse is direct, we need to take its level as next */
+	if (tgen->tidx < tgen->num_tones && tgen->direct[tgen->tidx])
+		end_lvl = tgen->dlvl[tgen->tidx];
+
+	*rdelay = tgen->cur_pulse_len;
+	*rlvl = end_lvl;
+
+	tgen->cur_lvl = end_lvl;
 	--tgen->rem_pulses;
 }

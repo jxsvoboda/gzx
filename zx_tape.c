@@ -271,7 +271,7 @@ static void gs_voice(void) {
 void zx_tape_ldbytes(void) {
   unsigned req_flag,toload,addr,verify;
   unsigned u;
-  u8 flag,b,x,chksum;
+  u8 flag,b,x=0,chksum;
   unsigned error;
   int btype;
   tb_data_info_t binfo;

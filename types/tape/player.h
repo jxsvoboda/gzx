@@ -36,6 +36,7 @@
 #ifndef TYPES_TAPE_PLAYER_H
 #define TYPES_TAPE_PLAYER_H
 
+#include <stdint.h>
 #include <stdio.h>
 #include "tape.h"
 #include "tonegen.h"
@@ -45,7 +46,7 @@ typedef struct {
 	/** Current tape block */
 	tape_block_t *cur_block;
 	/** Index in current block. Exact meaning depends on block type */
-	int cur_idx;
+	uint32_t cur_idx;
 	/** Done programming pause */
 	bool pause_done;
 
