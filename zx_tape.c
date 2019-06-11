@@ -29,6 +29,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,103 +40,99 @@
 #include "strutil.h"
 #include "zx_tape.h"
 #include "z80.h"
-#include "zxt_fif.h"
-#include "zxt_ng.h"
 #include "tape/player.h"
+#include "tape/tap.h"
 #include "tape/tape.h"
+#include "tape/tzx.h"
+#include "tape/wav.h"
+
+static tape_t *tape;
+static tape_block_t *tblock;
 
 static tape_player_t *player;
 
 static int tape_delta_t;
 static int tape_playing,tape_paused;
 
-static tfr_t *tfr;
-
 /*** quick load ***/
 void zx_tape_ldbytes(void) {
   unsigned req_flag,toload,addr,verify;
   unsigned u;
   u8 flag,b,x=0,chksum;
-  unsigned error;
-  int btype;
-  tb_data_info_t binfo;
+  tblock_data_t *data;
   
   fprintf(logfi,"zx_tape_ldbytes()\n");
   
-  fprintf(logfi,"tfr?\n");
-  if(!tfr) return;
   fprintf(logfi,"!tape_playing?\n");
   if(tape_playing) return;
-  btype=tfr->block_type();
-  fprintf(logfi,"btype==BT_DATA?\n");
-  while (btype != BT_DATA) {
-    if(btype != BT_UNKNOWN) return;
-    if (tfr->skip_block() < 0) return;
-    btype=tfr->block_type();
-  }
-  fprintf(logfi,"!getinfo?\n");
-  if(tfr->get_b_data_info(&binfo)) return;
+  
+  while (tblock != NULL && tblock->btype != tb_data)
+    tblock = tape_next(tblock);
+    
+  fprintf(logfi,"tblock?\n");
+  if(!tblock) return;
+  
+  assert(tblock->btype == tb_data);
+  data = (tblock_data_t *)tblock->ext;
   
   fprintf(logfi,"...\n");
   req_flag=cpus.r_[rA];
   toload=((u16)cpus.r[rD]<<8) | (u16)cpus.r[rE];
   addr=cpus.IX;
   verify=(cpus.F_&fC)?0:1; 
-    
-  if(tfr->open_block()) return;
   
-  error=0;
-    
-  if(tfr->b_data_getbytes(1,&flag)) error=1;
+  if (data->data_len < 1) {
+    printf("Data block too short.\n");
+    goto error;
+  }
+  
+  flag = data->data[0];
   
   fprintf(logfi,"req:len %d, flag 0x%02x, addr 0x%04x, verify:%d\n",
           toload,req_flag,addr,verify);
-  fprintf(logfi,"block len %u, block flag:0x%02x\n",binfo.data_bytes,flag);
+  fprintf(logfi,"block len %u, block flag:0x%02x\n",data->data_len,flag);
   fprintf(logfi,"z80 F:%02x\n",cpus.F_);
   
-  if(flag!=req_flag) error=1;
+  if(flag!=req_flag)
+	goto error;
   
-  if(!error) {
-    if(verify) fprintf(logfi,"verifying\n");
-      else fprintf(logfi,"loading\n");
-      
-    x=flag;
-    for(u=0;u<toload;u++) {
-      if(tfr->b_data_getbytes(1,&b)) {
-        error=1;
-	fprintf(logfi,"out of data\n");
-	break;
-      }
-      if(!verify)
-        zx_memset8(addr+u,b);
+  if(verify) fprintf(logfi,"verifying\n");
+    else fprintf(logfi,"loading\n");
+
+  x=flag;
+  for(u=0;u<toload;u++) {
+    if (1 + u >= data->data_len) {
+      fprintf(logfi,"out of data\n");
+      goto error;
+    }
+    b = data->data[1 + u];
+    if(!verify) {
+      zx_memset8(addr+u,b);
       x^=b;
     }
   }
   
-  if(!error) {
-    if(tfr->b_data_getbytes(1,&chksum)) {
-      error=1;
-      fprintf(logfi,"out of data\n");
-    }
+  if (1 + toload >= data->data_len) {
+    fprintf(logfi,"out of data\n");
+    goto error;
   }
+  chksum = data->data[1 + toload];
   
-  if(!error) {
-    fprintf(logfi,"stored chksum:$%02x computed:$%02x\n",chksum,x);
-    if(chksum!=x) {
-      fprintf(logfi,"wrong checksum\n");
-      error=1;
-    }
+  fprintf(logfi,"stored chksum:$%02x computed:$%02x\n",chksum,x);
+  if(chksum!=x) {
+    fprintf(logfi,"wrong checksum\n");
+    goto error;
   }
 
-  if(error) {
-    cpus.F &= ~fC;
-  } else {
-    cpus.F |= fC;
-    fprintf(logfi,"load ok\n");
-  }
+  cpus.F |= fC;
+  fprintf(logfi,"load ok\n");
+  goto common;
+error:
+  cpus.F &= ~fC;
+  fprintf(logfi,"load error\n");
+common:
   
-  tfr->close_block();
-  
+  tblock = tape_next(tblock);
   /* RET */
   fprintf(logfi,"returning\n");
   cpus.PC=zx_memget16(cpus.SP);
@@ -196,15 +193,20 @@ void zx_tape_sabytes(void) {
   }
 }*/
 
+
 static tape_lvl_t cur_lvl;
 static uint32_t next_delay;
 static tape_lvl_t next_lvl;
 
 int zx_tape_selectfile(char *name) {
   char *ext;
-  int res;
+  int rc;
   
-  if(tfr) tfr->close_file();
+  if(tape != NULL) {
+    tape_destroy(tape);
+    tape = NULL;
+    tblock = NULL;
+  }
   
   ext=strrchr(name,'.');
   if(!ext) {
@@ -212,27 +214,39 @@ int zx_tape_selectfile(char *name) {
     return -1;
   }
   
-  tfr = &tfr_ng;
-  
-  res=tfr->open_file(name);
-    
-  if(res<0) {
+  if (strcmpci(ext, ".tap") == 0) {
+    rc = tap_tape_load(name, &tape);
+  } else if (strcmpci(ext, ".tzx") == 0) {
+    rc = tzx_tape_load(name, &tape);
+  } else if (strcmpci(ext, ".wav") == 0) {
+    rc = wav_tape_load(name, &tape);
+  } else {
+    printf("Uknown extension '%s'.\n", ext);
+    return -1;
+  }
+
+  if (rc != 0) {
     printf("error opening tape file\n");
     return -1;
   }
-  tape_player_init(player, tape_first(ng_get_tape()));
+
+  tblock = tape_first(tape);
+
+  tape_player_init(player, tblock);
   cur_lvl = tape_player_cur_lvl(player);
   if (!tape_player_is_end(player))
     tape_player_get_next(player, &next_delay, &next_lvl);
   else
     tape_playing = 0;
+  
   return 0;
 }
 
 int zx_tape_init(int delta_t) {
   int rc;
   tape_playing=0;
-  tfr=NULL;
+  tape=NULL;
+  tblock = NULL;
   tape_delta_t=delta_t;
   rc = tape_player_create(&player);
   if (rc != 0)
@@ -241,7 +255,10 @@ int zx_tape_init(int delta_t) {
 }
 
 void zx_tape_done(void) {
-  if(tfr) tfr->close_file();
+  if(tape != NULL)
+	tape_destroy(tape);
+  tape = NULL;
+  tblock = NULL;
   if (player != NULL) {
 	tape_player_destroy(player);
 	player = NULL;
@@ -282,9 +299,10 @@ void zx_tape_stop(void) {
 }
 
 void zx_tape_rewind(void) {
-  if(tfr) tfr->rewind_file();
+  if (tape != NULL)
+	tblock = tape_first(tape);
 
-  tape_player_init(player, tape_first(ng_get_tape()));
+  tape_player_init(player, tblock);
   cur_lvl = tape_player_cur_lvl(player);
   if (!tape_player_is_end(player))
     tape_player_get_next(player, &next_delay, &next_lvl);

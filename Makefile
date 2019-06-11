@@ -55,7 +55,6 @@ sources_generic = \
     zx_kbd.c \
     zx_sound.c \
     zx_tape.c \
-    zxt_ng.c \
     zx_scr.c \
     ay.c \
     menus.c \

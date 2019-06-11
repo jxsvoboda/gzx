@@ -46,35 +46,6 @@
 
 #define TAPE_PAUSE_MULT 3500
 
-typedef struct {  
-  unsigned data_bytes;
-  unsigned used_bits;		/* in last byte */
-
-  int rom_timing;		/* 1=ROM-timed, 0=turbo-timed */
-  int has_leadin;		/* 1=play pilot/sync, 0=data only */
-  unsigned pause_after_len;     /* in T-states */
-  
-  /* these must be set correctly even for ROM-timed blocks! */
-  unsigned pilot_len;
-  unsigned sync1_len;
-  unsigned sync2_len;
-  unsigned zero_len;
-  unsigned one_len;
-  unsigned pilot_pulses;
-} tb_data_info_t;
-
-typedef struct {  
-  unsigned pause_after_len;     /* in T-states */
-  unsigned samples;
-  unsigned smp_len;		/* int T-states */
-} tb_voice_info_t;
-
-#define BT_EOT     0
-#define BT_UNKNOWN 1
-#define BT_DATA    2
-#define BT_VOICE   3
-#define BT_TONES   4
-
 #include "intdef.h"
 
 /* quick tape loading */
