@@ -441,7 +441,7 @@ static int test_tape_player_pure_data(void)
 	tape_t *tape;
 	tblock_pure_data_t *pdata;
 	tape_player_t *player;
-	uint8_t dbytes[data_dbytes] = { 0xff, 10, 100, 128+32+8+2 };
+	uint8_t dbytes[data_dbytes] = { 0xff, 10, 100, 200 };
 	int lb_bits = 7;
 	uint32_t one_pulses[2] = { 1000, 1000 };
 	uint32_t zero_pulses[2] = { 500, 500 };
