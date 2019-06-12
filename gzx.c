@@ -199,9 +199,7 @@ static void key_unmod(wkey_t *k)
 	break;
       case WKEY_F2: save_snap_dialog(); break;
       // case WKEY_F2: zx_scr_save(); break;
-//      case WKEY_F2: zx_tape_selectfile(TAP_NAME2); break;
       case WKEY_F3: load_snap_dialog(); break;
-//      case WKEY_F4: zx_tape_selectfile(TAP_NAME4); break;
 //      case WKEY_F5: z80_nmi(); break;
       case WKEY_F5: tape_menu(); break;
 //      case WKEY_F6: zx_reset(); break;
@@ -212,9 +210,9 @@ static void key_unmod(wkey_t *k)
       case WKEY_F10: printf("F10 pressed\n"); quit=1; break;
       case WKEY_F11: zx_scr_mode(0); break;
 //      case WKEY_F12: zx_scr_mode(1); break;
-      case WKEY_NPLUS: zx_tape_play(); break;
-      case WKEY_NMINUS: zx_tape_stop(); break;
-      case WKEY_NSTAR: zx_tape_rewind(); break;
+      case WKEY_NPLUS: tape_deck_play(tape_deck); break;
+      case WKEY_NMINUS: tape_deck_stop(tape_deck); break;
+      case WKEY_NSTAR: tape_deck_rewind(tape_deck); break;
       case WKEY_NSLASH: slow_load=!slow_load; break;
 #ifdef XMAP
       case WKEY_N5: xmap_clear(); break;
@@ -386,8 +384,8 @@ static int zx_init(void) {
   midi.midi_msg = gzx_midi_msg;
   midi.midi_msg_arg = &midi;
 
-  if(zx_tape_init(ZX_TAPE_TICKS_SMP)<0) return -1;
-  //if(zx_tape_selectfile("/mnt/dos/jetpac.tap")<0) return -1;
+  if(tape_deck_create(&tape_deck) != 0) return -1;
+  tape_deck->delta_t = ZX_TAPE_TICKS_SMP;
 
   zx_reset();
   
@@ -496,14 +494,14 @@ void zx_debug_mstep(void) {
     snd_t+=ZX_SOUND_TICKS_SMP;
   }
   if(CLOCK_GE(z80_clock-tapp_t,ZX_TAPE_TICKS_SMP)) {
-    zx_tape_getsmp(&tape_smp);
+    tape_deck_getsmp(tape_deck, &tape_smp);
     ear=tape_smp;
     tapp_t+=ZX_TAPE_TICKS_SMP;
   }
   if(!slow_load) {
     if(cpus.PC==ZX_LDBYTES_TRAP) {
       printf("load trapped!\n");
-      zx_tape_ldbytes();
+      zx_tape_ldbytes(tape_deck);
     }
     if(cpus.PC==ZX_SABYTES_TRAP) {
       printf("save trapped!\n");
@@ -733,7 +731,7 @@ int main(int argc, char **argv) {
     }
     if(CLOCK_GE(z80_clock-tapp_t,ZX_TAPE_TICKS_SMP)) {
 //      putchar('T');
-      zx_tape_getsmp(&tape_smp);
+      tape_deck_getsmp(tape_deck, &tape_smp);
       ear=tape_smp;
       tapp_t+=ZX_TAPE_TICKS_SMP;
     }
@@ -741,7 +739,7 @@ int main(int argc, char **argv) {
     if(!slow_load) {
       if(cpus.PC==ZX_LDBYTES_TRAP) {
         printf("load trapped!\n");
-	zx_tape_ldbytes();
+	zx_tape_ldbytes(tape_deck);
       }
       if(cpus.PC==ZX_SABYTES_TRAP) {
         printf("save trapped!\n");
@@ -766,7 +764,8 @@ int main(int argc, char **argv) {
 #endif
   
   zx_sound_done();
-  zx_tape_done();
+  tape_deck_destroy(tape_deck);
+  tape_deck = NULL;
 
   writestat();  
   fclose(logfi);

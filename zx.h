@@ -35,11 +35,13 @@
 #include "ay.h"
 #include "midi.h"
 #include "rs232.h"
+#include "tape/deck.h"
 #include "zx_kbd.h"
 
 extern ay_t ay0;
 extern midi_port_t midi;
 extern rs232_t rs232;
+extern tape_deck_t *tape_deck;
 extern zx_keys_t keys;
 
 #endif

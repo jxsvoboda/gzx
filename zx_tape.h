@@ -46,22 +46,10 @@
 
 #define TAPE_PAUSE_MULT 3500
 
-#include "intdef.h"
+#include "types/tape/deck.h"
 
 /* quick tape loading */
-void zx_tape_ldbytes(void);
+void zx_tape_ldbytes(tape_deck_t *);
 void zx_tape_sabytes(void);
-
-/* real-time tape */
-void zx_tape_getsmp(u8 *smp);
-void zx_tape_play(void);
-void zx_tape_pause(void);
-void zx_tape_stop(void);
-
-/* common */
-int zx_tape_init(int delta_t);
-void zx_tape_done(void);
-int zx_tape_selectfile(char *name);
-void zx_tape_rewind(void);
 
 #endif

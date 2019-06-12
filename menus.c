@@ -40,10 +40,11 @@
 #include "gzx.h"
 #include "memio.h"
 #include "mgfx.h"
-#include "zx_tape.h"
 #include "snap.h"
 #include "menus.h"
 #include "sys_all.h"
+#include "tape/deck.h"
+#include "zx.h"
 
 #ifdef __MINGW32__
 #include "platform/win/sys_win.h"
@@ -787,9 +788,9 @@ static void tmenu_draw(int mpos) {
 
 static void tmenu_run_line(int l) {
   switch(l) {
-    case 0: zx_tape_play(); break;
-    case 1: zx_tape_stop(); break;
-    case 2: zx_tape_rewind(); break;
+    case 0: tape_deck_play(tape_deck); break;
+    case 1: tape_deck_stop(tape_deck); break;
+    case 2: tape_deck_rewind(tape_deck); break;
     case 3: slow_load=!slow_load; break;
   }
 }
@@ -860,7 +861,7 @@ void select_tapefile_dialog(void) {
   
   if(file_sel(&fname,"Select Tapefile")>0) {
     fprintf(logfi,"selecting tape file\n"); fflush(logfi);
-    zx_tape_selectfile(fname);
+    (void) tape_deck_open(tape_deck, fname);
     fprintf(logfi,"freeing filename\n"); fflush(logfi);
     free(fname);
   }

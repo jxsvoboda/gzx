@@ -39,10 +39,8 @@
 #include "z80.h"
 #include "tape/deck.h"
 
-static tape_deck_t *tape_deck;
-
 /*** quick load ***/
-void zx_tape_ldbytes(void) {
+void zx_tape_ldbytes(tape_deck_t *deck) {
   unsigned req_flag,toload,addr,verify;
   unsigned u;
   u8 flag,b,x=0,chksum;
@@ -52,12 +50,12 @@ void zx_tape_ldbytes(void) {
   fprintf(logfi,"zx_tape_ldbytes()\n");
   
   fprintf(logfi,"!tape_playing?\n");
-  if(tape_deck_is_playing(tape_deck)) return;
+  if(tape_deck_is_playing(deck)) return;
   
-  tblock = tape_deck_cur_block(tape_deck);
+  tblock = tape_deck_cur_block(deck);
   while (tblock != NULL && tblock->btype != tb_data) {
-    tape_deck_next(tape_deck);
-    tblock = tape_deck_cur_block(tape_deck);
+    tape_deck_next(deck);
+    tblock = tape_deck_cur_block(deck);
   }
     
   fprintf(logfi,"tblock?\n");
@@ -123,7 +121,7 @@ error:
   fprintf(logfi,"load error\n");
 common:
   
-  tape_deck_next(tape_deck);
+  tape_deck_next(deck);
   /* RET */
   fprintf(logfi,"returning\n");
   cpus.PC=zx_memget16(cpus.SP);
@@ -183,51 +181,3 @@ void zx_tape_sabytes(void) {
     cpus.SP+=2;
   }
 }*/
-
-int zx_tape_selectfile(char *name) {
-  int rc;
- 
-  rc = tape_deck_open(tape_deck, name);
-  if (rc != 0)
-    return -1;
-
-  return 0;
-}
-
-int zx_tape_init(int delta_t) {
-  int rc;
-
-  rc = tape_deck_create(&tape_deck);
-  if (rc != 0)
-    return -1;
-
-  tape_deck->delta_t = delta_t;
-  return 0;
-}
-
-void zx_tape_done(void) {
-  if(tape_deck != NULL) {
-    tape_deck_destroy(tape_deck);
-    tape_deck = NULL;
-  }
-}
-
-void zx_tape_getsmp(u8 *smp) {
-  tape_deck_getsmp(tape_deck, smp);
-}
-
-void zx_tape_play(void) {
-  tape_deck_play(tape_deck);
-}
-
-void zx_tape_pause(void) {
-  tape_deck_pause(tape_deck);
-}
-
-void zx_tape_stop(void) {
-  tape_deck_stop(tape_deck);
-}
-
-void zx_tape_rewind(void) {
-  tape_deck_rewind(tape_deck);
-}

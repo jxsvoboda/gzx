@@ -31,6 +31,7 @@
 
 #include "ay.h"
 #include "rs232.h"
+#include "tape/deck.h"
 #include "zx.h"
 #include "zx_kbd.h"
 
@@ -42,6 +43,9 @@ midi_port_t midi;
 
 /** RS-232 port */
 rs232_t rs232;
+
+/** Virtual tape deck */
+tape_deck_t *tape_deck;
 
 /** Keyboard */
 zx_keys_t keys;
