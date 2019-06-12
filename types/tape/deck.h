@@ -1,6 +1,6 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Tape player
+ * Tape deck types
  *
  * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
@@ -30,25 +30,41 @@
  */
 
 /**
- * @file Tape player.
- *
- * Produce waveform from spectrum tape.
+ * @file Tape deck types
  */
 
-#ifndef TAPE_PLAYER_H
-#define TAPE_PLAYER_H
+#ifndef TYPES_TAPE_DECK_H
+#define TYPES_TAPE_DECK_H
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "../types/tape/player.h"
-#include "../types/tape/tape.h"
+#include "player.h"
+#include "tape.h"
 
-extern int tape_player_create(tape_player_t **);
-extern void tape_player_init(tape_player_t *, tape_block_t *);
-extern void tape_player_destroy(tape_player_t *);
-extern bool tape_player_is_end(tape_player_t *);
-extern tape_lvl_t tape_player_cur_lvl(tape_player_t *);
-extern tape_block_t *tape_player_cur_block(tape_player_t *);
-extern void tape_player_get_next(tape_player_t *, uint32_t *, tape_lvl_t *);
+/** Tape deck */
+typedef struct {
+	/** Tape */
+	tape_t *tape;
+	/** Tape file name or @c NULL */
+	char *fname;
+	/** Current tape block (if not playing) */
+	tape_block_t *cur_block;
+	/** Tape player */
+	tape_player_t *player;
+
+	/** Delay between tape samples */
+	int delta_t;
+	/** Tape is playing */
+	bool playing;
+	/** Tape is paused */
+	bool paused;
+
+	/** Current level */
+	tape_lvl_t cur_lvl;
+	/** Delay until next event */
+	uint32_t next_delay;
+	/** Next level */
+	tape_lvl_t next_lvl;
+} tape_deck_t;
 
 #endif

@@ -32,6 +32,7 @@
 #ifndef STRUTIL_H
 #define STRUTIL_H
 
-int strcmpci(char *a, char *b);
+extern int strcmpci(const char *, const char *);
+extern char *strdupl(const char *);
 
 #endif

@@ -30,6 +30,7 @@
  */
 
 #include <ctype.h>
+#include <stdlib.h>
 #include <string.h>
 #include "strutil.h"
 
@@ -40,7 +41,7 @@
  * @return Less than zero, zero, greater than zero, if a < b, a == b, a > b,
  *         respectively.
  */
-int strcmpci(char *a, char *b)
+int strcmpci(const char *a, const char *b)
 {
 	while (*a && *b && tolower(*a) == tolower(*b)) {
 		a++;
@@ -48,4 +49,23 @@ int strcmpci(char *a, char *b)
 	}
 
 	return tolower(*a) - tolower(*b);
+}
+
+/** Duplicate string.
+ *
+ * @param s String
+ * @return Copy of string or @c NULL if out of memory
+ */
+char *strdupl(const char *s)
+{
+	char *ns;
+	size_t len;
+
+	len = strlen(s);
+	ns = malloc(len + 1);
+	if (ns == NULL)
+		return NULL;
+
+	memcpy(ns, s, len + 1);
+	return ns;
 }

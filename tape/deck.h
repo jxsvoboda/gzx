@@ -1,6 +1,6 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Tape player
+ * Tape deck
  *
  * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
@@ -30,25 +30,32 @@
  */
 
 /**
- * @file Tape player.
- *
- * Produce waveform from spectrum tape.
+ * @file Tape deck.
  */
 
-#ifndef TAPE_PLAYER_H
-#define TAPE_PLAYER_H
+#ifndef TAPE_DECK_H
+#define TAPE_DECK_H
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "../types/tape/player.h"
-#include "../types/tape/tape.h"
+#include "../types/tape/deck.h"
 
-extern int tape_player_create(tape_player_t **);
-extern void tape_player_init(tape_player_t *, tape_block_t *);
-extern void tape_player_destroy(tape_player_t *);
-extern bool tape_player_is_end(tape_player_t *);
-extern tape_lvl_t tape_player_cur_lvl(tape_player_t *);
-extern tape_block_t *tape_player_cur_block(tape_player_t *);
-extern void tape_player_get_next(tape_player_t *, uint32_t *, tape_lvl_t *);
+extern int tape_deck_create(tape_deck_t **);
+extern void tape_deck_destroy(tape_deck_t *);
+
+extern int tape_deck_new(tape_deck_t *);
+extern int tape_deck_open(tape_deck_t *, const char *);
+extern int tape_deck_save(tape_deck_t *);
+extern int tape_deck_save_as(tape_deck_t *, const char *);
+
+extern void tape_deck_play(tape_deck_t *);
+extern void tape_deck_pause(tape_deck_t *);
+extern void tape_deck_stop(tape_deck_t *);
+extern void tape_deck_rewind(tape_deck_t *);
+extern void tape_deck_next(tape_deck_t *);
+
+extern bool tape_deck_is_playing(tape_deck_t *);
+extern void tape_deck_getsmp(tape_deck_t *, uint8_t *smp);
+extern tape_block_t *tape_deck_cur_block(tape_deck_t *);
 
 #endif

@@ -32,27 +32,14 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
 #include "gzx.h"
 #include "intdef.h"
 #include "memio.h"
-#include "strutil.h"
 #include "zx_tape.h"
 #include "z80.h"
-#include "tape/player.h"
-#include "tape/tap.h"
-#include "tape/tape.h"
-#include "tape/tzx.h"
-#include "tape/wav.h"
+#include "tape/deck.h"
 
-static tape_t *tape;
-static tape_block_t *tblock;
-
-static tape_player_t *player;
-
-static int tape_delta_t;
-static int tape_playing,tape_paused;
+static tape_deck_t *tape_deck;
 
 /*** quick load ***/
 void zx_tape_ldbytes(void) {
@@ -60,14 +47,18 @@ void zx_tape_ldbytes(void) {
   unsigned u;
   u8 flag,b,x=0,chksum;
   tblock_data_t *data;
+  tape_block_t *tblock;
   
   fprintf(logfi,"zx_tape_ldbytes()\n");
   
   fprintf(logfi,"!tape_playing?\n");
-  if(tape_playing) return;
+  if(tape_deck_is_playing(tape_deck)) return;
   
-  while (tblock != NULL && tblock->btype != tb_data)
-    tblock = tape_next(tblock);
+  tblock = tape_deck_cur_block(tape_deck);
+  while (tblock != NULL && tblock->btype != tb_data) {
+    tape_deck_next(tape_deck);
+    tblock = tape_deck_cur_block(tape_deck);
+  }
     
   fprintf(logfi,"tblock?\n");
   if(!tblock) return;
@@ -132,7 +123,7 @@ error:
   fprintf(logfi,"load error\n");
 common:
   
-  tblock = tape_next(tblock);
+  tape_deck_next(tape_deck);
   /* RET */
   fprintf(logfi,"returning\n");
   cpus.PC=zx_memget16(cpus.SP);
@@ -193,119 +184,50 @@ void zx_tape_sabytes(void) {
   }
 }*/
 
-
-static tape_lvl_t cur_lvl;
-static uint32_t next_delay;
-static tape_lvl_t next_lvl;
-
 int zx_tape_selectfile(char *name) {
-  char *ext;
   int rc;
-  
-  if(tape != NULL) {
-    tape_destroy(tape);
-    tape = NULL;
-    tblock = NULL;
-  }
-  
-  ext=strrchr(name,'.');
-  if(!ext) {
-    printf("file has no extension\n");
+ 
+  rc = tape_deck_open(tape_deck, name);
+  if (rc != 0)
     return -1;
-  }
-  
-  if (strcmpci(ext, ".tap") == 0) {
-    rc = tap_tape_load(name, &tape);
-  } else if (strcmpci(ext, ".tzx") == 0) {
-    rc = tzx_tape_load(name, &tape);
-  } else if (strcmpci(ext, ".wav") == 0) {
-    rc = wav_tape_load(name, &tape);
-  } else {
-    printf("Uknown extension '%s'.\n", ext);
-    return -1;
-  }
 
-  if (rc != 0) {
-    printf("error opening tape file\n");
-    return -1;
-  }
-
-  tblock = tape_first(tape);
-
-  tape_player_init(player, tblock);
-  cur_lvl = tape_player_cur_lvl(player);
-  if (!tape_player_is_end(player))
-    tape_player_get_next(player, &next_delay, &next_lvl);
-  else
-    tape_playing = 0;
-  
   return 0;
 }
 
 int zx_tape_init(int delta_t) {
   int rc;
-  tape_playing=0;
-  tape=NULL;
-  tblock = NULL;
-  tape_delta_t=delta_t;
-  rc = tape_player_create(&player);
+
+  rc = tape_deck_create(&tape_deck);
   if (rc != 0)
-	return -1;
+    return -1;
+
+  tape_deck->delta_t = delta_t;
   return 0;
 }
 
 void zx_tape_done(void) {
-  if(tape != NULL)
-	tape_destroy(tape);
-  tape = NULL;
-  tblock = NULL;
-  if (player != NULL) {
-	tape_player_destroy(player);
-	player = NULL;
+  if(tape_deck != NULL) {
+    tape_deck_destroy(tape_deck);
+    tape_deck = NULL;
   }
 }
 
 void zx_tape_getsmp(u8 *smp) {
-  uint32_t td;
-
-  if (!tape_playing || tape_paused) {
-        *smp = cur_lvl;
-	return;
-  }
-
-  td = tape_delta_t;
-  while (next_delay <= td && !tape_player_is_end(player)) {
-    td -= next_delay;
-    cur_lvl = next_lvl;
-    tape_player_get_next(player, &next_delay, &next_lvl);
-  }
-
-  if (next_delay > td)
-    next_delay -= td;
-  *smp = cur_lvl;
+  tape_deck_getsmp(tape_deck, smp);
 }
 
 void zx_tape_play(void) {
-  tape_playing=1;
-  tape_paused=0;
+  tape_deck_play(tape_deck);
 }
 
 void zx_tape_pause(void) {
-  tape_paused=1;
+  tape_deck_pause(tape_deck);
 }
 
 void zx_tape_stop(void) {
-  tape_playing=0;
+  tape_deck_stop(tape_deck);
 }
 
 void zx_tape_rewind(void) {
-  if (tape != NULL)
-	tblock = tape_first(tape);
-
-  tape_player_init(player, tblock);
-  cur_lvl = tape_player_cur_lvl(player);
-  if (!tape_player_is_end(player))
-    tape_player_get_next(player, &next_delay, &next_lvl);
-  else
-    tape_playing = 0;
+  tape_deck_rewind(tape_deck);
 }

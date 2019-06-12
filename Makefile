@@ -33,6 +33,7 @@ distdir = $(distbase)/$(distname)
 
 sources_generic = \
     adt/list.c \
+    tape/deck.c \
     tape/player.c \
     tape/tap.c \
     tape/tape.c \

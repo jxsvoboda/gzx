@@ -124,6 +124,19 @@ tape_lvl_t tape_player_cur_lvl(tape_player_t *player)
 	return tonegen_cur_lvl(&player->tgen);
 }
 
+/** Return currently playing block.
+ *
+ * @param player Tape player
+ * @return Currently playing block
+ */
+tape_block_t *tape_player_cur_block(tape_player_t *player)
+{
+	if (player->cur_block != NULL)
+		return player->cur_block;
+
+	return player->next_block;
+}
+
 /** Make sure tone generator is programmed with next tones.
  *
  * If there is nothing more to program, do nothing.
