@@ -37,6 +37,7 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include "tape/deck.h"
 #include "tape/tape.h"
 #include "tape/tzx.h"
 
@@ -54,7 +55,7 @@ static void print_syntax(void)
  */
 static int gtap_list(const char *fname)
 {
-	tape_t *tape;
+	tape_deck_t *deck;
 	tape_block_t *tblock;
 	tblock_data_t *data;
 	tblock_turbo_data_t *tdata;
@@ -66,14 +67,20 @@ static int gtap_list(const char *fname)
 	unsigned bidx;
 	int rc;
 
-	rc = tzx_tape_load(fname, &tape);
+	rc = tape_deck_create(&deck);
+	if (rc != 0) {
+		printf("Out of memory.\n");
+		return ENOMEM;
+	}
+
+	rc = tape_deck_open(deck, fname);
 	if (rc != 0) {
 		printf("Error loading tape file '%s'.\n", fname);
 		return ENOENT;
 	}
 
 	bcount = 0;
-	tblock = tape_first(tape);
+	tblock = tape_deck_cur_block(deck);
 	while (tblock != NULL) {
 		++bcount;
 		tblock = tape_next(tblock);
@@ -82,7 +89,7 @@ static int gtap_list(const char *fname)
 	printf("Listing tape file '%s'\n", fname);
 	printf("%u blocks\n\n", bcount);
 
-	tblock = tape_first(tape);
+	tblock = tape_deck_cur_block(deck);
 	bidx = 1;
 	while (tblock != NULL) {
 		printf("%d. %s", bidx, tape_btype_str(tblock->btype));
@@ -113,7 +120,7 @@ static int gtap_list(const char *fname)
 		tblock = tape_next(tblock);
 	}
 
-	tape_destroy(tape);
+	tape_deck_destroy(deck);
 	printf("\n");
 
 	return 0;

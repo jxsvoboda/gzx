@@ -66,9 +66,17 @@ sources_generic = \
 
 sources_gtap_generic = \
     adt/list.c \
+    strutil.c \
+    tape/deck.c \
+    tape/player.c \
+    tape/tap.c \
     tape/tape.c \
+    tape/tonegen.c \
     tape/tzx.c \
-    gtap.c
+    tape/wav.c \
+    gtap.c \
+    wav/chunk.c \
+    wav/rwave.c
 
 sources = \
     $(sources_generic) \
