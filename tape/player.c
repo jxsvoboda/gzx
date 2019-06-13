@@ -39,10 +39,10 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include "defs.h"
 #include "tape.h"
 #include "tonegen.h"
 #include "player.h"
-#include "../zx_tape.h"
 
 static void tape_player_next(tape_player_t *);
 static void tape_player_end_block(tape_player_t *);

@@ -26,4 +26,3 @@
 ./zx_scr.c
 ./zx_sound.c
 ./zx_tape.c
-./zx_tape.h

@@ -1,8 +1,8 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Tape support
+ * Tape definitions
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,16 +29,18 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ZX_TAPE_H
-#define ZX_TAPE_H
+#ifndef ZX_TAPE_DEFS_H
+#define ZX_TAPE_DEFS_H
 
-#define ZX_LDBYTES_TRAP	0x056a
-#define ZX_SABYTES_TRAP	0x04d1
+#define ROM_PILOT_LEN 2168
+#define ROM_SYNC1_LEN  667
+#define ROM_SYNC2_LEN  735
+#define ROM_ZERO_LEN   855
+#define ROM_ONE_LEN   1710
+#define ROM_PPULSES_H 8064
+#define ROM_PPULSES_D 3220
+#define ROM_PAUSE_LEN 3500000
 
-#include "types/tape/deck.h"
-
-/* quick tape loading */
-void zx_tape_ldbytes(tape_deck_t *);
-void zx_tape_sabytes(void);
+#define TAPE_PAUSE_MULT 3500
 
 #endif
