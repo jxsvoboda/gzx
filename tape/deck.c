@@ -53,14 +53,25 @@
 int tape_deck_create(tape_deck_t **rdeck)
 {
 	tape_deck_t *deck;
+	tape_player_t *player = NULL;
 	int rc;
 
 	deck = calloc(1, sizeof(tape_deck_t));
 	if (deck == NULL)
 		return ENOMEM;
 
+	rc = tape_player_create(&player);
+	if (rc != 0) {
+		printf("Out of memory.\n");
+		free(deck);
+		return rc;
+	}
+
+	deck->player = player;
+
 	rc = tape_deck_new(deck);
 	if (rc != 0) {
+		tape_player_destroy(deck->player);
 		free(deck);
 		return rc;
 	}
@@ -99,11 +110,6 @@ static void tape_deck_close(tape_deck_t *deck)
 		free(deck->fname);
 		deck->fname = NULL;
 	}
-
-	if (deck->player != NULL) {
-		tape_player_destroy(deck->player);
-		deck->player = NULL;
-	}
 }
 
 /** Insert new (empty) tape in tape deck.
@@ -138,7 +144,6 @@ int tape_deck_open(tape_deck_t *deck, const char *fname)
 	char *name;
 	const char *ext;
 	tape_t *tape;
-	tape_player_t *player;
 	int rc;
 
 	tape_deck_close(deck);
@@ -164,22 +169,15 @@ int tape_deck_open(tape_deck_t *deck, const char *fname)
 		return rc;
 	}
 
-	rc = tape_player_create(&player);
-	if (rc != 0) {
-		printf("Out of memory.\n");
-		return rc;
-	}
 
 	name = strdupl(fname);
 	if (name == NULL) {
-		tape_player_destroy(player);
 		printf("Out of memory.\n");
 		return rc;
 	}
 
 	deck->tape = tape;
 	deck->fname = name;
-	deck->player = player;
 	deck->cur_block = tape_first(tape);
 
 	return 0;
