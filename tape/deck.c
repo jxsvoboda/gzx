@@ -127,6 +127,13 @@ int tape_deck_new(tape_deck_t *deck)
 		return rc;
 
 	tape_deck_close(deck);
+
+	deck->fname = strdupl("newtape.tzx");
+	if (deck->fname == NULL) {
+		tape_destroy(tape);
+		return ENOMEM;
+	}
+
 	deck->tape = tape;
 	deck->cur_block = NULL;
 
@@ -169,7 +176,6 @@ int tape_deck_open(tape_deck_t *deck, const char *fname)
 		return rc;
 	}
 
-
 	name = strdupl(fname);
 	if (name == NULL) {
 		printf("Out of memory.\n");
@@ -177,6 +183,7 @@ int tape_deck_open(tape_deck_t *deck, const char *fname)
 	}
 
 	deck->tape = tape;
+	free(deck->fname);
 	deck->fname = name;
 	deck->cur_block = tape_first(tape);
 

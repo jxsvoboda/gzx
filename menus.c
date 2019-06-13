@@ -757,17 +757,20 @@ void main_menu(void) {
 
 /***** tape menu *****/
 
-#define TMENU_NENT 4
+#define TMENU_NENT 7
 
 static char *tmentry_text[TMENU_NENT]= {
   "~Play",
   "~Stop",
   "~Rewind",
-  "~Quick Load Toggle"
+  "~Quick Load Toggle",
+  "~New",
+  "Sa~ve",
+  "Save ~As"
 };
 
 static int tmkeys[TMENU_NENT]={
-  WKEY_P,WKEY_S,WKEY_R,WKEY_Q
+  WKEY_P,WKEY_S,WKEY_R,WKEY_Q,WKEY_N,WKEY_V,WKEY_A
 };
 
 static void tmenu_draw(int mpos) {
@@ -792,6 +795,9 @@ static void tmenu_run_line(int l) {
     case 1: tape_deck_stop(tape_deck); break;
     case 2: tape_deck_rewind(tape_deck); break;
     case 3: slow_load=!slow_load; break;
+    case 4: tape_deck_new(tape_deck); break;
+    case 5: tape_deck_save(tape_deck); break;
+    case 6: save_tape_as_dialog(); break;
   }
 }
 
@@ -877,12 +883,6 @@ void load_snap_dialog(void) {
 }
 
 void save_snap_dialog(void) {
-/*  char *fname;
-
-  if(file_sel(&fname,"Load Snapshot")>0) {
-    zx_load_snap(fname);
-    free(fname);
-  }*/
   wkey_t k;
   
   fscols=20;
@@ -917,6 +917,41 @@ void save_snap_dialog(void) {
 	break;
     }
   }
+}
+
+void save_tape_as_dialog(void) {
+  wkey_t k;
   
-//  zx_save_snap("testx.z80");
+  fscols=20;
+  flist_cx0 = scr_xs/16 - fscols/2;
+  teline_init(&fn_line,flist_cx0,12,20);
+  fn_line.focus = 1;
+    
+  while(1) {
+    mgfx_fillrect(flist_cx0*8-8,0,flist_cx0*8+8*(fscols+1),scr_ys-1,1);
+    teline_draw(&fn_line);
+    gmovec(scr_xs/16-(strlen("Save Tape As")/2),0);
+    fgc=7; bgc=1; gputs("Save Tape As");
+
+    mgfx_updscr();
+    do {
+      mgfx_input_update();
+      sys_usleep(1000);
+    } while(!w_getkey(&k));
+    
+    if(k.press)
+    switch(k.key) {
+      case WKEY_ESC:
+	return;
+
+      case WKEY_ENTER:
+        fn_line.buf[fn_line.len]=0;
+	tape_deck_save_as(tape_deck, fn_line.buf);
+	return;
+        
+      default:
+        teline_key(&fn_line,&k);
+	break;
+    }
+  }
 }
