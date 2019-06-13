@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Menus & file selector
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -772,17 +772,17 @@ static int tmkeys[TMENU_NENT]={
 
 static void tmenu_draw(int mpos) {
   int i;
-  int fgc,bgc,hlc;
+  int fgc_,bgc_,hlc_;
   
   mgfx_fillrect(menu_cx0*8,0,menu_cx0*8+8*20,scr_ys-1,1);
   gmovec(scr_xs/16-(strlen("Tape Menu")/2),0);
   fgc=7; bgc=1; gputs("Tape Menu");
  
   for(i=0;i<TMENU_NENT;i++) {
-    if(i==mpos) { fgc=hlc=1; bgc=5; }
-      else { fgc=7; hlc=14; bgc=1; }
+    if(i==mpos) { fgc_=hlc_=1; bgc_=5; }
+      else { fgc_=7; hlc_=14; bgc_=1; }
     gmovec(menu_cx0+1,2+i);
-    gputs_hl(18,fgc,hlc,bgc,tmentry_text[i]);
+    gputs_hl(18,fgc_,hlc_,bgc_,tmentry_text[i]);
   }
 }
 
