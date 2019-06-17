@@ -505,7 +505,7 @@ void zx_debug_mstep(void) {
     }
     if(cpus.PC==ZX_SABYTES_TRAP) {
       printf("save trapped!\n");
-      zx_tape_sabytes();
+      zx_tape_sabytes(tape_deck);
     }
   }
 #ifdef XMAP
@@ -743,7 +743,7 @@ int main(int argc, char **argv) {
       }
       if(cpus.PC==ZX_SABYTES_TRAP) {
         printf("save trapped!\n");
-	zx_tape_sabytes();
+	zx_tape_sabytes(tape_deck);
       }
     }
 #ifdef XMAP

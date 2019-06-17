@@ -25,4 +25,3 @@
 ./z80itab.c
 ./zx_scr.c
 ./zx_sound.c
-./zx_tape.c

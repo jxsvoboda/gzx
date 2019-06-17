@@ -38,7 +38,7 @@
 #include "types/tape/deck.h"
 
 /* quick tape loading */
-void zx_tape_ldbytes(tape_deck_t *);
-void zx_tape_sabytes(void);
+extern void zx_tape_ldbytes(tape_deck_t *);
+extern void zx_tape_sabytes(tape_deck_t *);
 
 #endif

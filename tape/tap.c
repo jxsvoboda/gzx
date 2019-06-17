@@ -39,13 +39,9 @@
 #include <stdlib.h>
 #include "../byteorder.h"
 #include "../zx_tape.h"
+#include "defs.h"
 #include "tape.h"
 #include "tap.h"
-
-enum {
-	/** 1000 ms */
-	tap_pause_after = 1000
-};
 
 /** Need to set some version corresponding to TZX */
 enum {
@@ -81,7 +77,7 @@ static int tap_load_data(FILE *f, tape_t *tape)
 	if (rc != 0)
 		goto error;
 
-	data->pause_after = tap_pause_after;
+	data->pause_after = ROM_PAUSE_LEN_MS;
 	data->data_len = uint16_t_le2host(data_len);
 
 	data->data = calloc(data->data_len, 1);

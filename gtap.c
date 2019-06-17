@@ -53,7 +53,7 @@ static void print_syntax(void)
 /** Print summary based on standard tape header.
  *
  * @param data Data block with standard ROM tape header
-  */
+ */
 static void print_std_header(uint8_t *data)
 {
 	rom_tape_header_t *hdr = (rom_tape_header_t *)data;

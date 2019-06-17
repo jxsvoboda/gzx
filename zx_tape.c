@@ -38,146 +38,169 @@
 #include "zx_tape.h"
 #include "z80.h"
 #include "tape/deck.h"
+#include "tape/defs.h"
+#include "tape/tape.h"
 
 /*** quick load ***/
-void zx_tape_ldbytes(tape_deck_t *deck) {
-  unsigned req_flag,toload,addr,verify;
-  unsigned u;
-  u8 flag,b,x=0,chksum;
-  tblock_data_t *data;
-  tape_block_t *tblock;
-  
-  fprintf(logfi,"zx_tape_ldbytes()\n");
-  
-  fprintf(logfi,"!tape_playing?\n");
-  if(tape_deck_is_playing(deck)) return;
-  
-  tblock = tape_deck_cur_block(deck);
-  while (tblock != NULL && tblock->btype != tb_data) {
-    tape_deck_next(deck);
-    tblock = tape_deck_cur_block(deck);
-  }
-    
-  fprintf(logfi,"tblock?\n");
-  if(!tblock) return;
-  
-  assert(tblock->btype == tb_data);
-  data = (tblock_data_t *)tblock->ext;
-  
-  fprintf(logfi,"...\n");
-  req_flag=cpus.r_[rA];
-  toload=((u16)cpus.r[rD]<<8) | (u16)cpus.r[rE];
-  addr=cpus.IX;
-  verify=(cpus.F_&fC)?0:1; 
-  
-  if (data->data_len < 1) {
-    printf("Data block too short.\n");
-    goto error;
-  }
-  
-  flag = data->data[0];
-  
-  fprintf(logfi,"req:len %d, flag 0x%02x, addr 0x%04x, verify:%d\n",
-          toload,req_flag,addr,verify);
-  fprintf(logfi,"block len %u, block flag:0x%02x\n",data->data_len,flag);
-  fprintf(logfi,"z80 F:%02x\n",cpus.F_);
-  
-  if(flag!=req_flag)
-	goto error;
-  
-  if(verify) fprintf(logfi,"verifying\n");
-    else fprintf(logfi,"loading\n");
+void zx_tape_ldbytes(tape_deck_t *deck)
+{
+	unsigned req_flag, toload, addr, verify;
+	unsigned u;
+	u8 flag, b, chksum;
+	u8 x = 0;
+	tblock_data_t *data;
+	tape_block_t *tblock;
 
-  x=flag;
-  for(u=0;u<toload;u++) {
-    if (1 + u >= data->data_len) {
-      fprintf(logfi,"out of data\n");
-      goto error;
-    }
-    b = data->data[1 + u];
-    if(!verify) {
-      zx_memset8(addr+u,b);
-      x^=b;
-    }
-  }
-  
-  if (1 + toload >= data->data_len) {
-    fprintf(logfi,"out of data\n");
-    goto error;
-  }
-  chksum = data->data[1 + toload];
-  
-  fprintf(logfi,"stored chksum:$%02x computed:$%02x\n",chksum,x);
-  if(chksum!=x) {
-    fprintf(logfi,"wrong checksum\n");
-    goto error;
-  }
+	fprintf(logfi, "zx_tape_ldbytes()\n");
 
-  cpus.F |= fC;
-  fprintf(logfi,"load ok\n");
-  goto common;
+	fprintf(logfi, "!tape_playing?\n");
+	if (tape_deck_is_playing(deck))
+		return;
+
+	tblock = tape_deck_cur_block(deck);
+	while (tblock != NULL && tblock->btype != tb_data) {
+		tape_deck_next(deck);
+		tblock = tape_deck_cur_block(deck);
+	}
+
+	fprintf(logfi, "tblock?\n");
+	if (!tblock)
+		return;
+
+	assert(tblock->btype == tb_data);
+	data = (tblock_data_t *)tblock->ext;
+
+	fprintf(logfi, "...\n");
+	req_flag = cpus.r_[rA];
+	toload = ((u16)cpus.r[rD] << 8) | (u16)cpus.r[rE];
+	addr = cpus.IX;
+	verify = (cpus.F_ & fC) != 0 ? 0 : 1;
+
+	if (data->data_len < 1) {
+		printf("Data block too short.\n");
+		goto error;
+	}
+
+	flag = data->data[0];
+
+	fprintf(logfi, "req:len %d, flag 0x%02x, addr 0x%04x, verify:%d\n",
+	    toload, req_flag, addr, verify);
+	fprintf(logfi, "block len %u, block flag:0x%02x\n", data->data_len,
+	    flag);
+	fprintf(logfi, "z80 F:%02x\n", cpus.F_);
+
+	if (flag != req_flag)
+		goto error;
+
+	if (verify)
+		fprintf(logfi, "verifying\n");
+	else
+		fprintf(logfi, "loading\n");
+
+	x = flag;
+	for (u = 0; u < toload; u++) {
+		if (1 + u >= data->data_len) {
+			fprintf(logfi, "out of data\n");
+			goto error;
+		}
+
+		b = data->data[1 + u];
+		if (!verify) {
+			zx_memset8(addr + u, b);
+			x ^= b;
+		}
+	}
+
+	if (1 + toload >= data->data_len) {
+		fprintf(logfi, "out of data\n");
+		goto error;
+	}
+
+	chksum = data->data[1 + toload];
+
+	fprintf(logfi, "stored chksum:$%02x computed:$%02x\n", chksum, x);
+	if (chksum != x) {
+		fprintf(logfi, "wrong checksum\n");
+		goto error;
+	}
+
+	cpus.F |= fC;
+	fprintf(logfi, "load ok\n");
+	goto common;
 error:
-  cpus.F &= ~fC;
-  fprintf(logfi,"load error\n");
+	cpus.F &= ~fC;
+	fprintf(logfi, "load error\n");
 common:
-  
-  tape_deck_next(deck);
-  /* RET */
-  fprintf(logfi,"returning\n");
-  cpus.PC=zx_memget16(cpus.SP);
-  cpus.SP+=2;
+	tape_deck_next(deck);
+
+	/* RET */
+	fprintf(logfi, "returning\n");
+	cpus.PC = zx_memget16(cpus.SP);
+	cpus.SP += 2;
 }
 
 /*** quick save ***/
-void zx_tape_sabytes(void) {
-}
+void zx_tape_sabytes(tape_deck_t *deck)
+{
+	unsigned flag, tosave, addr;
+	unsigned x, u, b;
+	unsigned error;
+	tblock_data_t *data;
+	tape_block_t *cur;
+	int rc;
 
-/*void zx_tape_sabytes(void) {
-  unsigned flag,tosave,addr;
-  unsigned x,u,b;
-  unsigned error;
-  tape_block block;
-  
-  if(sablock) {
-    //printf("sabytes()\n");
-    flag=cpus.r_[rA];
-    tosave=((u16)cpus.r[rD]<<8) | (u16)cpus.r[rE];
-    addr=cpus.IX;
-    
-    block.type=BT_DATA;
-    block.len=tosave+2;
-    block.data=malloc(block.len);
-    
-    block.data[0]=flag;
-  
-    fprintf(logfi,"wr:len %d, flag 0x%02x, addr 0x%04x\n",
-           tosave,flag,addr);
-  
-    error=0;
-      
-    fprintf(logfi,"writing\n");
-    x=flag;
-    for(u=0;u<tosave;u++) {
-      b=zx_memget8(addr+u);
-      block.data[1+u]=b;
-      x^=b;
-    }
-    block.data[1+tosave]=x;*/ /* write checksum */
-    
-/*    if(!wtapf) if(w_open("out.tap")<0) return;
-    sablock(&block);
-    if(flag!=0x00) w_close();*/ /* not a header.. close the file! */
-    
-/*    cpus.F=error ? (cpus.F&(~fC)) : (cpus.F | fC);
-    if(!error) {
-      fprintf(logfi,"write ok\n");
-    
-    
-    freeblock(&block);*/
-    
-    //printf("RET\n");
-    /* RET */
-/*    cpus.PC=zx_memget16(cpus.SP);
-    cpus.SP+=2;
-  }
-}*/
+	rc = tblock_data_create(&data);
+	if (rc != 0) {
+		printf("Out of memory\n");
+		return;
+	}
+
+	flag = cpus.r_[rA];
+	tosave = ((u16)cpus.r[rD] << 8) | (u16)cpus.r[rE];
+	addr = cpus.IX;
+
+	data->data_len = tosave + 2;
+	data->data = malloc(data->data_len);
+	if (data->data == NULL) {
+		printf("Out of memory\n");
+		tblock_data_destroy(data);
+		return;
+	}
+
+	data->data[0] = flag;
+
+	fprintf(logfi, "wr:len %d, flag 0x%02x, addr 0x%04x\n",
+	    tosave, flag, addr);
+
+	error = 0;
+
+	fprintf(logfi, "writing\n");
+	x = flag;
+	for (u = 0; u < tosave; u++) {
+		b = zx_memget8(addr + u);
+		data->data[1 + u] = b;
+		x ^= b;
+	}
+
+	/* Write checksum */
+	data->data[1 + tosave] = x;
+
+	cpus.F = error ? (cpus.F & (~fC)) : (cpus.F | fC);
+	if (!error)
+		fprintf(logfi, "write ok\n");
+
+	/* RET */
+	cpus.PC = zx_memget16(cpus.SP);
+	cpus.SP += 2;
+
+	data->pause_after = ROM_PAUSE_LEN_MS;
+
+	cur = tape_deck_cur_block(deck);
+	if (cur != NULL) {
+		/* Insert before current block */
+		tape_insert_before(data->block, cur);
+	} else {
+		/* We're at the end of the tape, so append */
+		tape_append(deck->tape, data->block);
+	}
+}

@@ -58,6 +58,8 @@ int tape_create(tape_t **rtape)
 		return ENOMEM;
 
 	list_initialize(&tape->blocks);
+	tape->version.major = 1;
+	tape->version.minor = 1;
 
 	*rtape = tape;
 	return 0;
@@ -156,6 +158,17 @@ void tape_append(tape_t *tape, tape_block_t *block)
 {
 	block->tape = tape;
 	list_append(&block->ltape, &tape->blocks);
+}
+
+/** Insert block before another block.
+ *
+ * @param newb New block
+ * @param oldb Old block
+ */
+void tape_insert_before(tape_block_t *newb, tape_block_t *oldb)
+{
+	newb->tape = oldb->tape;
+	list_insert_before(&newb->ltape, &oldb->ltape);
 }
 
 /** Create tape block.

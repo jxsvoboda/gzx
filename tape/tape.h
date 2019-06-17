@@ -49,6 +49,7 @@ extern tape_block_t *tape_last(tape_t *);
 extern tape_block_t *tape_next(tape_block_t *);
 extern tape_block_t *tape_prev(tape_block_t *);
 extern void tape_append(tape_t *, tape_block_t *);
+extern void tape_insert_before(tape_block_t *, tape_block_t *);
 extern void tape_block_destroy(tape_block_t *);
 extern int tblock_data_create(tblock_data_t **);
 extern void tblock_data_destroy(tblock_data_t *);
