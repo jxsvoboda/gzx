@@ -69,6 +69,7 @@ sources_gtap_generic = \
     strutil.c \
     tape/deck.c \
     tape/player.c \
+    tape/romblock.c \
     tape/tap.c \
     tape/tape.c \
     tape/tonegen.c \

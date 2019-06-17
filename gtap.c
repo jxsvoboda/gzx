@@ -38,14 +38,29 @@
 #include <errno.h>
 #include <stdio.h>
 #include "tape/deck.h"
+#include "tape/romblock.h"
 #include "tape/tape.h"
 #include "tape/tzx.h"
+#include "types/tape/romblock.h"
 
 /** Print command line syntax help. */
 static void print_syntax(void)
 {
 	fprintf(stderr, "GZX tape utility\n");
 	fprintf(stderr, "syntax: gtap <tape-file>\n");
+}
+
+/** Print summary based on standard tape header.
+ *
+ * @param data Data block with standard ROM tape header
+  */
+static void print_std_header(uint8_t *data)
+{
+	rom_tape_header_t *hdr = (rom_tape_header_t *)data;
+	rom_filename_t fname;
+
+	rom_tape_header_get_fname(hdr, &fname);
+	printf("%s: %s\n", rom_tape_get_ftype_desc(hdr->ftype), fname.fname);
 }
 
 /** List blocks in tape file.
@@ -92,11 +107,19 @@ static int gtap_list(const char *fname)
 	tblock = tape_deck_cur_block(deck);
 	bidx = 1;
 	while (tblock != NULL) {
-		printf("%d. %s", bidx, tape_btype_str(tblock->btype));
+		if (tblock->btype == tb_data)
+			printf("%d. ", bidx);
+		else
+			printf("%d. %s", bidx, tape_btype_str(tblock->btype));
 
 		if (tblock->btype == tb_data) {
 			data = (tblock_data_t *) tblock->ext;
-			printf(" %02Xh, %d B\n", data->data[0], data->data_len);
+			if (data->data[0] == bflag_header &&
+			    data->data_len == sizeof(rom_tape_header_t)) {
+				print_std_header(data->data);
+			} else {
+				printf("Data %02Xh, %d B\n", data->data[0], data->data_len);
+			}
 		} else if (tblock->btype == tb_turbo_data) {
 			tdata = (tblock_turbo_data_t *) tblock->ext;
 			printf(" %02Xh, %d B\n", tdata->data[0], tdata->data_len);
