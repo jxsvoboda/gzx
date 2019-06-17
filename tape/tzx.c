@@ -67,6 +67,8 @@ static uint8_t tzx_block_type(tape_block_t *block)
 		return tzxb_pulses;
 	case tb_pure_data:
 		return tzxb_pure_data;
+	case tb_direct_rec:
+		return tzxb_direct_rec;
 	case tb_pause:
 		return tzxb_pause_stop;
 	case tb_group_start:
@@ -511,6 +513,86 @@ static int tzx_save_pure_data(tblock_pure_data_t *pdata, FILE *f)
 
 	nwr = fwrite(pdata->data, 1, pdata->data_len, f);
 	if (nwr != pdata->data_len)
+		return EIO;
+
+	return 0;
+}
+
+/** Load direct recording block.
+ *
+ * @param f File to read from
+ * @param tape Tape to add block to
+ * @return Zero on success or error code
+ */
+static int tzx_load_direct_rec(FILE *f, tape_t *tape)
+{
+	tzx_block_direct_rec_t block;
+	tblock_direct_rec_t *drec = NULL;
+	size_t nread;
+	int rc;
+
+	nread = fread(&block, 1, sizeof(tzx_block_direct_rec_t), f);
+	if (nread != sizeof(tzx_block_direct_rec_t)) {
+		rc = EIO;
+		goto error;
+	}
+
+	rc = tblock_direct_rec_create(&drec);
+	if (rc != 0)
+		goto error;
+
+	drec->smp_dur = uint16_t_le2host(block.smp_dur);
+	drec->pause_after = uint16_t_le2host(block.pause_after);
+	drec->lb_bits = block.lb_bits;
+	drec->data_len = block.data_len[0] +
+	    ((uint32_t) block.data_len[1] << 8) +
+	    ((uint32_t) block.data_len[2] << 16);
+
+	drec->data = calloc(drec->data_len, 1);
+	if (drec->data == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	nread = fread(drec->data, 1, drec->data_len, f);
+	if (nread != drec->data_len) {
+		rc = EIO;
+		goto error;
+	}
+
+	tape_append(tape, drec->block);
+	return 0;
+error:
+	if (drec != NULL)
+		tblock_direct_rec_destroy(drec);
+	return rc;
+}
+
+/** Save direct recording block.
+ *
+ * @param drec Direct recording
+ * @param f File to write to
+ * @return Zero on success or error code
+ */
+static int tzx_save_direct_rec(tblock_direct_rec_t *drec, FILE *f)
+{
+	tzx_block_direct_rec_t block;
+	size_t nwr;
+	int i;
+
+	block.smp_dur = host2uint16_t_le(drec->smp_dur);
+	block.pause_after = host2uint16_t_le(drec->pause_after);
+	block.lb_bits = drec->lb_bits;
+
+	for (i = 0; i < 3; i++)
+		block.data_len[i] = (drec->data_len >> (8 * i)) & 0xff;
+
+	nwr = fwrite(&block, 1, sizeof(tzx_block_direct_rec_t), f);
+	if (nwr != sizeof(tzx_block_direct_rec_t))
+		return EIO;
+
+	nwr = fwrite(drec->data, 1, drec->data_len, f);
+	if (nwr != drec->data_len)
 		return EIO;
 
 	return 0;
@@ -1350,6 +1432,9 @@ int tzx_tape_load(const char *fname, tape_t **rtape)
 		case tzxb_pure_data:
 			rc = tzx_load_pure_data(f, tape);
 			break;
+		case tzxb_direct_rec:
+			rc = tzx_load_direct_rec(f, tape);
+			break;
 		case tzxb_pause_stop:
 			rc = tzx_load_pause_stop(f, tape);
 			break;
@@ -1456,6 +1541,10 @@ int tzx_tape_save(tape_t *tape, const char *fname)
 		case tb_pure_data:
 			rc = tzx_save_pure_data(
 			    (tblock_pure_data_t *) block->ext, f);
+			break;
+		case tb_direct_rec:
+			rc = tzx_save_direct_rec(
+			    (tblock_direct_rec_t *) block->ext, f);
 			break;
 		case tb_pause:
 			rc = tzx_save_pause((tblock_pause_t *) block->ext, f);

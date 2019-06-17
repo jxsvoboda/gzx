@@ -170,6 +170,18 @@ typedef struct {
 	uint8_t data_len[3];
 } __attribute__((packed)) tzx_block_pure_data_t;
 
+/** Direct recording header */
+typedef struct {
+	/** Sample duration (T) */
+	uint16_t smp_dur;
+	/** Pause after this block in ms */
+	uint16_t pause_after;
+	/** Used bits in last byte */
+	uint8_t lb_bits;
+	/** Data length in bytes */
+	uint8_t data_len[3];
+} __attribute__((packed)) tzx_block_direct_rec_t;
+
 /** Pause (silence) or 'Stop the Tape' header */
 typedef struct {
 	/** Pause duration in ms or zero to stop the tape */
