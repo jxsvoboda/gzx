@@ -54,8 +54,8 @@
 #include "zx_scr.h"
 #include "rs232.h"
 #include "snap.h"
+#include "tape/quick.h"
 #include "zx_sound.h"
-#include "zx_tape.h"
 #include "ay.h"
 #include "menus.h"
 #include "midi.h"
@@ -499,13 +499,13 @@ void zx_debug_mstep(void) {
     tapp_t+=ZX_TAPE_TICKS_SMP;
   }
   if(!slow_load) {
-    if(cpus.PC==ZX_LDBYTES_TRAP) {
+    if(cpus.PC==TAPE_LDBYTES_TRAP) {
       printf("load trapped!\n");
-      zx_tape_ldbytes(tape_deck);
+      tape_quick_ldbytes(tape_deck);
     }
-    if(cpus.PC==ZX_SABYTES_TRAP) {
+    if(cpus.PC==TAPE_SABYTES_TRAP) {
       printf("save trapped!\n");
-      zx_tape_sabytes(tape_deck);
+      tape_quick_sabytes(tape_deck);
     }
   }
 #ifdef XMAP
@@ -737,13 +737,13 @@ int main(int argc, char **argv) {
     }
     ic++;
     if(!slow_load) {
-      if(cpus.PC==ZX_LDBYTES_TRAP) {
+      if(cpus.PC==TAPE_LDBYTES_TRAP) {
         printf("load trapped!\n");
-	zx_tape_ldbytes(tape_deck);
+	tape_quick_ldbytes(tape_deck);
       }
-      if(cpus.PC==ZX_SABYTES_TRAP) {
+      if(cpus.PC==TAPE_SABYTES_TRAP) {
         printf("save trapped!\n");
-	zx_tape_sabytes(tape_deck);
+	tape_quick_sabytes(tape_deck);
       }
     }
 #ifdef XMAP

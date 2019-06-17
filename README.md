@@ -18,9 +18,8 @@ Some of the features of this emulator:
   * Run in Windows (DirectDraw or GDI) and Linux (SDL 1.x)
   * ZX Spectrum 48K, 128K
   * AY-3-8192
+  * Read and write TZX, TAP, WAV tape formats
   * Z80, SNA, AY snapshots
-  * Read TAP, TZX, WAV tape formats
-  * Write TAP
   * High vertical resolution, Spec256 (experimental)
   * Emulate built-in MIDI port of 128K Spectrum
   * Record data sent to I/O ports

@@ -30,28 +30,37 @@
  */
 
 #include <assert.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "gzx.h"
-#include "intdef.h"
-#include "memio.h"
-#include "zx_tape.h"
-#include "z80.h"
-#include "tape/deck.h"
-#include "tape/defs.h"
-#include "tape/tape.h"
+#include "../gzx.h"
+#include "../memio.h"
+#include "../z80.h"
+#include "deck.h"
+#include "defs.h"
+#include "quick.h"
+#include "tape.h"
 
-/*** quick load ***/
-void zx_tape_ldbytes(tape_deck_t *deck)
+/** Quick load.
+ *
+ * Emulate (most of) the ROM LD-BYTES routine using a virtual tape deck.
+ * This can only load a standard speed data block.
+ *
+ * @param deck Source tape deck
+ */
+void tape_quick_ldbytes(tape_deck_t *deck)
 {
-	unsigned req_flag, toload, addr, verify;
-	unsigned u;
-	u8 flag, b, chksum;
-	u8 x = 0;
+	bool verify;
+	uint8_t req_flag;
+	uint16_t toload, addr;
+	size_t u;
+	uint8_t flag, b, chksum;
+	uint8_t x = 0;
 	tblock_data_t *data;
 	tape_block_t *tblock;
 
-	fprintf(logfi, "zx_tape_ldbytes()\n");
+	fprintf(logfi, "tape_quick_ldbytes()\n");
 
 	fprintf(logfi, "!tape_playing?\n");
 	if (tape_deck_is_playing(deck))
@@ -72,9 +81,9 @@ void zx_tape_ldbytes(tape_deck_t *deck)
 
 	fprintf(logfi, "...\n");
 	req_flag = cpus.r_[rA];
-	toload = ((u16)cpus.r[rD] << 8) | (u16)cpus.r[rE];
+	toload = ((uint16_t)cpus.r[rD] << 8) | (uint16_t)cpus.r[rE];
 	addr = cpus.IX;
-	verify = (cpus.F_ & fC) != 0 ? 0 : 1;
+	verify = (cpus.F_ & fC) != 0;
 
 	if (data->data_len < 1) {
 		printf("Data block too short.\n");
@@ -139,32 +148,44 @@ common:
 	cpus.SP += 2;
 }
 
-/*** quick save ***/
-void zx_tape_sabytes(tape_deck_t *deck)
+/** Quick save.
+ *
+ * Emulate (most of) the ROM SA-BYTES routine using a virtual tape deck.
+ * This produces a standard speed data block.
+ *
+ * @param deck Destination tape deck
+ */
+void tape_quick_sabytes(tape_deck_t *deck)
 {
-	unsigned flag, tosave, addr;
-	unsigned x, u, b;
-	unsigned error;
-	tblock_data_t *data;
+	uint8_t flag;
+	uint16_t tosave;
+	uint16_t addr;
+	size_t u;
+	uint8_t x, b;
+	bool error;
+	tblock_data_t *data = NULL;
 	tape_block_t *cur;
 	int rc;
 
 	rc = tblock_data_create(&data);
 	if (rc != 0) {
 		printf("Out of memory\n");
-		return;
+		error = true;
+		goto done;
 	}
 
 	flag = cpus.r_[rA];
-	tosave = ((u16)cpus.r[rD] << 8) | (u16)cpus.r[rE];
+	tosave = ((uint16_t)cpus.r[rD] << 8) | (uint16_t)cpus.r[rE];
 	addr = cpus.IX;
 
-	data->data_len = tosave + 2;
+	data->data_len = (size_t)tosave + 2;
 	data->data = malloc(data->data_len);
 	if (data->data == NULL) {
 		printf("Out of memory\n");
 		tblock_data_destroy(data);
-		return;
+		data = NULL;
+		error = true;
+		goto done;
 	}
 
 	data->data[0] = flag;
@@ -172,7 +193,7 @@ void zx_tape_sabytes(tape_deck_t *deck)
 	fprintf(logfi, "wr:len %d, flag 0x%02x, addr 0x%04x\n",
 	    tosave, flag, addr);
 
-	error = 0;
+	error = false;
 
 	fprintf(logfi, "writing\n");
 	x = flag;
@@ -183,8 +204,9 @@ void zx_tape_sabytes(tape_deck_t *deck)
 	}
 
 	/* Write checksum */
-	data->data[1 + tosave] = x;
+	data->data[1 + (size_t)tosave] = x;
 
+done:
 	cpus.F = error ? (cpus.F & (~fC)) : (cpus.F | fC);
 	if (!error)
 		fprintf(logfi, "write ok\n");
@@ -193,14 +215,16 @@ void zx_tape_sabytes(tape_deck_t *deck)
 	cpus.PC = zx_memget16(cpus.SP);
 	cpus.SP += 2;
 
-	data->pause_after = ROM_PAUSE_LEN_MS;
+	if (data != NULL) {
+		data->pause_after = ROM_PAUSE_LEN_MS;
 
-	cur = tape_deck_cur_block(deck);
-	if (cur != NULL) {
-		/* Insert before current block */
-		tape_insert_before(data->block, cur);
-	} else {
-		/* We're at the end of the tape, so append */
-		tape_append(deck->tape, data->block);
+		cur = tape_deck_cur_block(deck);
+		if (cur != NULL) {
+			/* Insert before current block */
+			tape_insert_before(data->block, cur);
+		} else {
+			/* We're at the end of the tape, so append */
+			tape_append(deck->tape, data->block);
+		}
 	}
 }

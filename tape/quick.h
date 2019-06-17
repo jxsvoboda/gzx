@@ -1,6 +1,6 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Tape support
+ * Quick tape
  *
  * Copyright (c) 1999-2017 Jiri Svoboda
  * All rights reserved.
@@ -29,16 +29,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ZX_TAPE_H
-#define ZX_TAPE_H
+#ifndef TAPE_QUICK_H
+#define TAPE_QUICK_H
 
-#define ZX_LDBYTES_TRAP	0x056a
-#define ZX_SABYTES_TRAP	0x04d1
+#define TAPE_LDBYTES_TRAP 0x056a
+#define TAPE_SABYTES_TRAP 0x04d1
 
-#include "types/tape/deck.h"
+#include "../types/tape/deck.h"
 
-/* quick tape loading */
-extern void zx_tape_ldbytes(tape_deck_t *);
-extern void zx_tape_sabytes(tape_deck_t *);
+extern void tape_quick_ldbytes(tape_deck_t *);
+extern void tape_quick_sabytes(tape_deck_t *);
 
 #endif

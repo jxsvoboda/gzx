@@ -35,6 +35,7 @@ sources_generic = \
     adt/list.c \
     tape/deck.c \
     tape/player.c \
+    tape/quick.c \
     tape/tap.c \
     tape/tape.c \
     tape/tonegen.c \
@@ -55,7 +56,6 @@ sources_generic = \
     zx.c \
     zx_kbd.c \
     zx_sound.c \
-    zx_tape.c \
     zx_scr.c \
     ay.c \
     menus.c \

@@ -37,9 +37,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "../../tape/defs.h"
 #include "../../tape/player.h"
 #include "../../tape/tape.h"
-#include "../../zx_tape.h"
 #include "player.h"
 
 enum {

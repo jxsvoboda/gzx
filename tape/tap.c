@@ -38,7 +38,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../byteorder.h"
-#include "../zx_tape.h"
 #include "defs.h"
 #include "tape.h"
 #include "tap.h"

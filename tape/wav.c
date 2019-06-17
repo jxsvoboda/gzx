@@ -41,7 +41,6 @@
 #include "../byteorder.h"
 #include "../clock.h"
 #include "../wav/rwave.h"
-#include "../zx_tape.h"
 #include "tape.h"
 #include "wav.h"
 
