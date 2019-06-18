@@ -78,6 +78,7 @@ static int gtap_list(const char *fname)
 	tblock_pause_t *pause;
 	tblock_group_start_t *gstart;
 	tblock_text_desc_t *tdesc;
+	tblock_unknown_t *unknown;
 	unsigned bcount;
 	unsigned bidx;
 	int rc;
@@ -135,6 +136,9 @@ static int gtap_list(const char *fname)
 		} else if (tblock->btype == tb_text_desc) {
 			tdesc = (tblock_text_desc_t *) tblock->ext;
 			printf(" \"%s\"\n", tdesc->text);
+		} else if (tblock->btype == tb_unknown) {
+			unknown = (tblock_unknown_t *) tblock->ext;
+			printf(" (%02Xh)\n", unknown->block_type);
 		} else {
 			printf("\n");
 		}
