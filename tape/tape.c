@@ -1183,7 +1183,7 @@ int tblock_unknown_create(tblock_unknown_t **runknown)
 		goto error;
 	}
 
-	rc = tape_block_create(tb_hw_type, unknown, &block);
+	rc = tape_block_create(tb_unknown, unknown, &block);
 	if (rc != 0)
 		goto error;
 
