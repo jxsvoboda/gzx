@@ -75,6 +75,8 @@ extern int tblock_loop_start_create(tblock_loop_start_t **);
 extern void tblock_loop_start_destroy(tblock_loop_start_t *);
 extern int tblock_loop_end_create(tblock_loop_end_t **);
 extern void tblock_loop_end_destroy(tblock_loop_end_t *);
+extern int tblock_stop_48k_create(tblock_stop_48k_t **);
+extern void tblock_stop_48k_destroy(tblock_stop_48k_t *);
 extern int tblock_text_desc_create(tblock_text_desc_t **);
 extern void tblock_text_desc_destroy(tblock_text_desc_t *);
 extern int tblock_archive_info_create(tblock_archive_info_t **);

@@ -200,6 +200,12 @@ typedef struct {
 	uint16_t num_rep;
 } __attribute__((packed)) tzx_block_loop_start_t;
 
+/** Stop the tape if in 48K mode header */
+typedef struct {
+	/** Block length */
+	uint32_t block_len;
+} __attribute__((packed)) tzx_block_stop_48k_t;
+
 /** Text description header */
 typedef struct {
 	/** Length of text string */

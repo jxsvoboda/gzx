@@ -253,6 +253,9 @@ void tape_block_destroy(tape_block_t *block)
 	case tb_loop_end:
 		tblock_loop_end_destroy((tblock_loop_end_t *) block->ext);
 		break;
+	case tb_stop_48k:
+		tblock_stop_48k_destroy((tblock_stop_48k_t *) block->ext);
+		break;
 	case tb_text_desc:
 		tblock_text_desc_destroy((tblock_text_desc_t *) block->ext);
 		break;
@@ -816,6 +819,50 @@ void tblock_loop_end_destroy(tblock_loop_end_t *lend)
 
 	tape_block_destroy_base(lend->block);
 	free(lend);
+}
+
+/** Create Stop the tape if in 48K mode.
+ *
+ * @param rstop48k Place to store pointer to new stop the tape if in 48K mode
+ * @return Zero on success or error code
+ */
+int tblock_stop_48k_create(tblock_stop_48k_t **rstop48k)
+{
+	tblock_stop_48k_t *stop48k;
+	tape_block_t *block = NULL;
+	int rc;
+
+	stop48k = calloc(1, sizeof(tblock_stop_48k_t));
+	if (stop48k == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	rc = tape_block_create(tb_stop_48k, stop48k, &block);
+	if (rc != 0)
+		goto error;
+
+	stop48k->block = block;
+
+	*rstop48k = stop48k;
+	return 0;
+error:
+	if (stop48k != NULL)
+		free(stop48k);
+	return rc;
+}
+
+/** Destroy loop end.
+ *
+ * @param stop48k loop send
+ */
+void tblock_stop_48k_destroy(tblock_stop_48k_t *stop48k)
+{
+	if (stop48k == NULL)
+		return;
+
+	tape_block_destroy_base(stop48k->block);
+	free(stop48k);
 }
 
 /** Create text description.

@@ -71,6 +71,8 @@ static uint8_t tzx_block_type(tape_block_t *block)
 		return tzxb_direct_rec;
 	case tb_pause:
 		return tzxb_pause_stop;
+	case tb_stop:
+		return tzxb_pause_stop;
 	case tb_group_start:
 		return tzxb_group_start;
 	case tb_group_end:
@@ -79,8 +81,8 @@ static uint8_t tzx_block_type(tape_block_t *block)
 		return tzxb_loop_start;
 	case tb_loop_end:
 		return tzxb_loop_end;
-	case tb_stop:
-		return tzxb_pause_stop;
+	case tb_stop_48k:
+		return tzxb_stop_48k;
 	case tb_text_desc:
 		return tzxb_text_desc;
 	case tb_archive_info:
@@ -881,6 +883,61 @@ static int tzx_save_loop_end(tblock_loop_end_t *lend, FILE *f)
 	return 0;
 }
 
+/** Load stop the tape if in 48K mode.
+ *
+ * @param f File to read from
+ * @param tape Tape to add block to
+ * @return Zero on success or error code
+ */
+static int tzx_load_stop_48k(FILE *f, tape_t *tape)
+{
+	tzx_block_stop_48k_t block;
+	tblock_stop_48k_t *stop48k = NULL;
+	size_t nread;
+	int rc;
+
+	nread = fread(&block, 1, sizeof(tzx_block_stop_48k_t), f);
+	if (nread != sizeof(tzx_block_stop_48k_t)) {
+		rc = EIO;
+		goto error;
+	}
+
+	/* Length of the block should be zero */
+	if (uint32_t_le2host(block.block_len) != 0) {
+		rc = EIO;
+		goto error;
+	}
+
+	rc = tblock_stop_48k_create(&stop48k);
+	if (rc != 0)
+		goto error;
+
+	tape_append(tape, stop48k->block);
+	return 0;
+error:
+	return rc;
+}
+
+/** Save stop the tape if in 48K mode.
+ *
+ * @param stop48k stop the tape if in 48K mode
+ * @param f File to write to
+ * @return Zero on success or error code
+ */
+static int tzx_save_stop_48k(tblock_stop_48k_t *stop48k, FILE *f)
+{
+	tzx_block_stop_48k_t block;
+	size_t nwr;
+
+	block.block_len = host2uint32_t_le(0);
+
+	nwr = fwrite(&block, 1, sizeof(tzx_block_stop_48k_t), f);
+	if (nwr != sizeof(tzx_block_stop_48k_t))
+		return EIO;
+
+	return 0;
+}
+
 /** Load text description.
  *
  * @param f File to read from
@@ -1450,6 +1507,9 @@ int tzx_tape_load(const char *fname, tape_t **rtape)
 		case tzxb_loop_end:
 			rc = tzx_load_loop_end(f, tape);
 			break;
+		case tzxb_stop_48k:
+			rc = tzx_load_stop_48k(f, tape);
+			break;
 		case tzxb_text_desc:
 			rc = tzx_load_text_desc(f, tape);
 			break;
@@ -1566,6 +1626,10 @@ int tzx_tape_save(tape_t *tape, const char *fname)
 			break;
 		case tb_loop_end:
 			rc = tzx_save_loop_end((tblock_loop_end_t *)
+			    block->ext, f);
+			break;
+		case tb_stop_48k:
+			rc = tzx_save_stop_48k((tblock_stop_48k_t *)
 			    block->ext, f);
 			break;
 		case tb_text_desc:
