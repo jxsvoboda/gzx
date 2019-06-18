@@ -45,6 +45,7 @@
 #include "../types/tape/tonegen.h"
 
 extern void tonegen_init(tonegen_t *, tape_lvl_t);
+extern void tonegen_clear(tonegen_t *);
 extern void tonegen_add_tone(tonegen_t *, unsigned, unsigned);
 extern void tonegen_add_dpulse(tonegen_t *, tape_lvl_t, unsigned);
 extern bool tonegen_is_end(tonegen_t *);

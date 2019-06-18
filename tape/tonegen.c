@@ -50,6 +50,24 @@
  */
 void tonegen_init(tonegen_t *tgen, tape_lvl_t lvl)
 {
+	tonegen_clear(tgen);
+
+	tgen->cur_lvl = lvl;
+	tgen->rem_pulses = 0;
+	tgen->cur_pulse_len = 0;
+	tgen->cur_is_direct = false;
+}
+
+/** Clear tone generator program.
+ *
+ * After all commands have been played, call this function to clear the
+ * command buffer and begin adding new comands. The internal state of the
+ * generator (level, edge status) is preserved.
+ *
+ * @param tgen Tone generator
+ */
+void tonegen_clear(tonegen_t *tgen)
+{
 	int i;
 
 	tgen->num_tones = 0;
@@ -59,10 +77,6 @@ void tonegen_init(tonegen_t *tgen, tape_lvl_t lvl)
 	}
 
 	tgen->tidx = 0;
-	tgen->cur_lvl = lvl;
-	tgen->rem_pulses = 0;
-	tgen->cur_pulse_len = 0;
-	tgen->cur_is_direct = false;
 }
 
 /** Program one tone into the tone generator.

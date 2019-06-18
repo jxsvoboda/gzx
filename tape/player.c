@@ -317,7 +317,7 @@ static void tape_player_program_pause(tape_player_t *player,
  */
 static void tape_player_data_init(tape_player_t *player, tblock_data_t *data)
 {
-	tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+	tonegen_clear(&player->tgen);
 
 	/* Pilot tone */
 	tonegen_add_tone(&player->tgen, ROM_PILOT_LEN,
@@ -343,14 +343,14 @@ static void tape_player_data_next(tape_player_t *player, tblock_data_t *data)
 		return;
 
 	if (player->cur_idx < data->data_len) {
-		tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+		tonegen_clear(&player->tgen);
 
 		tape_player_program_bits(player, data->data[player->cur_idx],
 		    8, ROM_ONE_LEN, ROM_ZERO_LEN);
 		++player->cur_idx;
 
 	} else if (!player->pause_done) {
-		tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+		tonegen_clear(&player->tgen);
 
 		tape_player_program_pause(player, data->pause_after);
 		player->pause_done = true;
@@ -367,7 +367,7 @@ static void tape_player_data_next(tape_player_t *player, tblock_data_t *data)
 static void tape_player_turbo_data_init(tape_player_t *player,
     tblock_turbo_data_t *tdata)
 {
-	tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+	tonegen_clear(&player->tgen);
 
 	/* Pilot tone */
 	tonegen_add_tone(&player->tgen, tdata->pilot_len, tdata->pilot_pulses);
@@ -395,7 +395,7 @@ static void tape_player_turbo_data_next(tape_player_t *player,
 		return;
 
 	if (player->cur_idx < tdata->data_len) {
-		tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+		tonegen_clear(&player->tgen);
 
 		nb = player->cur_idx < tdata->data_len - 1 ? 8 : tdata->lb_bits;
 		tape_player_program_bits(player, tdata->data[player->cur_idx],
@@ -403,7 +403,7 @@ static void tape_player_turbo_data_next(tape_player_t *player,
 		++player->cur_idx;
 
 	} else if (!player->pause_done) {
-		tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+		tonegen_clear(&player->tgen);
 
 		tape_player_program_pause(player, tdata->pause_after);
 		player->pause_done = true;
@@ -419,7 +419,7 @@ static void tape_player_turbo_data_next(tape_player_t *player,
  */
 static void tape_player_tone_init(tape_player_t *player, tblock_tone_t *tone)
 {
-	tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+	tonegen_clear(&player->tgen);
 	tonegen_add_tone(&player->tgen, tone->pulse_len, tone->num_pulses);
 }
 
@@ -457,7 +457,7 @@ static void tape_player_pulses_next(tape_player_t *player,
 	if (!tonegen_is_end(&player->tgen))
 		return;
 
-	tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+	tonegen_clear(&player->tgen);
 	tonegen_add_tone(&player->tgen, pulses->pulse_len[player->cur_idx], 1);
 	++player->cur_idx;
 
@@ -474,7 +474,7 @@ static void tape_player_pulses_next(tape_player_t *player,
 static void tape_player_pure_data_init(tape_player_t *player,
     tblock_pure_data_t *pdata)
 {
-	tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+	tonegen_clear(&player->tgen);
 
 	/* Index of next data byte to program */
 	player->cur_idx = 0;
@@ -495,7 +495,7 @@ static void tape_player_pure_data_next(tape_player_t *player,
 		return;
 
 	if (player->cur_idx < pdata->data_len) {
-		tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+		tonegen_clear(&player->tgen);
 
 		nb = player->cur_idx < pdata->data_len - 1 ? 8 : pdata->lb_bits;
 		tape_player_program_bits(player, pdata->data[player->cur_idx],
@@ -503,7 +503,7 @@ static void tape_player_pure_data_next(tape_player_t *player,
 		++player->cur_idx;
 
 	} else if (!player->pause_done) {
-		tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+		tonegen_clear(&player->tgen);
 
 		tape_player_program_pause(player, pdata->pause_after);
 		player->pause_done = true;
@@ -520,7 +520,7 @@ static void tape_player_pure_data_next(tape_player_t *player,
 static void tape_player_direct_rec_init(tape_player_t *player,
     tblock_direct_rec_t *drec)
 {
-	tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+	tonegen_clear(&player->tgen);
 
 	/* Index of next byte to program */
 	player->cur_idx = 0;
@@ -541,7 +541,7 @@ static void tape_player_direct_rec_next(tape_player_t *player,
 		return;
 
 	if (player->cur_idx < drec->data_len) {
-		tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+		tonegen_clear(&player->tgen);
 
 		nb = player->cur_idx < drec->data_len - 1 ? 8 : drec->lb_bits;
 		tape_player_program_dr_bits(player, drec->data[player->cur_idx],
@@ -549,7 +549,7 @@ static void tape_player_direct_rec_next(tape_player_t *player,
 		++player->cur_idx;
 
 	} else if (!player->pause_done) {
-		tonegen_init(&player->tgen, tonegen_cur_lvl(&player->tgen));
+		tonegen_clear(&player->tgen);
 
 		tape_player_program_pause(player, drec->pause_after);
 		player->pause_done = true;
