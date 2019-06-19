@@ -293,21 +293,32 @@ static void tape_player_program_dr_bits(tape_player_t *player, uint8_t b,
 
 /** Program playback of pause.
  *
+ * - pause is always low level
+ * - if and only if the pause follows a rising edge, start with 1 ms of high
+ * - current level stays low at the end of pause (so the next pulse will not
+ *   start with an edge)
+ *
  * @param player Tape player
  * @param pause_len Pause length in ms
  */
 static void tape_player_program_pause(tape_player_t *player,
     uint16_t pause_len)
 {
-	/*
-	 * XXX This is not correct
-	 *     - pause of zero duration is completely ignored, no level change
-	 *     - pause is always low level
-	 *     - if previous level was low, we start with 1 ms high level
-	 *     - current level stays low at the end of pause (so the next
-	 *     - pulse will not start with an edge)
-	 */
-	tonegen_add_tone(&player->tgen, TAPE_PAUSE_MULT * pause_len, 1);
+	if (pause_len == 0)
+		return;
+
+	if (tonegen_pprev_lvl(&player->tgen) == tlvl_low &&
+	    tonegen_plast_lvl(&player->tgen) == tlvl_high) {
+		/* Just following a rising edge */
+		tonegen_add_dpulse(&player->tgen, tlvl_high,
+		    TAPE_PAUSE_MULT * 1);
+		tonegen_add_dpulse(&player->tgen, tlvl_low,
+		    TAPE_PAUSE_MULT * (pause_len - 1));
+	} else {
+		/* All other cases */
+		tonegen_add_dpulse(&player->tgen, tlvl_low,
+		    TAPE_PAUSE_MULT * pause_len);
+	}
 }
 
 /** Initialize playback of standard speed data block.
