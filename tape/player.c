@@ -58,6 +58,8 @@ static void tape_player_pure_data_init(tape_player_t *, tblock_pure_data_t *);
 static void tape_player_pure_data_next(tape_player_t *, tblock_pure_data_t *);
 static void tape_player_direct_rec_init(tape_player_t *, tblock_direct_rec_t *);
 static void tape_player_direct_rec_next(tape_player_t *, tblock_direct_rec_t *);
+static void tape_player_pause_init(tape_player_t *, tblock_pause_t *);
+static void tape_player_pause_next(tape_player_t *, tblock_pause_t *);
 
 /** Create tape player.
  *
@@ -186,6 +188,11 @@ static void tape_player_next(tape_player_t *player)
 				    (tblock_direct_rec_t *)
 				    player->cur_block->ext);
 				break;
+			case tb_pause:
+				tape_player_pause_init(player,
+				    (tblock_pause_t *)
+				    player->cur_block->ext);
+				break;
 			default:
 				/* Skip other blocks */
 				tape_player_end_block(player);
@@ -220,6 +227,10 @@ static void tape_player_next(tape_player_t *player)
 		case tb_direct_rec:
 			tape_player_direct_rec_next(player,
 			    (tblock_direct_rec_t *) player->cur_block->ext);
+			break;
+		case tb_pause:
+			tape_player_pause_next(player,
+			    (tblock_pause_t *) player->cur_block->ext);
 			break;
 		default:
 			assert(false);
@@ -568,3 +579,27 @@ static void tape_player_direct_rec_next(tape_player_t *player,
 		tape_player_end_block(player);
 	}
 }
+
+/** Initialize playback of pause block.
+ *
+ * @param player Tape player
+ * @param pause Pause block
+ */
+static void tape_player_pause_init(tape_player_t *player,
+    tblock_pause_t *pause)
+{
+	tonegen_clear(&player->tgen);
+	tape_player_program_pause(player, pause->pause_len);
+}
+
+/** Next step in playback of pause block.
+ *
+ * @param player Tape player
+ * @param pause Pause block
+ */
+static void tape_player_pause_next(tape_player_t *player,
+    tblock_pause_t *pause)
+{
+	tape_player_end_block(player);
+}
+
