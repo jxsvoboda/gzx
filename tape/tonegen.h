@@ -48,6 +48,8 @@ extern void tonegen_init(tonegen_t *, tape_lvl_t);
 extern void tonegen_clear(tonegen_t *);
 extern void tonegen_add_tone(tonegen_t *, unsigned, unsigned);
 extern void tonegen_add_dpulse(tonegen_t *, tape_lvl_t, unsigned);
+extern tape_lvl_t tonegen_pprev_lvl(tonegen_t *);
+extern tape_lvl_t tonegen_plast_lvl(tonegen_t *);
 extern bool tonegen_is_end(tonegen_t *);
 extern tape_lvl_t tonegen_cur_lvl(tonegen_t *);
 extern void tonegen_get_next(tonegen_t *, uint32_t *, tape_lvl_t *);

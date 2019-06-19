@@ -51,6 +51,8 @@
 void tonegen_init(tonegen_t *tgen, tape_lvl_t lvl)
 {
 	tonegen_clear(tgen);
+	tgen->pprev_lvl = lvl;
+	tgen->plast_lvl = lvl;
 
 	tgen->cur_lvl = lvl;
 	tgen->rem_pulses = 0;
@@ -97,6 +99,18 @@ void tonegen_add_tone(tonegen_t *tgen, uint32_t pulse_len,
 	tgen->num_pulses[tgen->num_tones] = num_pulses;
 	tgen->direct[tgen->num_tones] = false;
 	++tgen->num_tones;
+
+	/* The last programmed level changes if number of pulses is odd */
+	if (num_pulses % 2 != 0)
+		tgen->plast_lvl = !tgen->plast_lvl;
+
+	/*
+	 * Previous programmed level changes only if we advance in time.
+	 * Since a pulse ends with an edge, previous level was the opposite
+	 * of the new last level.
+	 */
+	if (pulse_len > 0 && num_pulses > 0)
+		tgen->pprev_lvl = !tgen->plast_lvl;
 }
 
 /** Program one direct pulse into the tone generator.
@@ -122,6 +136,30 @@ void tonegen_add_dpulse(tonegen_t *tgen, tape_lvl_t lvl, uint32_t pulse_len)
 		tgen->cur_lvl = lvl;
 
 	++tgen->num_tones;
+
+	if (pulse_len > 0)
+		tgen->pprev_lvl = lvl;
+	tgen->plast_lvl = lvl;
+}
+
+/** Get previous programmed level before last programmed instant.
+ *
+ * @param player Tape player
+ * @return Previous programmed level.
+ */
+tape_lvl_t tonegen_pprev_lvl(tonegen_t *tgen)
+{
+	return tgen->pprev_lvl;
+}
+
+/** Get last programmed level.
+ *
+ * @param player Tape player
+ * @return Last programmed level.
+ */
+tape_lvl_t tonegen_plast_lvl(tonegen_t *tgen)
+{
+	return tgen->plast_lvl;
 }
 
 /** Determine if tone generator is at the end.

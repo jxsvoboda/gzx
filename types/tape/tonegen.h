@@ -55,6 +55,10 @@ typedef struct {
 	bool direct[tonegen_max_tones];
 	/** Direct level (if direct[] is true) */
 	tape_lvl_t dlvl[tonegen_max_tones];
+	/** Last programmed level */
+	tape_lvl_t plast_lvl;
+	/** Previous programmed level just before last programmed instant */
+	tape_lvl_t pprev_lvl;
 
 	/** Next tone index */
 	int tidx;
