@@ -64,6 +64,7 @@ static int test_check_waveform(tape_player_t *player, uint32_t *delays,
 	uint32_t delay;
 	tape_lvl_t lvl;
 	tape_lvl_t tlvl;
+	tape_player_sigs_t sigs;
 
 	tlvl = start_lvl;
 
@@ -82,7 +83,7 @@ static int test_check_waveform(tape_player_t *player, uint32_t *delays,
 
 		tlvl = !tlvl;
 
-		tape_player_get_next(player, &delay, &lvl);
+		tape_player_get_next(player, &delay, &lvl, &sigs);
 		if (delay != delays[i]) {
 			printf("Incorrect pulse length (%d != %d).\n", delay, delays[i]);
 			return 1;
@@ -91,6 +92,11 @@ static int test_check_waveform(tape_player_t *player, uint32_t *delays,
 		if (lvl != tlvl) {
 			printf("Incorrect level (actual=%d expected=%d).\n",
 			    lvl, tlvl);
+			return 1;
+		}
+
+		if (sigs != tps_none) {
+			printf("Unexpected signal.\n");
 			return 1;
 		}
 	}
@@ -111,6 +117,7 @@ static int test_check_dpulse(tape_player_t *player, tape_lvl_t pulse_lvl,
 {
 	uint32_t delay;
 	tape_lvl_t lvl;
+	tape_player_sigs_t sigs;
 
 	if (tape_player_is_end(player)) {
 		printf("Premature end of waveform.\n");
@@ -124,10 +131,15 @@ static int test_check_dpulse(tape_player_t *player, tape_lvl_t pulse_lvl,
 		return 1;
 	}
 
-	tape_player_get_next(player, &delay, &lvl);
+	tape_player_get_next(player, &delay, &lvl, &sigs);
 	if (delay != pulse_len) {
 		printf("Incorrect pulse length (%d != %d).\n", delay,
 		    pulse_len);
+		return 1;
+	}
+
+	if (sigs != tps_none) {
+		printf("Unexpected signal.\n");
 		return 1;
 	}
 
@@ -638,6 +650,70 @@ static int test_tape_player_pause(void)
 	return 0;
 }
 
+/** Test tape player with stop block.
+ *
+ * @return Zero on success, non-zero on failure
+ */
+static int test_tape_player_stop(void)
+{
+	tape_t *tape;
+	tblock_stop_t *stop;
+	tape_player_t *player;
+	uint32_t delay;
+	tape_lvl_t lvl;
+	tape_player_sigs_t sigs;
+	int rc;
+
+	printf("Test tape player with stop block...\n");
+
+	rc = tape_create(&tape);
+	if (rc != 0)
+		return 1;
+
+	rc = tblock_stop_create(&stop);
+	if (rc != 0)
+		return 1;
+
+	tape_append(tape, stop->block);
+
+	rc = tape_player_create(&player);
+	if (rc != 0)
+		return 1;
+
+	tape_player_init(player, tape_first(tape));
+
+	tape_player_get_next(player, &delay, &lvl, &sigs);
+	if (delay != 0) {
+		printf("Incorrect pulse length (%d != 0).\n", delay);
+		return 1;
+	}
+
+	if (lvl != tlvl_low) {
+		printf("Incorrect level (actual=%d expected=0).\n",
+		    lvl);
+		return 1;
+	}
+
+	if (sigs != tps_stop) {
+		printf("Expected stop signal not found.\n");
+		return 1;
+	}
+
+	if (!tape_player_is_end(player)) {
+		printf("Expected end of waveform not found.\n");
+		tape_player_get_next(player, &delay, &lvl, &sigs);
+		printf("delay=%d lvl=%d sigs=%d\n", delay, lvl, sigs);
+		return 1;
+	}
+
+	tape_player_destroy(player);
+	tape_destroy(tape);
+
+	printf(" ... passed\n");
+
+	return 0;
+}
+
 /** Run tape player unit tests.
  *
  * @return Zero on success, non-zero on failure
@@ -671,6 +747,10 @@ int test_tape_player(void)
 		return 1;
 
 	rc = test_tape_player_pause();
+	if (rc != 0)
+		return 1;
+
+	rc = test_tape_player_stop();
 	if (rc != 0)
 		return 1;
 

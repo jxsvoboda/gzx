@@ -60,6 +60,8 @@ static void tape_player_direct_rec_init(tape_player_t *, tblock_direct_rec_t *);
 static void tape_player_direct_rec_next(tape_player_t *, tblock_direct_rec_t *);
 static void tape_player_pause_init(tape_player_t *, tblock_pause_t *);
 static void tape_player_pause_next(tape_player_t *, tblock_pause_t *);
+static void tape_player_stop_init(tape_player_t *, tblock_stop_t *);
+static void tape_player_stop_next(tape_player_t *, tblock_stop_t *);
 
 /** Create tape player.
  *
@@ -113,7 +115,7 @@ void tape_player_destroy(tape_player_t *player)
 bool tape_player_is_end(tape_player_t *player)
 {
 	tape_player_next(player);
-	return tonegen_is_end(&player->tgen);
+	return tonegen_is_end(&player->tgen) && player->sig == tps_none;
 }
 
 /** Determine current tape player signal level.
@@ -149,9 +151,7 @@ tape_block_t *tape_player_cur_block(tape_player_t *player)
  */
 static void tape_player_next(tape_player_t *player)
 {
-	while (true) {
-		if (!tonegen_is_end(&player->tgen))
-			break;
+	while (tonegen_is_end(&player->tgen) && player->sig == tps_none) {
 
 		while (player->cur_block == NULL) {
 			player->cur_block = player->next_block;
@@ -193,6 +193,11 @@ static void tape_player_next(tape_player_t *player)
 				    (tblock_pause_t *)
 				    player->cur_block->ext);
 				break;
+			case tb_stop:
+				tape_player_stop_init(player,
+				    (tblock_stop_t *)
+				    player->cur_block->ext);
+				break;
 			default:
 				/* Skip other blocks */
 				tape_player_end_block(player);
@@ -232,6 +237,10 @@ static void tape_player_next(tape_player_t *player)
 			tape_player_pause_next(player,
 			    (tblock_pause_t *) player->cur_block->ext);
 			break;
+		case tb_stop:
+			tape_player_stop_next(player,
+			    (tblock_stop_t *) player->cur_block->ext);
+			break;
 		default:
 			assert(false);
 			break;
@@ -246,10 +255,19 @@ static void tape_player_next(tape_player_t *player)
  * @param rlvl Place to store next signal level
  */
 void tape_player_get_next(tape_player_t *player, uint32_t *rdelay,
-    tape_lvl_t *rlvl)
+    tape_lvl_t *rlvl, tape_player_sig_t *rsig)
 {
 	tape_player_next(player);
-	tonegen_get_next(&player->tgen, rdelay, rlvl);
+
+	if (player->sig == tps_none) {
+		tonegen_get_next(&player->tgen, rdelay, rlvl);
+		*rsig = 0;
+	} else {
+		*rdelay = 0;
+		*rlvl = tonegen_cur_lvl(&player->tgen);
+		*rsig = player->sig;
+		player->sig = tps_none;
+	}
 }
 
 /** End processing current block.
@@ -603,3 +621,22 @@ static void tape_player_pause_next(tape_player_t *player,
 	tape_player_end_block(player);
 }
 
+/** Initialize playback of stop the tape block.
+ *
+ * @param player Tape player
+ * @param stop Stop the tape block
+ */
+static void tape_player_stop_init(tape_player_t *player, tblock_stop_t *stop)
+{
+	player->sig = tps_stop;
+}
+
+/** Next step in playback of stop the tape block.
+ *
+ * @param player Tape player
+ * @param stop Stop the tape block
+ */
+static void tape_player_stop_next(tape_player_t *player, tblock_stop_t *stop)
+{
+	tape_player_end_block(player);
+}

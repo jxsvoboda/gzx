@@ -41,6 +41,16 @@
 #include "tape.h"
 #include "tonegen.h"
 
+/** Tape player output signal */
+typedef enum {
+	/** No signal */
+	tps_none,
+	/** Stop the tape */
+	tps_stop,
+	/** Stop the tape if in 48K mode */
+	tps_stop_48k
+} tape_player_sig_t;
+
 /** Tape player */
 typedef struct {
 	/** Current tape block */
@@ -49,6 +59,9 @@ typedef struct {
 	uint32_t cur_idx;
 	/** Done programming pause */
 	bool pause_done;
+
+	/** Output signal */
+	tape_player_sig_t sig;
 
 	/** Next tape block */
 	tape_block_t *next_block;

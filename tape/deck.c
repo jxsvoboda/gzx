@@ -45,6 +45,8 @@
 #include "wav.h"
 #include "../strutil.h"
 
+static void tape_deck_process_sig(tape_deck_t *, tape_player_sig_t);
+
 /** Create tape deck.
  *
  * @param rdeck Place to store pointer to new tape deck
@@ -274,6 +276,8 @@ int tape_deck_save_as(tape_deck_t *deck, const char *fname)
  */
 void tape_deck_play(tape_deck_t *deck)
 {
+	tape_player_sig_t sig;
+
 	if (deck->paused) {
 		deck->paused = false;
 		return;
@@ -285,8 +289,10 @@ void tape_deck_play(tape_deck_t *deck)
 	if (tape_player_is_end(deck->player))
 		return;
 
-	tape_player_get_next(deck->player, &deck->next_delay, &deck->next_lvl);
 	deck->playing = true;
+	tape_player_get_next(deck->player, &deck->next_delay, &deck->next_lvl,
+	    &sig);
+	tape_deck_process_sig(deck, sig);
 }
 
 /** Pause tape.
@@ -350,6 +356,7 @@ bool tape_deck_is_playing(tape_deck_t *deck)
  */
 void tape_deck_getsmp(tape_deck_t *deck, uint8_t *smp)
 {
+	tape_player_sig_t sig;
 	uint32_t td;
 
 	if (!deck->playing || deck->paused) {
@@ -358,17 +365,19 @@ void tape_deck_getsmp(tape_deck_t *deck, uint8_t *smp)
 	}
 
 	td = deck->delta_t;
-	while (deck->next_delay <= td && !tape_player_is_end(deck->player)) {
+	while (deck->playing && !deck->paused && deck->next_delay <= td &&
+	    !tape_player_is_end(deck->player)) {
 		td -= deck->next_delay;
 		deck->cur_lvl = deck->next_lvl;
 		tape_player_get_next(deck->player, &deck->next_delay,
-		    &deck->next_lvl);
+		    &deck->next_lvl, &sig);
+		tape_deck_process_sig(deck, sig);
 	}
 
-	if (deck->next_delay > td) {
+	if (deck->next_delay > td)
 		deck->next_delay -= td;
-		*smp = deck->cur_lvl;
-	}
+
+	*smp = deck->cur_lvl;
 }
 
 /** Get current tape block.
@@ -382,4 +391,21 @@ tape_block_t *tape_deck_cur_block(tape_deck_t *deck)
 		return tape_player_cur_block(deck->player);
 
 	return deck->cur_block;
+}
+
+/** Process tape player signal and act accordingly.
+ *
+ * @param deck Tape deck
+ * @param sig Tape player signal
+ */
+static void tape_deck_process_sig(tape_deck_t *deck, tape_player_sig_t sig)
+{
+	switch (sig) {
+	case tps_none:
+		break;
+	case tps_stop:
+	case tps_stop_48k:
+		deck->playing = false;
+		break;
+	}
 }

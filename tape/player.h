@@ -49,6 +49,7 @@ extern void tape_player_destroy(tape_player_t *);
 extern bool tape_player_is_end(tape_player_t *);
 extern tape_lvl_t tape_player_cur_lvl(tape_player_t *);
 extern tape_block_t *tape_player_cur_block(tape_player_t *);
-extern void tape_player_get_next(tape_player_t *, uint32_t *, tape_lvl_t *);
+extern void tape_player_get_next(tape_player_t *, uint32_t *, tape_lvl_t *,
+    tape_player_sig_t *);
 
 #endif
