@@ -59,6 +59,8 @@ typedef struct {
 	uint32_t cur_idx;
 	/** Done programming pause */
 	bool pause_done;
+	/** Loop counter */
+	uint16_t loop_cnt;
 
 	/** Output signal */
 	tape_player_sig_t sig;

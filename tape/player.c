@@ -62,6 +62,10 @@ static void tape_player_pause_init(tape_player_t *, tblock_pause_t *);
 static void tape_player_pause_next(tape_player_t *, tblock_pause_t *);
 static void tape_player_stop_init(tape_player_t *, tblock_stop_t *);
 static void tape_player_stop_next(tape_player_t *, tblock_stop_t *);
+static void tape_player_loop_start_init(tape_player_t *, tblock_loop_start_t *);
+static void tape_player_loop_start_next(tape_player_t *, tblock_loop_start_t *);
+static void tape_player_loop_end_init(tape_player_t *, tblock_loop_end_t *);
+static void tape_player_loop_end_next(tape_player_t *, tblock_loop_end_t *);
 static void tape_player_stop_48k_init(tape_player_t *, tblock_stop_48k_t *);
 static void tape_player_stop_48k_next(tape_player_t *, tblock_stop_48k_t *);
 
@@ -161,7 +165,7 @@ static void tape_player_next(tape_player_t *player)
 
 			if (player->cur_block == NULL)
 				break;
-			printf("next block: %d\n", player->cur_block->btype);
+
 			switch (player->cur_block->btype) {
 			case tb_data:
 				tape_player_data_init(player,
@@ -198,6 +202,16 @@ static void tape_player_next(tape_player_t *player)
 			case tb_stop:
 				tape_player_stop_init(player,
 				    (tblock_stop_t *)
+				    player->cur_block->ext);
+				break;
+			case tb_loop_start:
+				tape_player_loop_start_init(player,
+				    (tblock_loop_start_t *)
+				    player->cur_block->ext);
+				break;
+			case tb_loop_end:
+				tape_player_loop_end_init(player,
+				    (tblock_loop_end_t *)
 				    player->cur_block->ext);
 				break;
 			case tb_stop_48k:
@@ -247,6 +261,14 @@ static void tape_player_next(tape_player_t *player)
 		case tb_stop:
 			tape_player_stop_next(player,
 			    (tblock_stop_t *) player->cur_block->ext);
+			break;
+		case tb_loop_start:
+			tape_player_loop_start_next(player,
+			    (tblock_loop_start_t *) player->cur_block->ext);
+			break;
+		case tb_loop_end:
+			tape_player_loop_end_next(player,
+			    (tblock_loop_end_t *) player->cur_block->ext);
 			break;
 		case tb_stop_48k:
 			tape_player_stop_48k_next(player,
@@ -652,10 +674,73 @@ static void tape_player_stop_next(tape_player_t *player, tblock_stop_t *stop)
 	tape_player_end_block(player);
 }
 
-/** Initialize playback of stop the tape if in 48K mode block.
+/** Initialize playback of loop start block.
  *
  * @param player Tape player
- * @param stop48k Stop the tape if in 48K mode block
+ * @param lstart Loop start block
+ */
+static void tape_player_loop_start_init(tape_player_t *player,
+    tblock_loop_start_t *lstart)
+{
+	player->loop_cnt = lstart->num_rep;
+}
+
+/** Next step in playback of loop start block.
+ *
+ * @param player Tape player
+ * @param lstart Loop end block
+ */
+static void tape_player_loop_start_next(tape_player_t *player,
+    tblock_loop_start_t *lstart)
+{
+	tape_player_end_block(player);
+}
+
+/** Initialize playback of loop end block.
+ *
+ * @param player Tape player
+ * @param lend Loop end block
+ */
+static void tape_player_loop_end_init(tape_player_t *player,
+    tblock_loop_end_t *lend)
+{
+	tape_block_t *block;
+	tape_block_t *prev;
+
+	if (player->loop_cnt > 0)
+		--player->loop_cnt;
+
+	/* Next iteration? */
+	if (player->loop_cnt > 0) {
+		/* Find loop start */
+		block = lend->block;
+		prev = tape_prev(block);
+		while (prev != NULL && prev->btype != tb_loop_start) {
+			block = prev;
+			prev = tape_prev(block);
+		}
+
+		/* Continue at first block after loop start */
+		player->cur_block = NULL;
+		player->next_block = block;
+	}
+}
+
+/** Next step in playback of loop end block.
+ *
+ * @param player Tape player
+ * @param lend Loop start block
+ */
+static void tape_player_loop_end_next(tape_player_t *player,
+    tblock_loop_end_t *lend)
+{
+	tape_player_end_block(player);
+}
+
+/** Initialize playback of loop start if in 48K mode block.
+ *
+ * @param player Tape player
+ * @param stop48k Loop start if in 48K mode block
  */
 static void tape_player_stop_48k_init(tape_player_t *player,
     tblock_stop_48k_t *stop48k)

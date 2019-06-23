@@ -714,6 +714,73 @@ static int test_tape_player_stop(void)
 	return 0;
 }
 
+/** Test tape player with loop blocks.
+ *
+ * @return Zero on success, non-zero on failure
+ */
+static int test_tape_player_loop(void)
+{
+	tape_t *tape;
+	tblock_loop_start_t *lstart;
+	tblock_tone_t *tone;
+	tblock_loop_end_t *lend;
+	tape_player_t *player;
+	uint32_t delays[tone_np] = { 10, 10, 10 };
+	int rc;
+
+	printf("Test tape player with loop blocks...\n");
+
+	rc = tape_create(&tape);
+	if (rc != 0)
+		return 1;
+
+	rc = tblock_loop_start_create(&lstart);
+	if (rc != 0)
+		return 1;
+
+	lstart->num_rep = 3;
+	tape_append(tape, lstart->block);
+
+	rc = tblock_tone_create(&tone);
+	if (rc != 0)
+		return 1;
+
+	tone->num_pulses = 1;
+	tone->pulse_len = 10;
+
+	tape_append(tape, tone->block);
+
+	rc = tblock_loop_end_create(&lend);
+	if (rc != 0)
+		return 1;
+
+	tape_append(tape, lend->block);
+
+	rc = tape_player_create(&player);
+	if (rc != 0)
+		return 1;
+
+	tape_player_init(player, tape_first(tape));
+
+	rc = test_check_waveform(player, delays, tone_np, tlvl_low);
+	if (rc != 0)
+		return 1;
+
+	if (!tape_player_is_end(player)) {
+		printf("Expected end of waveform not found.\n");
+		return 1;
+	}
+
+	tape_player_destroy(player);
+	tape_destroy(tape);
+
+	printf(" ... passed\n");
+
+	return 0;
+}
+
+
+
 /** Test tape player with stop 48K block.
  *
  * @return Zero on success, non-zero on failure
@@ -815,6 +882,10 @@ int test_tape_player(void)
 		return 1;
 
 	rc = test_tape_player_stop();
+	if (rc != 0)
+		return 1;
+
+	rc = test_tape_player_loop();
 	if (rc != 0)
 		return 1;
 
