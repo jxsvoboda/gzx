@@ -58,6 +58,8 @@ typedef struct {
 	bool playing;
 	/** Tape is paused */
 	bool paused;
+	/** Mode is 48K */
+	bool mode48k;
 
 	/** Current level */
 	tape_lvl_t cur_lvl;

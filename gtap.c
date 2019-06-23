@@ -83,7 +83,7 @@ static int gtap_list(const char *fname)
 	unsigned bidx;
 	int rc;
 
-	rc = tape_deck_create(&deck);
+	rc = tape_deck_create(&deck, false);
 	if (rc != 0) {
 		printf("Out of memory.\n");
 		return ENOMEM;

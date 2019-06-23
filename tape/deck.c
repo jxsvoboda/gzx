@@ -49,10 +49,11 @@ static void tape_deck_process_sig(tape_deck_t *, tape_player_sig_t);
 
 /** Create tape deck.
  *
+ * @param mode48k Start in 48K mode
  * @param rdeck Place to store pointer to new tape deck
  * @return EOK on success, ENOMEM if out of memory
  */
-int tape_deck_create(tape_deck_t **rdeck)
+int tape_deck_create(tape_deck_t **rdeck, bool mode48k)
 {
 	tape_deck_t *deck;
 	tape_player_t *player = NULL;
@@ -78,6 +79,7 @@ int tape_deck_create(tape_deck_t **rdeck)
 		return rc;
 	}
 
+	deck->mode48k = mode48k;
 	*rdeck = deck;
 	return 0;
 }
@@ -339,6 +341,18 @@ void tape_deck_next(tape_deck_t *deck)
 	deck->cur_block = tape_next(deck->cur_block);
 }
 
+/** Enable or disable 48K mode.
+ *
+ * This affects the behavior of Stop the tape if in 48K mode block.
+ *
+ * @param deck Tape deck
+ * @param mode48k @c true if in 48K mode
+ */
+void tape_deck_set_48k(tape_deck_t *deck, bool mode48k)
+{
+	deck->mode48k = mode48k;
+}
+
 /** Check if tape is playing.
  *
  * @param deck Tape deck
@@ -404,8 +418,11 @@ static void tape_deck_process_sig(tape_deck_t *deck, tape_player_sig_t sig)
 	case tps_none:
 		break;
 	case tps_stop:
-	case tps_stop_48k:
 		deck->playing = false;
+		break;
+	case tps_stop_48k:
+		if (deck->mode48k)
+			deck->playing = false;
 		break;
 	}
 }

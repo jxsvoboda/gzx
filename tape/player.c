@@ -62,6 +62,8 @@ static void tape_player_pause_init(tape_player_t *, tblock_pause_t *);
 static void tape_player_pause_next(tape_player_t *, tblock_pause_t *);
 static void tape_player_stop_init(tape_player_t *, tblock_stop_t *);
 static void tape_player_stop_next(tape_player_t *, tblock_stop_t *);
+static void tape_player_stop_48k_init(tape_player_t *, tblock_stop_48k_t *);
+static void tape_player_stop_48k_next(tape_player_t *, tblock_stop_48k_t *);
 
 /** Create tape player.
  *
@@ -159,7 +161,7 @@ static void tape_player_next(tape_player_t *player)
 
 			if (player->cur_block == NULL)
 				break;
-
+			printf("next block: %d\n", player->cur_block->btype);
 			switch (player->cur_block->btype) {
 			case tb_data:
 				tape_player_data_init(player,
@@ -196,6 +198,11 @@ static void tape_player_next(tape_player_t *player)
 			case tb_stop:
 				tape_player_stop_init(player,
 				    (tblock_stop_t *)
+				    player->cur_block->ext);
+				break;
+			case tb_stop_48k:
+				tape_player_stop_48k_init(player,
+				    (tblock_stop_48k_t *)
 				    player->cur_block->ext);
 				break;
 			default:
@@ -240,6 +247,10 @@ static void tape_player_next(tape_player_t *player)
 		case tb_stop:
 			tape_player_stop_next(player,
 			    (tblock_stop_t *) player->cur_block->ext);
+			break;
+		case tb_stop_48k:
+			tape_player_stop_48k_next(player,
+			    (tblock_stop_48k_t *) player->cur_block->ext);
 			break;
 		default:
 			assert(false);
@@ -637,6 +648,28 @@ static void tape_player_stop_init(tape_player_t *player, tblock_stop_t *stop)
  * @param stop Stop the tape block
  */
 static void tape_player_stop_next(tape_player_t *player, tblock_stop_t *stop)
+{
+	tape_player_end_block(player);
+}
+
+/** Initialize playback of stop the tape if in 48K mode block.
+ *
+ * @param player Tape player
+ * @param stop48k Stop the tape if in 48K mode block
+ */
+static void tape_player_stop_48k_init(tape_player_t *player,
+    tblock_stop_48k_t *stop48k)
+{
+	player->sig = tps_stop_48k;
+}
+
+/** Next step in playback of stop the tape if in 48K mode block.
+ *
+ * @param player Tape player
+ * @param stop48k Stop the tape if in 48K mode block
+ */
+static void tape_player_stop_48k_next(tape_player_t *player,
+    tblock_stop_48k_t *stop48k)
 {
 	tape_player_end_block(player);
 }

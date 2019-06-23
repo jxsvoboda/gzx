@@ -167,6 +167,18 @@ void gzx_ui_lock(void)
 	ui_lock = true;
 }
 
+/** Notify on 48K mode change.
+ *
+ * 48K mode is on if we're Spectrum 48K (or lower) or if we are Spectrum
+ * 128K or higher locked in 48K emulation mode.
+ */
+void gzx_notify_mode_48k(bool mode48k)
+{
+	/* Tape needs to know to handle Stop the tape if in 48K mode */
+	if (tape_deck != NULL)
+		tape_deck_set_48k(tape_deck, mode48k);
+}
+
 static void key_unmod(wkey_t *k)
 {
    switch(k->key) {
@@ -384,7 +396,7 @@ static int zx_init(void) {
   midi.midi_msg = gzx_midi_msg;
   midi.midi_msg_arg = &midi;
 
-  if(tape_deck_create(&tape_deck) != 0) return -1;
+  if(tape_deck_create(&tape_deck, true) != 0) return -1;
   tape_deck->delta_t = ZX_TAPE_TICKS_SMP;
 
   zx_reset();

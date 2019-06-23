@@ -40,7 +40,7 @@
 #include <stdint.h>
 #include "../types/tape/deck.h"
 
-extern int tape_deck_create(tape_deck_t **);
+extern int tape_deck_create(tape_deck_t **, bool);
 extern void tape_deck_destroy(tape_deck_t *);
 
 extern int tape_deck_new(tape_deck_t *);
@@ -54,6 +54,7 @@ extern void tape_deck_stop(tape_deck_t *);
 extern void tape_deck_rewind(tape_deck_t *);
 extern void tape_deck_next(tape_deck_t *);
 
+extern void tape_deck_set_48k(tape_deck_t *, bool);
 extern bool tape_deck_is_playing(tape_deck_t *);
 extern void tape_deck_getsmp(tape_deck_t *, uint8_t *smp);
 extern tape_block_t *tape_deck_cur_block(tape_deck_t *);

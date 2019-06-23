@@ -107,8 +107,7 @@ void zx_mem_page_select(uint8_t val) {
 //  printf("bnk select 0x%02x: ram=%d,rom=%d,scr=%d\n",val,val&7,val&0x10,val&0x08);
   if(val&0x20) { /* 48k lock */
     bnk_lock48=1;
-    /* co ted? */
-    printf("48k lock - not implemented!\n");
+    gzx_notify_mode_48k(true);
   }
 }
 
@@ -284,6 +283,7 @@ int zx_select_memmodel(int model) {
       break;
   }
 
+  gzx_notify_mode_48k(has_banksw == false);
   return 0;
 }
 
