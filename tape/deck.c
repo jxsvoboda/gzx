@@ -105,6 +105,8 @@ void tape_deck_destroy(tape_deck_t *deck)
  */
 static void tape_deck_close(tape_deck_t *deck)
 {
+	tape_deck_stop(deck);
+
 	if (deck->tape != NULL) {
 		tape_destroy(deck->tape);
 		deck->tape = NULL;
