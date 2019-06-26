@@ -35,7 +35,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <surface.h>
+#include <draw/surface.h>
 #include <window.h>
 #include "../../mgfx.h"
 
