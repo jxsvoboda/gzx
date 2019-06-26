@@ -122,7 +122,7 @@ sources_helenos_g = \
     z80g.c
 
 sources_helenos_gtap = \
-    $(sources_gtap)
+    $(sources_gtap_generic)
 
 sources_test = \
     adt/list.c \
