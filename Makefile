@@ -53,6 +53,7 @@ sources_generic = \
     snap.c \
     snap_ay.c \
     strutil.c \
+    video/ula.c \
     zx.c \
     zx_kbd.c \
     zx_sound.c \
@@ -89,6 +90,7 @@ sources = \
 
 sources_g = \
     $(sources) \
+    video/spec256.c \
     z80g.c
 
 sources_gtap = \

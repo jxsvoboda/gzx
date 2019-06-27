@@ -779,8 +779,6 @@ static int test_tape_player_loop(void)
 	return 0;
 }
 
-
-
 /** Test tape player with stop 48K block.
  *
  * @return Zero on success, non-zero on failure

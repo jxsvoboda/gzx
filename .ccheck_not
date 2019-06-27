@@ -5,6 +5,8 @@
 ./platform/win/gfx_win.c
 ./platform/win/snd_win.c
 ./platform/win/sys_win.c
+./video/spec256.c
+./video/ula.c
 ./da_itab.c
 ./debug.c
 ./disasm.c
@@ -23,5 +25,4 @@
 ./z80g.c
 ./z80g.h
 ./z80itab.c
-./zx_scr.c
 ./zx_sound.c

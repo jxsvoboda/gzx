@@ -1,8 +1,8 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Spectrum Screen
+ * ULA video generator types
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,14 +28,25 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef ZX_SCR_H
-#define ZX_SCR_H
 
-int zx_scr_init(unsigned long);
-void zx_scr_mode(int mode);
-unsigned long zx_scr_get_clock(void);
+#ifndef TYPES_VIDEO_ULA_H
+#define TYPES_VIDEO_ULA_H
 
-extern void (*zx_scr_disp)(void);
-extern void (*zx_scr_disp_fast)(void);
+#include <stdbool.h>
+
+/** ULA video generator */
+typedef struct {
+	unsigned long clock;
+	unsigned long cbase;
+	/** Flash reverse */
+	bool fl_rev;
+	/** Field number */
+	int field_no;
+	/** Frame number */
+	int frame_no;
+
+	unsigned mains_x0, mains_x1i, mains_y0, mains_y1i;
+	unsigned scan_x0, scan_x1i, scan_y0, scan_y1i;
+} video_ula_t;
 
 #endif

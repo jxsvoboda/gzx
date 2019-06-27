@@ -84,7 +84,7 @@ int scr_no=0;
 
 FILE *logfi;
 
-static int fl_frames=0;
+static unsigned long disp_t;
 
 int quit=0;
 int slow_load=1;
@@ -369,7 +369,7 @@ static int zx_init(void) {
   printf("load font\n");
   gloadfont("font.bin");
   printf("init screen\n");
-  if(zx_scr_init()<0) return -1;
+  if(zx_scr_init(0)<0) return -1;
   if(zx_keys_init(&keys)<0) return -1;
   printf("sound\n");
   if(zx_sound_init()<0) return -1;
@@ -451,8 +451,6 @@ void zx_debug_mstep(void) {
     frmno=1;
     if(frmno>=1) {
 //      unsigned long twstart;
-      disp_cbase=disp_t;
-      disp_clock=0;
 	
         /* sync with time */
 /*	twstart = timer_val(&frmt);
@@ -480,11 +478,6 @@ void zx_debug_mstep(void) {
       frmno=0;
     }
     frmno++;
-    fl_frames++;
-    if(fl_frames>=16) {
-      fl_frames=0;
-      fl_rev=!fl_rev;
-    }
 #ifdef LOG
     if(cpus.iff1) fprintf(logfi,"interrupt\n");
 #endif
@@ -496,7 +489,7 @@ void zx_debug_mstep(void) {
   }
     
 #ifndef USE_GPU
-  while(CLOCK_LT(disp_cbase+disp_clock,z80_clock))
+  while(CLOCK_LT(zx_scr_get_clock(),z80_clock))
     zx_scr_disp();
 #endif      
     
@@ -681,8 +674,6 @@ int main(int argc, char **argv) {
       
       if(frmno>=1) {
 //        unsigned long twstart;
-        disp_cbase=disp_t;
-        disp_clock=0;
 	
         /* sync with time */
 /*	twstart = timer_val(&frmt);
@@ -712,11 +703,6 @@ int main(int argc, char **argv) {
 	frmno=0;
       }
       frmno++;
-      fl_frames++;
-      if(fl_frames>=16) {
-        fl_frames=0;
-	fl_rev=!fl_rev;
-      }
       mgfx_input_update();
       while(w_getkey(&k)) key_handler(&k);
 #ifdef LOG
@@ -730,7 +716,7 @@ int main(int argc, char **argv) {
     }
     
 #ifndef USE_GPU
-    while(CLOCK_LT(disp_cbase+disp_clock,z80_clock))
+    while(CLOCK_LT(zx_scr_get_clock(),z80_clock))
       zx_scr_disp();
 #endif      
     

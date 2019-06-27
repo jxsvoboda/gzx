@@ -28,14 +28,11 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef ZX_SCR_H
-#define ZX_SCR_H
+#ifndef VIDEO_DEFS_H
+#define VIDEO_DEFS_H
 
-int zx_scr_init(unsigned long);
-void zx_scr_mode(int mode);
-unsigned long zx_scr_get_clock(void);
-
-extern void (*zx_scr_disp)(void);
-extern void (*zx_scr_disp_fast)(void);
+#define ZX_PIXEL_START	0x0000
+#define ZX_ATTR_START	0x1800
+#define ZX_ATTR_END	0x1aff
 
 #endif

@@ -1,8 +1,8 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Spectrum Screen
+ * Spec256 video generator
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,14 +28,14 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef ZX_SCR_H
-#define ZX_SCR_H
+#ifndef VIDEO_SPEC256_H
+#define VIDEO_SPEC256_H
 
-int zx_scr_init(unsigned long);
-void zx_scr_mode(int mode);
-unsigned long zx_scr_get_clock(void);
+#include "../types/video/spec256.h"
 
-extern void (*zx_scr_disp)(void);
-extern void (*zx_scr_disp_fast)(void);
+extern int video_spec256_init(video_spec256_t *);
+extern void video_spec256_disp_fast(video_spec256_t *);
+extern void video_spec256_setpal(video_spec256_t *);
+extern unsigned long video_spec256_get_clock(video_spec256_t *);
 
 #endif
