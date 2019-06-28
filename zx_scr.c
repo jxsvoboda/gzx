@@ -100,6 +100,15 @@ int zx_scr_init(unsigned long clock)
 	return 0;
 }
 
+int zx_scr_load_bg(const char *fname)
+{
+#ifdef USE_GPU
+	return video_spec256_load_bg(&video_spec256, fname);
+#else
+	return 0;
+#endif
+}
+
 unsigned long zx_scr_get_clock(void)
 {
 	return video_ula_get_clock(&video_ula);

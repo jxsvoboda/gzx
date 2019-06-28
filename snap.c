@@ -29,6 +29,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,6 +42,11 @@
 #include "snap_ay.h"
 #include "z80.h"
 #include "zx.h"
+
+#ifdef USE_GPU
+#include "z80g.h"
+#include "zx_scr.h"
+#endif
 
 /*
   Translate 48k page numbers (8,4,5) to our numbering system (0,1,2)
@@ -661,6 +667,11 @@ static int zx_save_snap_sna(char *name) {
 /* determines snapshot type by extension */
 int zx_load_snap(char *name) {
   char *ext;
+#ifdef USE_GPU
+  char *gext;
+  char *gfxname;
+#endif
+  int rc;
   
   ext=strrchr(name,'.');
   if(!ext) {
@@ -668,12 +679,55 @@ int zx_load_snap(char *name) {
     return -1;
   }
   
-  if(!strcmpci(ext,".z80")) return zx_load_snap_z80(name);
-  if(!strcmpci(ext,".sna")) return zx_load_snap_sna(name);
-  if(!strcmpci(ext,".ay")) return zx_load_snap_ay(name);
+  if(!strcmpci(ext,".z80"))
+    rc = zx_load_snap_z80(name);
+  else if(!strcmpci(ext,".sna"))
+    rc = zx_load_snap_sna(name);
+  else if(!strcmpci(ext,".ay"))
+    rc = zx_load_snap_ay(name);
+  else {
+    printf("unknown extension\n");
+    rc = -1;
+  }
   
-  printf("unknown extension\n");
-  return -1;
+  if (rc != 0)
+    return rc;
+  
+#ifdef USE_GPU
+  if (strcmpci(ext, ".ay") != 0) {
+    gfxname = malloc(strlen(name) + 1);
+    if (gfxname == NULL)
+      return -1;
+    memcpy(gfxname, name, strlen(name) + 1);
+    gext = strrchr(gfxname, '.');
+    assert(gext != 0);
+    memcpy(gext + 1, "gfx", strlen("gfx"));
+    if (gfxram_load(gfxname)) {
+      memcpy(gext + 1, "GFX", strlen("GFX"));
+      if (gfxram_load(gfxname)) {
+        memcpy(gext + 1, "GFX", strlen("GFX"));
+        free(gfxname);
+        return -1;
+      }
+    }
+
+    memcpy(gext + 1, "b00", strlen("b00"));
+    if (zx_scr_load_bg(gfxname)) {
+      memcpy(gext + 1, "B00", strlen("B00"));
+      if (zx_scr_load_bg(gfxname)) {
+        free(gfxname);
+        return -1;
+      }
+    }
+
+    { int i;
+       for(i=0;i<NGP;i++)
+         gpus[i]=cpus;
+    }
+    zx_scr_mode(1);
+  }
+#endif
+  return 0;
 }
 
 /* returns 0 when ok, -1 on error */

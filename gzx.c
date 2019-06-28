@@ -185,29 +185,8 @@ static void key_unmod(wkey_t *k)
       case WKEY_ESC:
 	main_menu();
 	break;
-	
       case WKEY_F1:
-//        zx_load_snap("manicmin.sna");
-#ifdef USE_GPU
-        zx_load_snap("knlore.sna");
-	gfxram_load("out.gfx");
-//	gfxram_load("mmclr.gfx");
-//        zx_load_snap("jetpac.sna");
-//	gfxram_load("jetpac.gfx");
-//	zx_load_snap("jetpac.z80");
-//	gfxram_load("jetpac.gfx");
-//	zx_load_snap("underw.z80");
-//	gfxram_load("underw.gfx");
-	
-	{ int i;
-	  for(i=0;i<NGP;i++)
-	    gpus[i]=cpus;
-	}
-        zx_scr_mode(1);
-#else
-	zx_load_snap("manicmin.sna");
-	debugger();
-#endif
+	zx_load_snap("test.sna");
 	break;
       case WKEY_F2: save_snap_dialog(); break;
       // case WKEY_F2: zx_scr_save(); break;

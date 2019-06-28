@@ -32,6 +32,7 @@
 #define ZX_SCR_H
 
 int zx_scr_init(unsigned long);
+extern int zx_scr_load_bg(const char *);
 void zx_scr_mode(int mode);
 unsigned long zx_scr_get_clock(void);
 

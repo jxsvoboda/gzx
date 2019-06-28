@@ -107,13 +107,9 @@ int video_spec256_init(video_spec256_t *spec) {
   }
   fclose(f);
   
-  spec->background=malloc(64000);
+  spec->background=calloc(64000, 1);
   if(!spec->background) return -1;
-  f=fopen("knlore.b00","rb");
-  if(!f) return -1;
-  fread(spec->background,1,64000,f);
-  fclose(f);
-  
+
 //  scr_ys>>=1;
   
   spec->mains_x0=(scr_xs>>1)-(256>>1);
@@ -125,6 +121,16 @@ int video_spec256_init(video_spec256_t *spec) {
   
   spec->clock=0;
 
+  return 0;
+}
+
+int video_spec256_load_bg(video_spec256_t *spec, const char *fname)
+{
+  FILE *f;
+  f=fopen(fname,"rb");
+  if(!f) return -1;
+  fread(spec->background,1,64000,f);
+  fclose(f);
   return 0;
 }
 
