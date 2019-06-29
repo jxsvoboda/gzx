@@ -107,6 +107,7 @@ sources_w32 = \
 
 sources_w32_g = \
     $(sources_w32) \
+    video/spec256.c \
     z80g.c
 
 sources_w32_gtap = \
