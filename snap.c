@@ -714,11 +714,10 @@ int zx_load_snap(char *name) {
     memcpy(gext + 1, "b00", strlen("b00"));
     if (zx_scr_load_bg(gfxname)) {
       memcpy(gext + 1, "B00", strlen("B00"));
-      if (zx_scr_load_bg(gfxname)) {
-        free(gfxname);
-        return -1;
-      }
+      (void) zx_scr_load_bg(gfxname);
     }
+
+    free(gfxname);
 
     { int i;
        for(i=0;i<NGP;i++)
