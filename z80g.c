@@ -85,13 +85,12 @@ void gfx_select_memmodel(int model) {
   zxbnk[3]=tmpbnk[3];
 }
 
-#define GRANU 16
+#define GRANU 1
 
 /* execute instruction using both CPU and GPU */
 void z80_g_execinstr(void) {
   int i,j;
   unsigned long tmp_clock;
-  u8 *tmpram,*tmprom,*tmpscr;
   u8 *tmpbnk[4];
 
   tmp_clock=z80_clock;
@@ -107,21 +106,13 @@ void z80_g_execinstr(void) {
     
   /* execute instrucion on all GPUs */
   tmps=cpus; /* save CPU for a while */
-  
-  tmprom=zxrom;
-  tmpram=zxram;
-  tmpscr=zxscr;
-  
+
   tmpbnk[0]=zxbnk[0];
   tmpbnk[1]=zxbnk[1];
   tmpbnk[2]=zxbnk[2];
   tmpbnk[3]=zxbnk[3];
 
   for(i=0;i<NGP;i++) {
-/*    zxrom=gfxrom[i];
-    zxram=gfxram[i];
-    zxscr=gfxscr[i];*/
-    
     zxbnk[0]=gfxbnk[i][0];
     zxbnk[1]=gfxbnk[i][1];
     zxbnk[2]=gfxbnk[i][2];
@@ -133,21 +124,8 @@ void z80_g_execinstr(void) {
       z80_execinstr();
     
     gpus[i]=cpus;
-
-/*    gfxrom[i]=zxrom;
-    gfxram[i]=zxram;
-    gfxscr[i]=zxscr;    */
-    
-    gfxbnk[i][0]=zxbnk[0];
-    gfxbnk[i][1]=zxbnk[1];
-    gfxbnk[i][2]=zxbnk[2];
-    gfxbnk[i][3]=zxbnk[3];
   }
   cpus=tmps; /* restore CPU */
-  
-  zxrom=tmprom;
-  zxram=tmpram;
-  zxscr=tmpscr;
   
   zxbnk[0]=tmpbnk[0];
   zxbnk[1]=tmpbnk[1];
@@ -165,7 +143,6 @@ void z80_g_execinstr(void) {
 void z80_g_int(u8 bus) {
   int i;
   unsigned long tmp_clock;
-  u8 *tmpram,*tmprom,*tmpscr;
   u8 *tmpbnk[4];
  
   tmp_clock=z80_clock;
@@ -173,20 +150,12 @@ void z80_g_int(u8 bus) {
   /* execute int on all GPUs */
   tmps=cpus; /* save CPU for a while */
   
-  tmprom=zxrom;
-  tmpram=zxram;
-  tmpscr=zxscr;
-  
   tmpbnk[0]=zxbnk[0];
   tmpbnk[1]=zxbnk[1];
   tmpbnk[2]=zxbnk[2];
   tmpbnk[3]=zxbnk[3];
 
   for(i=0;i<NGP;i++) {
-    zxrom=gfxrom[i];
-    zxram=gfxram[i];
-    zxscr=gfxscr[i];
-    
     zxbnk[0]=gfxbnk[i][0];
     zxbnk[1]=gfxbnk[i][1];
     zxbnk[2]=gfxbnk[i][2];
@@ -197,21 +166,8 @@ void z80_g_int(u8 bus) {
     z80_int(bus);
     
     gpus[i]=cpus;
-
-    gfxrom[i]=zxrom;
-    gfxram[i]=zxram;
-    gfxscr[i]=zxscr;    
-    
-    gfxbnk[i][0]=zxbnk[0];
-    gfxbnk[i][1]=zxbnk[1];
-    gfxbnk[i][2]=zxbnk[2];
-    gfxbnk[i][3]=zxbnk[3];
   }
   cpus=tmps; /* restore CPU */
-  
-  zxrom=tmprom;
-  zxram=tmpram;
-  zxscr=tmpscr;
   
   zxbnk[0]=tmpbnk[0];
   zxbnk[1]=tmpbnk[1];

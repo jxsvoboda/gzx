@@ -79,6 +79,10 @@ static u16 z80_memget16(u16 addr) {
   return (u16)z80_memget8(addr)+(((u16)z80_memget8(addr+1))<<8);
 }
 
+static u16 z80_imemget16(u16 addr) {
+  return (u16)z80_imemget8(addr)+(((u16)z80_imemget8(addr+1))<<8);
+}
+
 static void z80_memset16(u16 addr, u16 val) {
   z80_memset8(addr, val & 0xff);
   z80_memset8(addr+1, val >> 8);
@@ -343,7 +347,7 @@ u16 z80_getHL_(void)
 static u8 z80_iget8(void) {
   u8 tmp;
 
-  tmp=z80_memget8(cpus.PC);
+  tmp=z80_imemget8(cpus.PC);
   cpus.PC++;
   return tmp;
 }
@@ -351,7 +355,7 @@ static u8 z80_iget8(void) {
 static u16 z80_iget16(void) {
   u16 tmp;
 
-  tmp=z80_memget16(cpus.PC);
+  tmp=z80_imemget16(cpus.PC);
   cpus.PC+=2;
   return tmp;
 }

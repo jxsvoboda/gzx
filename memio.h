@@ -43,6 +43,7 @@
 
 /* spectrum memory access */
 uint8_t zx_memget8(uint16_t addr);
+uint8_t zx_imemget8(uint16_t addr);
 void zx_memset8(uint16_t addr, uint8_t val);
 void zx_memset8f(uint16_t addr, uint8_t val);
 uint16_t zx_memget16(uint16_t addr);

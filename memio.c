@@ -72,6 +72,16 @@ uint8_t zx_memget8(uint16_t addr) {
     return zxbnk[addr>>14][addr&0x3fff];
 }
 
+uint8_t zx_imemget8(uint16_t addr) {
+  if(mem_model==ZXM_48K) {
+    if (addr < 16384)
+	return zxrom[addr];
+    else
+        return zxram[addr - 16384];
+  } else
+    return zx_memget8(addr);
+}
+
 void zx_memset8(uint16_t addr, uint8_t val) {
   if(mem_model==ZXM_ZX81) {
     if(addr>=8192 && addr<=0x7fff) zxbnk[addr>>14][addr&0x1fff]=val;

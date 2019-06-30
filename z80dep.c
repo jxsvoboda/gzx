@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Z80 core dependencies
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,11 @@
 uint8_t z80_memget8(uint16_t addr)
 {
 	return zx_memget8(addr);
+}
+
+uint8_t z80_imemget8(uint16_t addr)
+{
+	return zx_imemget8(addr);
 }
 
 void z80_memset8(uint16_t addr, uint8_t val)
