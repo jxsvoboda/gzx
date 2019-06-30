@@ -32,6 +32,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 //#include "video/defs.h"
 #include "../clock.h"
 #include "../mgfx.h"
@@ -132,6 +133,11 @@ int video_spec256_load_bg(video_spec256_t *spec, const char *fname)
   fread(spec->background,1,64000,f);
   fclose(f);
   return 0;
+}
+
+void video_spec256_clear_bg(video_spec256_t *spec)
+{
+  memset(spec->background,0,64000);
 }
 
 void video_spec256_setpal(video_spec256_t *spec)

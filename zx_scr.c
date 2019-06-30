@@ -109,6 +109,13 @@ int zx_scr_load_bg(const char *fname)
 #endif
 }
 
+void zx_scr_clear_bg(void)
+{
+#ifdef USE_GPU
+	video_spec256_clear_bg(&video_spec256);
+#endif
+}
+
 unsigned long zx_scr_get_clock(void)
 {
 	return video_ula_get_clock(&video_ula);

@@ -714,7 +714,10 @@ int zx_load_snap(char *name) {
     memcpy(gext + 1, "b00", strlen("b00"));
     if (zx_scr_load_bg(gfxname)) {
       memcpy(gext + 1, "B00", strlen("B00"));
-      (void) zx_scr_load_bg(gfxname);
+      if (zx_scr_load_bg(gfxname)) {
+        /* Perhaps this game does not have a background */
+        zx_scr_clear_bg();
+      }
     }
 
     free(gfxname);

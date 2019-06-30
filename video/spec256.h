@@ -35,6 +35,7 @@
 
 extern int video_spec256_init(video_spec256_t *);
 extern int video_spec256_load_bg(video_spec256_t *, const char *);
+extern void video_spec256_clear_bg(video_spec256_t *);
 extern void video_spec256_disp_fast(video_spec256_t *);
 extern void video_spec256_setpal(video_spec256_t *);
 extern unsigned long video_spec256_get_clock(video_spec256_t *);
