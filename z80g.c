@@ -95,13 +95,24 @@ void z80_g_execinstr(void) {
 
   tmp_clock=z80_clock;
 
-  /* synchronise GPUs with CPU */
+  /*
+   * Synchronize GPUs with CPU
+   *
+   * Synchronize everything but Gfx registers
+   */
   for(i=0;i<NGP;i++) {
     gpus[i].PC=cpus.PC;
+    gpus[i].SP=cpus.SP;
+    gpus[i].I=cpus.I;
+    gpus[i].R=cpus.R;
+    gpus[i].IFF1=cpus.IFF1;
+    gpus[i].IFF2=cpus.IFF2;
     gpus[i].modifier=cpus.modifier;
     gpus[i].int_lock=cpus.int_lock;
     gpus[i].halted=cpus.halted;
     gpus[i].int_mode=cpus.int_mode;
+    /* Sync all flags but Carry */
+    gpus[i].F=(gpus[i].F&fC)|(cpus.F&~fC);
   }
     
   /* execute instrucion on all GPUs */
