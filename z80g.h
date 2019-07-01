@@ -39,6 +39,8 @@
 #define NGP 8
 
 extern z80s gpus[NGP];
+/** Always points to real CPU, never GPU */
+extern z80s *rcpus;
 
 extern u8 *gfxrom[NGP];
 extern u8 *gfxram[NGP];

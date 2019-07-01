@@ -34,6 +34,7 @@
 
 z80s gpus[NGP];		/* GPUs */
 z80s tmps;		/* temporary place to store the CPU */
+z80s *rcpus = &cpus;
 
 u8 *gfxrom[NGP];
 u8 *gfxram[NGP];
@@ -117,6 +118,7 @@ void z80_g_execinstr(void) {
     
   /* execute instrucion on all GPUs */
   tmps=cpus; /* save CPU for a while */
+  rcpus = &tmps;
 
   tmpbnk[0]=zxbnk[0];
   tmpbnk[1]=zxbnk[1];
@@ -137,6 +139,7 @@ void z80_g_execinstr(void) {
     gpus[i]=cpus;
   }
   cpus=tmps; /* restore CPU */
+  rcpus=&cpus;
   
   zxbnk[0]=tmpbnk[0];
   zxbnk[1]=tmpbnk[1];

@@ -189,57 +189,122 @@ static void incr_R(u8 amount) {
   cpus.R = (cpus.R & 0x80) | ((cpus.R+amount)&0x7f);
 }
 
+/**************************** address register access *******************/
+
+/*
+ * In GPU case we need to take addresses from the CPU registers as a special
+ * case.
+ */
+
+#ifdef USE_GPU
+
+#include "z80g.h"
+
+static u16 get_addrBC(void)
+{
+  return ((u16)rcpus->r[rB] << 8) | rcpus->r[rC];
+}
+
+static u16 get_addrDE(void)
+{
+  return ((u16)rcpus->r[rD] << 8) | rcpus->r[rE];
+}
+
+static u16 get_addrHL(void)
+{
+  return ((u16)rcpus->r[rH] << 8) | rcpus->r[rL];
+}
+
+static u16 get_addrIX(void)
+{
+  return rcpus->IX;
+}
+
+static u16 get_addrIY(void)
+{
+  return rcpus->IY;
+}
+
+#else
+
+static u16 get_addrBC(void)
+{
+  return ((u16)cpus.r[rB] << 8) | cpus.r[rC];
+}
+
+static u16 get_addrDE(void)
+{
+  return ((u16)cpus.r[rD] << 8) | cpus.r[rE];
+}
+
+static u16 get_addrHL(void)
+{
+  return ((u16)cpus.r[rH] << 8) | cpus.r[rL];
+}
+
+static u16 get_addrIX(void)
+{
+  return cpus.IX;
+}
+
+static u16 get_addrIY(void)
+{
+  return cpus.IY;
+}
+
+#endif
+
 /**************************** operand access ***************************/
 
 /* returns (HL)(8) */
 static u8 _iHL8(void) {
-  return z80_memget8(((u16)cpus.r[rH]<<8)|(u16)cpus.r[rL]);
+  return z80_memget8(get_addrHL());
 }
 
 /* returns (BC) */
 static u8 _iBC8(void) {
-  return z80_memget8(((u16)cpus.r[rB]<<8)|(u16)cpus.r[rC]);
+  return z80_memget8(get_addrBC());
 }
 
 /* returns (DE) */
 static u8 _iDE8(void) {
-  return z80_memget8(((u16)cpus.r[rD]<<8)|(u16)cpus.r[rE]);
+  return z80_memget8(get_addrDE());
 }
 
 /* returns (IX+N) */
 static u8 _iIXN8(u16 N) {
-  return z80_memget8(cpus.IX+u8sval(N));
+  return z80_memget8(get_addrIX()+u8sval(N));
 }
 
 /* returns (IY+N) */
 static u8 _iIYN8(u16 N) {
-  return z80_memget8(cpus.IY+u8sval(N));
+  return z80_memget8(get_addrIY()+u8sval(N));
 }
 
 /* (IX+N) <- val*/
 static void s_iIXN8(u16 N, u8 val) {
-  z80_memset8(cpus.IX+u8sval(N),val);
+  z80_memset8(get_addrIX()+u8sval(N),val);
 }
 
 /* (IY+N) <- val*/
 static void s_iIYN8(u16 N, u8 val) {
-  z80_memset8(cpus.IY+u8sval(N),val);
+  z80_memset8(get_addrIY()+u8sval(N),val);
 }
 
 
 /* (HL) <- val */
 static void s_iHL8(u8 val) {
-  z80_memset8(((u16)cpus.r[rH]<<8)|(u16)cpus.r[rL],val);
+  z80_memset8(get_addrHL(),val);
 }
 
 /* (BC) <- val */
 static void s_iBC8(u8 val) {
-  z80_memset8(((u16)cpus.r[rB]<<8)|(u16)cpus.r[rC],val);
+  z80_memset8(get_addrBC(),val);
 }
 
 /* (DE) <- val */
 static void s_iDE8(u8 val) {
-  z80_memset8(((u16)cpus.r[rD]<<8)|(u16)cpus.r[rE],val);
+  z80_memset8(get_addrDE(),val);
 }
 
 /* returns (SP)(16-bits) */
