@@ -100,12 +100,26 @@ int zx_scr_init(unsigned long clock)
 	return 0;
 }
 
-int zx_scr_load_bg(const char *fname)
+int zx_scr_load_bg(const char *fname, int idx)
 {
 #ifdef USE_GPU
-	return video_spec256_load_bg(&video_spec256, fname);
+	return video_spec256_load_bg(&video_spec256, fname, idx);
 #else
 	return 0;
+#endif
+}
+
+void zx_scr_prev_bg(void)
+{
+#ifdef USE_GPU
+	video_spec256_prev_bg(&video_spec256);
+#endif
+}
+
+void zx_scr_next_bg(void)
+{
+#ifdef USE_GPU
+	video_spec256_next_bg(&video_spec256);
 #endif
 }
 

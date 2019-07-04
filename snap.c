@@ -670,6 +670,7 @@ int zx_load_snap(char *name) {
 #ifdef USE_GPU
   char *gext;
   char *gfxname;
+  int i;
 #endif
   int rc;
   
@@ -711,13 +712,25 @@ int zx_load_snap(char *name) {
       }
     }
 
-    memcpy(gext + 1, "b00", strlen("b00"));
-    if (zx_scr_load_bg(gfxname)) {
-      memcpy(gext + 1, "B00", strlen("B00"));
-      if (zx_scr_load_bg(gfxname)) {
-        /* Perhaps this game does not have a background */
-        zx_scr_clear_bg();
+    zx_scr_clear_bg();
+
+    i = 0;
+    while (i < 100) {
+      /* Try 'bNN' extension */
+      gext[1] = 'b';
+      gext[2] = '0' + i / 10;
+      gext[3] = '0' + i % 10;
+
+      printf("try loading '%s'\n", gfxname);
+      if (zx_scr_load_bg(gfxname, i)) {
+        /* Try 'BNN' extension */
+        gext[1] = 'B';
+        if (zx_scr_load_bg(gfxname, 0)) {
+          /* Not found, assuming there are no more backgrounds */
+          break;
+        }
       }
+      ++i;
     }
 
     free(gfxname);

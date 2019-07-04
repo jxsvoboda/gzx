@@ -31,11 +31,13 @@
 #ifndef ZX_SCR_H
 #define ZX_SCR_H
 
-int zx_scr_init(unsigned long);
-extern int zx_scr_load_bg(const char *);
+extern int zx_scr_init(unsigned long);
+extern int zx_scr_load_bg(const char *, int);
+extern void zx_scr_prev_bg(void);
+extern void zx_scr_next_bg(void);
 extern void zx_scr_clear_bg(void);
-void zx_scr_mode(int mode);
-unsigned long zx_scr_get_clock(void);
+extern void zx_scr_mode(int mode);
+extern unsigned long zx_scr_get_clock(void);
 
 extern void (*zx_scr_disp)(void);
 extern void (*zx_scr_disp_fast)(void);

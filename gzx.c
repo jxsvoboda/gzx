@@ -226,6 +226,12 @@ static void key_lalt(wkey_t *k)
 	  iorec = NULL;
 	}
 	break;
+      case WKEY_N:
+        zx_scr_prev_bg();
+        break;
+      case WKEY_M:
+        zx_scr_next_bg();
+        break;
     }
 }
 

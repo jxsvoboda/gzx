@@ -85,7 +85,12 @@ void video_spec256_disp_fast(video_spec256_t *spec) {
 	  if(gfxscr[j][buf]&(1<<(7-i))) b |= (1<<j);
 	}
 	if(b!=0) mgfx_setcolor(b);
-	  else mgfx_setcolor(spec->background[(spec->mains_y0+y)*320+spec->mains_x0+x*8+i]);
+	  else {
+	    if (spec->cur_bg >= 0)
+		mgfx_setcolor(spec->background[spec->cur_bg][(spec->mains_y0+y)*320+spec->mains_x0+x*8+i]);
+	    else
+	        mgfx_setcolor(0);
+	  }
 	mgfx_drawpixel(spec->mains_x0+x*8+i,spec->mains_y0+y);
       }
     }
@@ -108,8 +113,8 @@ int video_spec256_init(video_spec256_t *spec) {
   }
   fclose(f);
   
-  spec->background=calloc(64000, 1);
-  if(!spec->background) return -1;
+  spec->background=NULL;
+  spec->cur_bg = -1;
 
 //  scr_ys>>=1;
   
@@ -125,19 +130,63 @@ int video_spec256_init(video_spec256_t *spec) {
   return 0;
 }
 
-int video_spec256_load_bg(video_spec256_t *spec, const char *fname)
+int video_spec256_load_bg(video_spec256_t *spec, const char *fname, int idx)
 {
   FILE *f;
+  uint8_t **bgs;
+  uint8_t *bg;
+  
   f=fopen(fname,"rb");
   if(!f) return -1;
-  fread(spec->background,1,64000,f);
+  if (spec->nbgs < idx + 1) {
+    bg = malloc(64000);
+    if (bg == NULL) {
+      fclose(f);
+      return -1;
+    }
+    bgs = realloc(spec->background, (idx + 1) * sizeof(uint8_t *));
+    if (bgs == NULL) {
+      free(bg);
+      fclose(f);
+      return -1;
+    }
+
+    spec->background = bgs;
+    spec->nbgs = idx + 1;
+    spec->background[idx] = bg;
+  }
+
+  fread(spec->background[idx],1,64000,f);
   fclose(f);
+  printf("Loaded background '%s'\n", fname);
+  if (spec->cur_bg == -1)
+	spec->cur_bg = 0;
   return 0;
+}
+
+void video_spec256_prev_bg(video_spec256_t *spec)
+{
+  if (spec->cur_bg >= 0)
+    --spec->cur_bg;
+}
+
+void video_spec256_next_bg(video_spec256_t *spec)
+{
+  if (spec->cur_bg < spec->nbgs - 1)
+    ++spec->cur_bg;
 }
 
 void video_spec256_clear_bg(video_spec256_t *spec)
 {
-  memset(spec->background,0,64000);
+  int i;
+  for (i = 0; i < spec->nbgs; i++) {
+    if (spec->background[i] != NULL)
+      free(spec->background[i]);
+  }
+  free(spec->background);
+  spec->background = NULL;
+  spec->cur_bg = -1;
+  spec->nbgs = 0;
 }
 
 void video_spec256_setpal(video_spec256_t *spec)

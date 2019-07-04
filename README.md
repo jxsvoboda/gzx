@@ -130,6 +130,15 @@ Note that most functions can be accessed via menus as well as via shortcuts.
   Alt-Shift-L | Lock down UI (disable emulator control keys)
   Alt-Shift-U | Unlock UI (reenable emulator control keys)
 
+These might change or be removed in the future:
+
+  Key         | Function
+  ----------- | --------
+  Alt-R       | Start recording I/O port output to `out.ior`
+  Alt-T       | Stop recording I/O port output
+  Alt-N       | Select previous/none Spec256 background
+  Alt-M       | Select next Spec256 background
+
 On the numerical keypad:
 
   Key | Function
@@ -148,5 +157,23 @@ Spectrum Key Mappings
   Ctrl         | Symbol Shift
   Shift+Arrows | Cursor Keys
   Backspace    | Delete
+
+Key functions while in the debugger
+-----------------------------------
+
+  Key          | Function
+  ------------ | --------
+  Esc or Enter | Exit debugger, return to normal emulation
+  Up Arrow     | Move cursor to previous instruction
+  Down Arrow   | Move cursor to next instruction
+  Page Up      | Move cursor up one page
+  Page Down    | Move cursor down one page
+  Home         | Move cursor up by 256 bytes
+  End          | Move cursor down by 256 bytes
+  F7           | Trace into
+  F8           | Step over
+  F9           | Go to cursor (run until PC = cursor position)
+  F11          | View Spectrum screen (while paused)
+
 
 [1]: https://github.com/jxsvoboda/sycek
