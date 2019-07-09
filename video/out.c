@@ -1,6 +1,6 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Spec256 video generator types
+ * ULA video generator
  *
  * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
@@ -29,23 +29,65 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TYPES_VIDEO_SPEC256_H
-#define TYPES_VIDEO_SPEC256_H
-
 #include <stdint.h>
+#include "../mgfx.h"
+#include "out.h"
 
-/** Spec256 video generator */
-typedef struct {
-	struct video_out *vout;
-	unsigned long clock;
-	uint8_t gfxpal[3 * 256];
-	unsigned mains_x0, mains_x1i, mains_y0, mains_y1i;
-	/** Number of backgrounds */
-	int nbgs;
-	/** Backgrounds (320 x 200) */
-	uint8_t **background;
-	/** Current background (-1 = none, 0 .. nbgs - 1) */
-	int cur_bg;
-} video_spec256_t;
+/** Render rectangle to video output.
+ *
+ * @param vout Video output
+ * @param x0 X coordinate of top-left corner
+ * @param y0 Y coordinate of top-left corner
+ * @param x1 X coordinate of bottom-right corner
+ * @param y1 Y coordinate of bottom-right corner
+ * @param color Color
+ */
+void video_out_rect(video_out_t *vout, int x0, int y0, int x1, int y1,
+    uint8_t color)
+{
+	mgfx_fillrect(x0, y0, x1, y1, color);
+}
 
-#endif
+/** Render pixel to video output.
+ *
+ * @param vout Video output
+ * @param x X coordinate
+ * @param y Y coordinate
+ * @param color Color
+ */
+void video_out_pixel(video_out_t *vout, int x, int y, uint8_t color)
+{
+	mgfx_setcolor(color);
+	mgfx_drawpixel(x, y);
+}
+
+/** Signal end of current field.
+ *
+ * Should be called after rendering the entire field.
+ *
+ * @param vout Video output
+ */
+void video_out_end_field(video_out_t *vout)
+{
+	(void)vout;
+}
+
+/** Set the color palette.
+ *
+ * This is used to set the entire color palette at once. This replaces
+ * any previous color palette entirely (even if less colors are used).
+ *
+ * @param vout Video output
+ * @param ncolors Number of colors in palette
+ * @param pal Pallete, ncolors RGB triplets
+ */
+void video_out_set_palette(video_out_t *vout, int ncolors, uint8_t *pal)
+{
+	int ipal[3 * 256];
+	int i;
+
+	for (i = 0; i < 3 * ncolors; i++)
+		ipal[i] = pal[i];
+
+	mgfx_setpal(0, ncolors, ipal);
+}

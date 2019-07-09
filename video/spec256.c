@@ -38,6 +38,7 @@
 #include "../mgfx.h"
 #include "../memio.h"
 #include "../z80g.h"
+#include "out.h"
 #include "spec256.h"
 
 static uint16_t vxswapb(uint16_t ofs) {
@@ -49,33 +50,28 @@ void video_spec256_disp_fast(video_spec256_t *spec) {
   int x,y,i,j;
   unsigned buf;
   uint8_t b;
-  
+  uint8_t color;
+
   mgfx_setcolor(border);
-  
+
   /* draw border */
-  
+
   /* top + corners */
-  for(y=0;y<spec->mains_y0;y++)
-    for(x=0;x<scr_xs;x++)
-      mgfx_drawpixel(x,y);
-      
+  video_out_rect(spec->vout, 0, 0, scr_xs - 1, spec->mains_y0 - 1, border);
+
   /* bottom + corners */
-  for(y=spec->mains_y1i;y<scr_ys;y++)
-    for(x=0;x<scr_xs;x++)
-      mgfx_drawpixel(x,y);
-      
+  video_out_rect(spec->vout, 0, spec->mains_y1i, scr_xs - 1, scr_ys - 1, border);
+
   /* left */
-  for(y=spec->mains_y0;y<spec->mains_y1i;y++)
-    for(x=0;x<spec->mains_x0;x++)
-      mgfx_drawpixel(x,y);
-      
+  video_out_rect(spec->vout, 0, spec->mains_y0, spec->mains_x0 - 1,
+    spec->mains_y1i - 1, border);
+
   /* right */
-  for(y=spec->mains_y0;y<spec->mains_y1i;y++)
-    for(x=spec->mains_x1i;x<scr_xs;x++)
-      mgfx_drawpixel(x,y);
+  video_out_rect(spec->vout, spec->mains_x1i, spec->mains_y0, scr_xs - 1,
+    spec->mains_y1i - 1, border);
 
   /* draw main screen */
-  
+
   for(y=0;y<24*8;y++) {
     for(x=0;x<32;x++) {
       buf=vxswapb(y*32+x);
@@ -84,14 +80,15 @@ void video_spec256_disp_fast(video_spec256_t *spec) {
 	for(j=0;j<8;j++) {
 	  if(gfxscr[j][buf]&(1<<(7-i))) b |= (1<<j);
 	}
-	if(b!=0) mgfx_setcolor(b);
+	if(b!=0) color = b;
 	  else {
 	    if (spec->cur_bg >= 0)
-		mgfx_setcolor(spec->background[spec->cur_bg][(spec->mains_y0+y)*320+spec->mains_x0+x*8+i]);
+		color = spec->background[spec->cur_bg][(spec->mains_y0+y)*320+spec->mains_x0+x*8+i];
 	    else
-	        mgfx_setcolor(0);
+	        color = 0;
 	  }
-	mgfx_drawpixel(spec->mains_x0+x*8+i,spec->mains_y0+y);
+	video_out_pixel(spec->vout, spec->mains_x0+x*8+i,spec->mains_y0+y,
+	  color);
       }
     }
   }
@@ -191,7 +188,7 @@ void video_spec256_clear_bg(video_spec256_t *spec)
 
 void video_spec256_setpal(video_spec256_t *spec)
 {
-	mgfx_setpal(0,256,spec->gfxpal);
+	video_out_set_palette(spec->vout, 256, spec->gfxpal);
 }
 
 unsigned long video_spec256_get_clock(video_spec256_t *spec)

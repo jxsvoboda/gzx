@@ -1,6 +1,6 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Spec256 video generator types
+ * Video output
  *
  * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
@@ -29,23 +29,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TYPES_VIDEO_SPEC256_H
-#define TYPES_VIDEO_SPEC256_H
+#ifndef VIDEO_OUT_H
+#define VIDEO_OUT_H
 
 #include <stdint.h>
+#include "../types/video/out.h"
 
-/** Spec256 video generator */
-typedef struct {
-	struct video_out *vout;
-	unsigned long clock;
-	uint8_t gfxpal[3 * 256];
-	unsigned mains_x0, mains_x1i, mains_y0, mains_y1i;
-	/** Number of backgrounds */
-	int nbgs;
-	/** Backgrounds (320 x 200) */
-	uint8_t **background;
-	/** Current background (-1 = none, 0 .. nbgs - 1) */
-	int cur_bg;
-} video_spec256_t;
+extern void video_out_rect(video_out_t *, int, int, int, int, uint8_t);
+extern void video_out_pixel(video_out_t *, int, int, uint8_t);
+extern void video_out_end_field(video_out_t *);
+extern void video_out_set_palette(video_out_t *, int, uint8_t *);
 
 #endif

@@ -44,6 +44,8 @@ static void n_scr_disp(void);
 void (*zx_scr_disp_fast)(void) = n_scr_disp_fast;
 void (*zx_scr_disp)(void)      = n_scr_disp;
 
+static video_out_t video_out;
+
 static video_ula_t video_ula;
 
 #ifdef USE_GPU
@@ -89,7 +91,7 @@ int zx_scr_init(unsigned long clock)
 	if (mgfx_init())
 		return -1;
 
-	if (video_ula_init(&video_ula, clock))
+	if (video_ula_init(&video_ula, clock, &video_out))
 		return -1;
 
 #ifdef USE_GPU

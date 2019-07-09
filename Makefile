@@ -53,6 +53,7 @@ sources_generic = \
     snap.c \
     snap_ay.c \
     strutil.c \
+    video/out.c \
     video/ula.c \
     zx.c \
     zx_kbd.c \

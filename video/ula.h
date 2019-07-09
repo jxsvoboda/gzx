@@ -31,9 +31,10 @@
 #ifndef VIDEO_ULA_H
 #define VIDEO_ULA_H
 
+#include "../types/video/out.h"
 #include "../types/video/ula.h"
 
-extern int video_ula_init(video_ula_t *, unsigned long);
+extern int video_ula_init(video_ula_t *, unsigned long, video_out_t *);
 extern void video_ula_next_field(video_ula_t *);
 extern void video_ula_disp_fast(video_ula_t *);
 extern void video_ula_disp(video_ula_t *);

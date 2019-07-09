@@ -36,6 +36,7 @@
 
 /** ULA video generator */
 typedef struct {
+	struct video_out *vout;
 	unsigned long clock;
 	unsigned long cbase;
 	/** Flash reverse */
