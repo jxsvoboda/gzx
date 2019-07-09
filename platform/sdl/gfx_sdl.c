@@ -227,14 +227,14 @@ int mgfx_init(void) {
     
   /* set up virtual frame buffer */
   
-  vscr0=malloc(scr_xs*scr_ys*sizeof(uint8_t));
+  vscr0=calloc(scr_xs*scr_ys, sizeof(uint8_t));
   if(!vscr0) {
     printf("malloc failed\n");
     exit(1);
   }
   
   if(dbl_ln) {
-    vscr1=malloc(scr_xs*scr_ys*sizeof(uint8_t));
+    vscr1=calloc(scr_xs*scr_ys, sizeof(uint8_t));
     if(!vscr1) {
       printf("malloc failed\n");
       exit(1);

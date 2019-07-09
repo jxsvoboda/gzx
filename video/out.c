@@ -45,7 +45,8 @@
 void video_out_rect(video_out_t *vout, int x0, int y0, int x1, int y1,
     uint8_t color)
 {
-	mgfx_fillrect(x0, y0, x1, y1, color);
+	mgfx_fillrect(vout->x0 + x0, vout->y0 + y0, vout->x0 + x1,
+	    vout->y0 + y1, color);
 }
 
 /** Render pixel to video output.
@@ -58,7 +59,7 @@ void video_out_rect(video_out_t *vout, int x0, int y0, int x1, int y1,
 void video_out_pixel(video_out_t *vout, int x, int y, uint8_t color)
 {
 	mgfx_setcolor(color);
-	mgfx_drawpixel(x, y);
+	mgfx_drawpixel(vout->x0 + x, vout->y0 + y);
 }
 
 /** Signal end of current field.

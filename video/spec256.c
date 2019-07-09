@@ -33,13 +33,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include "video/defs.h"
+#include "defs.h"
 #include "../clock.h"
-#include "../mgfx.h"
 #include "../memio.h"
 #include "../z80g.h"
 #include "out.h"
 #include "spec256.h"
+
+enum {
+	spec256_img_w = 320,
+	spec256_img_h = 200,
+	spec256_bg_paper_x0 = spec256_img_w / 2 - zx_paper_w / 2,
+	spec256_bg_paper_y0 = spec256_img_h / 2 - zx_paper_h / 2
+};
 
 static uint16_t vxswapb(uint16_t ofs) {
   return (ofs & 0xf81f) | ((ofs & 0x00e0)<<3) | ((ofs & 0x0700)>>3);
@@ -52,23 +58,22 @@ void video_spec256_disp_fast(video_spec256_t *spec) {
   uint8_t b;
   uint8_t color;
 
-  mgfx_setcolor(border);
-
   /* draw border */
 
   /* top + corners */
-  video_out_rect(spec->vout, 0, 0, scr_xs - 1, spec->mains_y0 - 1, border);
+  video_out_rect(spec->vout, 0, 0, zx_field_w - 1, zx_paper_y0 - 1, border);
 
   /* bottom + corners */
-  video_out_rect(spec->vout, 0, spec->mains_y1i, scr_xs - 1, scr_ys - 1, border);
+  video_out_rect(spec->vout, 0, zx_paper_y1, zx_field_w - 1,
+    zx_field_h - 1, border);
 
   /* left */
-  video_out_rect(spec->vout, 0, spec->mains_y0, spec->mains_x0 - 1,
-    spec->mains_y1i - 1, border);
+  video_out_rect(spec->vout, 0, zx_paper_y0, zx_paper_x0 - 1,
+    zx_paper_y1, border);
 
   /* right */
-  video_out_rect(spec->vout, spec->mains_x1i, spec->mains_y0, scr_xs - 1,
-    spec->mains_y1i - 1, border);
+  video_out_rect(spec->vout, zx_paper_x1, zx_paper_y0, zx_field_w - 1,
+    zx_paper_y1, border);
 
   /* draw main screen */
 
@@ -82,12 +87,14 @@ void video_spec256_disp_fast(video_spec256_t *spec) {
 	}
 	if(b!=0) color = b;
 	  else {
-	    if (spec->cur_bg >= 0)
-		color = spec->background[spec->cur_bg][(spec->mains_y0+y)*320+spec->mains_x0+x*8+i];
-	    else
+	    if (spec->cur_bg >= 0) {
+		color = spec->background[spec->cur_bg][(spec256_bg_paper_y0+y)*
+		    spec256_img_w+spec256_bg_paper_x0+x*8+i];
+	    } else {
 	        color = 0;
+	    }
 	  }
-	video_out_pixel(spec->vout, spec->mains_x0+x*8+i,spec->mains_y0+y,
+	video_out_pixel(spec->vout, zx_paper_x0+x*8+i,zx_paper_y0+y,
 	  color);
       }
     }
@@ -96,7 +103,7 @@ void video_spec256_disp_fast(video_spec256_t *spec) {
   spec->clock += ULA_FIELD_TICKS;
 }
 
-int video_spec256_init(video_spec256_t *spec) {
+int video_spec256_init(video_spec256_t *spec, video_out_t *vout) {
   int b;
   int i;
   FILE *f;
@@ -110,18 +117,9 @@ int video_spec256_init(video_spec256_t *spec) {
   }
   fclose(f);
   
+  spec->vout = vout;
   spec->background=NULL;
   spec->cur_bg = -1;
-
-//  scr_ys>>=1;
-  
-  spec->mains_x0=(scr_xs>>1)-(256>>1);
-  spec->mains_y0=(scr_ys>>1)-(192>>1);
-  spec->mains_x1i=spec->mains_x0+256;
-  spec->mains_y1i=spec->mains_y0+192;
-  
-//  scr_ys<<=1;
-  
   spec->clock=0;
 
   return 0;

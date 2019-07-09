@@ -35,4 +35,27 @@
 #define ZX_ATTR_START	0x1800
 #define ZX_ATTR_END	0x1aff
 
+enum {
+	/** Border width */
+	zx_border_w = 48,
+	/** Border height */
+	zx_border_h = 48,
+	/** X coordinate of paper within 352x288 field */
+	zx_paper_x0 = zx_border_w,
+	/** Y coordinate of paper within 352x288 field */
+	zx_paper_y0 = zx_border_h,
+	/** Paper width in pixels */
+	zx_paper_w = 256,
+	/** Paper height in rows */
+	zx_paper_h = 192,
+	/** X coordinate of rightmost paper pixel */
+	zx_paper_x1 = zx_paper_x0 + zx_paper_w - 1,
+	/** Y coordinate of bottommost paper pixel */
+	zx_paper_y1 = zx_paper_y0 + zx_paper_h - 1,
+	/** Entire field width (352) */
+	zx_field_w = zx_paper_x1 + zx_border_w,
+	/** Entire field height (288) */
+	zx_field_h = zx_paper_y1 + zx_border_h
+};
+
 #endif

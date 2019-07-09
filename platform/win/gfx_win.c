@@ -601,14 +601,14 @@ int mgfx_init(void) {
     
   /* setup virtual framebuffer */
   
-  vscr0=malloc(scr_xs*scr_ys*sizeof(uint8_t));
+  vscr0=calloc(scr_xs*scr_ys, sizeof(uint8_t));
   if(!vscr0) return 1;
   
-  vscr1=malloc(scr_xs*scr_ys*sizeof(uint8_t));
+  vscr1=calloc(scr_xs*scr_ys, sizeof(uint8_t));
   if(!vscr1) return 1;
  
 
-  vscr2=malloc(sxs*sys*sizeof(uint8_t));
+  vscr2=calloc(sxs*sys, sizeof(uint8_t));
   if(!vscr2) return 1;
   
 

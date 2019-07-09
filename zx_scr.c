@@ -29,6 +29,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "video/defs.h"
 #include "video/spec256.h"
 #include "video/ula.h"
 #include "mgfx.h"
@@ -91,11 +92,14 @@ int zx_scr_init(unsigned long clock)
 	if (mgfx_init())
 		return -1;
 
+	video_out.x0 = scr_xs / 2 - zx_field_w / 2;
+	video_out.y0 = scr_ys / 2 - zx_field_h / 2;
+
 	if (video_ula_init(&video_ula, clock, &video_out))
 		return -1;
 
 #ifdef USE_GPU
-	if (video_spec256_init(&video_spec256))
+	if (video_spec256_init(&video_spec256, &video_out))
 		return -1;
 #endif
 

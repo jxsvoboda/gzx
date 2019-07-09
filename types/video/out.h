@@ -34,7 +34,21 @@
 
 /** Video output */
 typedef struct video_out {
-	int dummy;
+	/** X-coord of top left corner of video out on the screen, can be
+	 * negative, zero or positive if screen is smaller, same size as or
+	 * larger than the video output */
+	int x0;
+	/** Y-coord of top left corner of video out on the screen, can be
+	 * negative, zero or positive if screen is smaller, same size as or
+	 * larger than the video output */
+	int y0;
 } video_out_t;
+
+enum {
+	/** Width of video output */
+	video_out_w = 352,
+	/** Height of video output */
+	video_out_h = 288
+};
 
 #endif

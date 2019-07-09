@@ -45,9 +45,6 @@ typedef struct {
 	int field_no;
 	/** Frame number */
 	int frame_no;
-
-	unsigned mains_x0, mains_x1i, mains_y0, mains_y1i;
-	unsigned scan_x0, scan_x1i, scan_y0, scan_y1i;
 } video_ula_t;
 
 #endif

@@ -123,6 +123,7 @@ sources_helenos = \
 
 sources_helenos_g = \
     $(sources_helenos) \
+    video/spec256.c \
     z80g.c
 
 sources_helenos_gtap = \

@@ -35,7 +35,6 @@
 #include "defs.h"
 #include "../clock.h"
 #include "../memio.h"
-#include "../mgfx.h"
 #include "../z80.h"
 #include "out.h"
 #include "ula.h"
@@ -100,18 +99,19 @@ void video_ula_disp_fast(video_ula_t *ula)
   /* draw border */
 
   /* top + corners */
-  video_out_rect(ula->vout, 0, 0, scr_xs - 1, ula->mains_y0 - 1, border);
+  video_out_rect(ula->vout, 0, 0, zx_field_w - 1, zx_paper_y0 - 1, border);
 
   /* bottom + corners */
-  video_out_rect(ula->vout, 0, ula->mains_y1i, scr_xs - 1, scr_ys - 1, border);
+  video_out_rect(ula->vout, 0, zx_paper_y1, zx_field_w - 1,
+    zx_field_h - 1, border);
 
   /* left */
-  video_out_rect(ula->vout, 0, ula->mains_y0, ula->mains_x0 - 1,
-    ula->mains_y1i - 1, border);
+  video_out_rect(ula->vout, 0, zx_paper_y0, zx_paper_x0 - 1,
+    zx_paper_y1, border);
 
   /* right */
-  video_out_rect(ula->vout, ula->mains_x1i, ula->mains_y0, scr_xs - 1,
-    ula->mains_y1i - 1, border);
+  video_out_rect(ula->vout, zx_paper_x1, zx_paper_y0,
+    zx_field_w - 1, zx_paper_y1, border);
 
   /* draw main screen */
   
@@ -127,7 +127,7 @@ void video_ula_disp_fast(video_ula_t *ula)
         for(xx=0;xx<8;xx++) {
 	  b=(a&0x80);
 	  if(fl && ula->fl_rev) b=!b;
-	  video_out_pixel(ula->vout, ula->mains_x0+x*8+xx,ula->mains_y0+y*8+yy,
+	  video_out_pixel(ula->vout, zx_paper_x0 + x*8+xx, zx_paper_y0+y*8+yy,
 	    b ? fgc : bgc);
 	  a<<=1;
 	}
@@ -139,56 +139,54 @@ void video_ula_disp_fast(video_ula_t *ula)
 }
 
 /* line has 1 pixel, col is 8 pixels(1 byte) wide */
-static void scr_dispscrelem(video_ula_t *ula, int col, int line) {
+static void scr_dispscrelem(video_ula_t *ula, int x, int y) {
   uint8_t attr;
   uint8_t pix;
   uint8_t rev;
   uint8_t fgc,bgc,br;
   uint8_t color;
-  int x,y,i;
-  
+  uint8_t col;
+  uint8_t line;
+  int i;
+
+  col = (x - zx_paper_x0) >> 3;
+  line = y - zx_paper_y0;
+
   attr=zxscr[ZX_ATTR_START+(line>>3)*32+col];
   pix=zxscr[ZX_PIXEL_START+vxswapb(line*32+col)];
   rev=((attr>>7) && ula->fl_rev)?0x80:0;
   br=(attr>>6)&1;
   fgc=(attr&7)|(br<<3);
   bgc=((attr>>3)&7)|(br<<3);
-  
-  x=ula->scan_x0+8*(col+6);
-  y=ula->scan_y0+(line+48);
-  
+    
   for(i=0;i<8;i++) {
     color = ((pix&0x80)^rev) ? fgc : bgc;
     
-    if(x+i>=0 && y>=0 && x+i<scr_xs && y<scr_ys)
-      video_out_pixel(ula->vout, x+i,y, color);
+    video_out_pixel(ula->vout, x+i,y, color);
      
     pix<<=1;
   }
 }
 
 /* line has 1 pixel, col is 8 pixels(1 byte) wide */
-static void scr_dispbrdelem(video_ula_t *ula, int col, int line) {
-  int x,y;
-  
-  x=ula->scan_x0+8*col;
-  y=ula->scan_y0+line;
-  
-  video_out_rect(ula->vout, x, y, x+7, y, border);
+static void scr_dispbrdelem(video_ula_t *ula, int col, int line)
+{
+	video_out_rect(ula->vout, col, line, col+7, line, border);
 }
 
 /* slow and fine display routine, called after each instruction! */
 void video_ula_disp(video_ula_t *ula)
 {
-  unsigned line,col;
+  unsigned line,x,y;
   
   line=ula->clock/224;
-  col=(ula->clock%224)/4;
-  if(line>=SCR_SCAN_TOP && line<SCR_SCAN_BOTTOM && col<SCR_SCAN_RIGHT) {
-    if(col>=6 && col<(6+32) && line>=64 && line<(64+192))
-      scr_dispscrelem(ula,col-6,line-64);
+  x=(ula->clock%224)*2;
+  if(line>=SCR_SCAN_TOP && line<SCR_SCAN_BOTTOM && x<SCR_SCAN_RIGHT) {
+    y=line-SCR_SCAN_TOP;
+    if(x>=zx_paper_x0 && x<=zx_paper_x1 && y>=zx_paper_y0 && y<=zx_paper_y1)
+      scr_dispscrelem(ula,x,y);
     else
-      scr_dispbrdelem(ula,col,line-16);
+      scr_dispbrdelem(ula,x,y);
   }
     
   ula->clock+=4;
@@ -200,19 +198,6 @@ int video_ula_init(video_ula_t *ula, unsigned long clock, video_out_t *vout)
 {
   ula->vout = vout;
   video_ula_setpal(ula);
-//  scr_ys>>=1;
-  
-  ula->mains_x0=(scr_xs>>1)-(256>>1);
-  ula->mains_y0=(scr_ys>>1)-(192>>1);
-  ula->mains_x1i=ula->mains_x0+256;
-  ula->mains_y1i=ula->mains_y0+192;
-  
-  ula->scan_x0=(scr_xs>>1)-(352>>1);
-  ula->scan_y0=(scr_ys>>1)-(288>>1);
-  ula->scan_x1i=ula->mains_x0+352;
-  ula->scan_y1i=ula->mains_y0+288;
-  
-//  scr_ys<<=1;
   
   ula->clock = 0;
   ula->cbase = clock;
