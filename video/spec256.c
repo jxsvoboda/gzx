@@ -40,155 +40,245 @@
 #include "out.h"
 #include "spec256.h"
 
+/*
+ * Spec256 is designed for VGA's 320x200x256 mode and that's the resolution
+ * of the backgrounds (even though I've not seen one that would use the
+ * area outside of the Spectrum's 256x192 paper area).
+ *
+ * We push the emulated Spec256 video through the same 352x288 video field as
+ * for ULA.
+ */
 enum {
+	/** Width of Spec256 background */
 	spec256_img_w = 320,
+	/** Height of Spec256 background */
 	spec256_img_h = 200,
+	/** X coordinate of top-left corner of Spec256 BG within video field */
 	spec256_bg_paper_x0 = spec256_img_w / 2 - zx_paper_w / 2,
+	/** Y coordinate of top-left corner of Spec256 BG within video field */
 	spec256_bg_paper_y0 = spec256_img_h / 2 - zx_paper_h / 2
 };
 
-static uint16_t vxswapb(uint16_t ofs) {
-  return (ofs & 0xf81f) | ((ofs & 0x00e0)<<3) | ((ofs & 0x0700)>>3);
+/** Flip video address bits as ULA does.
+ *
+ * @param ofs Address or offset within video page
+ */
+static uint16_t vxswapb(uint16_t ofs)
+{
+	return (ofs & 0xf81f) | ((ofs & 0x00e0) << 3) | ((ofs & 0x0700) >> 3);
 }
 
+/** Display a Spec256 paper element.
+ *
+ * @param spec Spec256 video generator
+ * @param x Column (0-31)
+ * @param y Line (0-191)
+ */
+static void video_spec256_disp_fast_elem(video_spec256_t *spec, int x, int y)
+{
+	int i, j;
+	uint8_t b;
+	uint8_t color;
+	uint16_t offs;
+	uint16_t bgoff;
 
-void video_spec256_disp_fast(video_spec256_t *spec) {
-  int x,y,i,j;
-  unsigned buf;
-  uint8_t b;
-  uint8_t color;
+	offs = vxswapb(y * 32 + x);
 
-  /* draw border */
+	for (i = 0; i < 8; i++) {
+		b = 0;
+		for (j = 0; j < 8; j++) {
+			if (gfxscr[j][offs] & (1 << (7 - i)))
+				b |= (1 << j);
+		}
+		if (b != 0) {
+			color = b;
+		} else {
+			if (spec->cur_bg >= 0) {
+				bgoff = (spec256_bg_paper_y0 + y) * spec256_img_w +
+				    spec256_bg_paper_x0 + x * 8 + i;
+				color = spec->background[spec->cur_bg][bgoff];
+			} else {
+				color = 0;
+			}
+		}
 
-  /* top + corners */
-  video_out_rect(spec->vout, 0, 0, zx_field_w - 1, zx_paper_y0 - 1, border);
-
-  /* bottom + corners */
-  video_out_rect(spec->vout, 0, zx_paper_y1, zx_field_w - 1,
-    zx_field_h - 1, border);
-
-  /* left */
-  video_out_rect(spec->vout, 0, zx_paper_y0, zx_paper_x0 - 1,
-    zx_paper_y1, border);
-
-  /* right */
-  video_out_rect(spec->vout, zx_paper_x1, zx_paper_y0, zx_field_w - 1,
-    zx_paper_y1, border);
-
-  /* draw main screen */
-
-  for(y=0;y<24*8;y++) {
-    for(x=0;x<32;x++) {
-      buf=vxswapb(y*32+x);
-      for(i=0;i<8;i++) {
-        b=0;
-	for(j=0;j<8;j++) {
-	  if(gfxscr[j][buf]&(1<<(7-i))) b |= (1<<j);
+		video_out_pixel(spec->vout, zx_paper_x0 + x * 8 + i,
+		    zx_paper_y0 + y, color);
 	}
-	if(b!=0) color = b;
-	  else {
-	    if (spec->cur_bg >= 0) {
-		color = spec->background[spec->cur_bg][(spec256_bg_paper_y0+y)*
-		    spec256_img_w+spec256_bg_paper_x0+x*8+i];
-	    } else {
-	        color = 0;
-	    }
-	  }
-	video_out_pixel(spec->vout, zx_paper_x0+x*8+i,zx_paper_y0+y,
-	  color);
-      }
-    }
-  }
-
-  spec->clock += ULA_FIELD_TICKS;
 }
 
-int video_spec256_init(video_spec256_t *spec, video_out_t *vout) {
-  int b;
-  int i;
-  FILE *f;
-  
-  f=fopen("sp256.pal","rt");
-  if(!f) return -1;
-  
-  for(i=0;i<3*256;i++) {
-    fscanf(f,"%d",&b);
-    spec->gfxpal[i]=b>>2;
-  }
-  fclose(f);
-  
-  spec->vout = vout;
-  spec->background=NULL;
-  spec->cur_bg = -1;
-  spec->clock=0;
+/** Crude and fast Spec256 display routine, called 50 times a second.
+ *
+ * @param spec Spec256 video generator
+ *
+ * This can be used to draw the screen instantly, but ignoring the fact
+ * that the video is generated over time. Thus high-speed effects
+ * such as tape loading stripes are not displayed correctly.
+ */
+void video_spec256_disp_fast(video_spec256_t *spec)
+{
+	int x, y;
 
-  return 0;
+	/*
+	 * Draw border
+	 */
+
+	/* top + corners */
+	video_out_rect(spec->vout, 0, 0, zx_field_w - 1, zx_paper_y0 - 1, border);
+
+	/* bottom + corners */
+	video_out_rect(spec->vout, 0, zx_paper_y1, zx_field_w - 1,
+	    zx_field_h - 1, border);
+
+	/* left */
+	video_out_rect(spec->vout, 0, zx_paper_y0, zx_paper_x0 - 1,
+	    zx_paper_y1, border);
+
+	/* right */
+	video_out_rect(spec->vout, zx_paper_x1, zx_paper_y0, zx_field_w - 1,
+	    zx_paper_y1, border);
+
+	/*
+	 * Draw paper
+	 */
+
+	for (y = 0; y < 24 * 8; y++)
+		for (x = 0; x < 32; x++)
+			video_spec256_disp_fast_elem(spec, x, y);
+
+	spec->clock += ULA_FIELD_TICKS;
 }
 
+/** Initialize Spec256 video generator.
+ *
+ * @param spec Spec256 video generator
+ * @param vout Video output
+ * @return EOK on success or an error code
+ */
+int video_spec256_init(video_spec256_t *spec, video_out_t *vout)
+{
+	int b;
+	int i;
+	FILE *f;
+
+	f = fopen("sp256.pal", "rt");
+	if (!f)
+		return -1;
+
+	for (i = 0; i < 3 * 256; i++) {
+		fscanf(f, "%d", &b);
+		spec->gfxpal[i] = b >> 2;
+	}
+	fclose(f);
+
+	spec->vout = vout;
+	spec->background = NULL;
+	spec->cur_bg = -1;
+	spec->clock = 0;
+
+	return 0;
+}
+
+/** Load Spec256 background.
+ *
+ * Load a file containing a Spec256 background as raw 320x200x256 bitmap.
+ * This gets laid under the actual pixels based on a color key.
+ *
+ * @param spec Spec256 video generator
+ * @param fname Background file name
+ * @param idx Index of background to load (>=0).
+ * @return EOK on success or an error code
+ */
 int video_spec256_load_bg(video_spec256_t *spec, const char *fname, int idx)
 {
-  FILE *f;
-  uint8_t **bgs;
-  uint8_t *bg;
-  
-  f=fopen(fname,"rb");
-  if(!f) return -1;
-  if (spec->nbgs < idx + 1) {
-    bg = malloc(64000);
-    if (bg == NULL) {
-      fclose(f);
-      return -1;
-    }
-    bgs = realloc(spec->background, (idx + 1) * sizeof(uint8_t *));
-    if (bgs == NULL) {
-      free(bg);
-      fclose(f);
-      return -1;
-    }
+	FILE *f;
+	uint8_t **bgs;
+	uint8_t *bg;
 
-    spec->background = bgs;
-    spec->nbgs = idx + 1;
-    spec->background[idx] = bg;
-  }
+	f = fopen(fname, "rb");
+	if (!f)
+		return -1;
+	if (spec->nbgs < idx + 1) {
+		bg = malloc(64000);
+		if (bg == NULL) {
+			fclose(f);
+			return -1;
+		}
+		bgs = realloc(spec->background, (idx + 1) * sizeof(uint8_t *));
+		if (bgs == NULL) {
+			free(bg);
+			fclose(f);
+			return -1;
+		}
 
-  fread(spec->background[idx],1,64000,f);
-  fclose(f);
-  printf("Loaded background '%s'\n", fname);
-  if (spec->cur_bg == -1)
-	spec->cur_bg = 0;
-  return 0;
+		spec->background = bgs;
+		spec->nbgs = idx + 1;
+		spec->background[idx] = bg;
+	}
+
+	fread(spec->background[idx], 1, 64000, f);
+	fclose(f);
+	printf("Loaded background '%s'\n", fname);
+	if (spec->cur_bg == -1)
+		spec->cur_bg = 0;
+	return 0;
 }
 
+/** Switch to previous background.
+ *
+ * @param spec Spec256 video generator
+ */
 void video_spec256_prev_bg(video_spec256_t *spec)
 {
-  if (spec->cur_bg >= 0)
-    --spec->cur_bg;
+	if (spec->cur_bg >= 0)
+		--spec->cur_bg;
 }
 
+/** Switch to next background.
+ *
+ * @param spec Spec256 video generator
+ */
 void video_spec256_next_bg(video_spec256_t *spec)
 {
-  if (spec->cur_bg < spec->nbgs - 1)
-    ++spec->cur_bg;
+	if (spec->cur_bg < spec->nbgs - 1)
+		++spec->cur_bg;
 }
 
+/** Clear all backgrounds.
+ *
+ * @param spec Spec256 video generator
+ */
 void video_spec256_clear_bg(video_spec256_t *spec)
 {
-  int i;
-  for (i = 0; i < spec->nbgs; i++) {
-    if (spec->background[i] != NULL)
-      free(spec->background[i]);
-  }
-  free(spec->background);
-  spec->background = NULL;
-  spec->cur_bg = -1;
-  spec->nbgs = 0;
+	int i;
+	for (i = 0; i < spec->nbgs; i++) {
+		if (spec->background[i] != NULL)
+			free(spec->background[i]);
+	}
+	free(spec->background);
+	spec->background = NULL;
+	spec->cur_bg = -1;
+	spec->nbgs = 0;
 }
 
+/** Set up palette for Spec256 video generator.
+ *
+ * Configure video output palette for use with Spec256 video.
+ * This needs to be called explicitly when switching from a different
+ * video generator.
+ *
+ * @param ula Spec256 video generator
+ */
 void video_spec256_setpal(video_spec256_t *spec)
 {
 	video_out_set_palette(spec->vout, 256, spec->gfxpal);
 }
 
+/** Get current Spec256 video clock.
+ *
+ * @param ula Spec256 video generator
+ * @return Current clock value
+ */
 unsigned long video_spec256_get_clock(video_spec256_t *spec)
 {
 	return spec->clock;

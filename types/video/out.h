@@ -36,11 +36,13 @@
 typedef struct video_out {
 	/** X-coord of top left corner of video out on the screen, can be
 	 * negative, zero or positive if screen is smaller, same size as or
-	 * larger than the video output */
+	 * larger than the video output
+	 */
 	int x0;
 	/** Y-coord of top left corner of video out on the screen, can be
 	 * negative, zero or positive if screen is smaller, same size as or
-	 * larger than the video output */
+	 * larger than the video output
+	 */
 	int y0;
 } video_out_t;
 

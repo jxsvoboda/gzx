@@ -5,8 +5,6 @@
 ./platform/win/gfx_win.c
 ./platform/win/snd_win.c
 ./platform/win/sys_win.c
-./video/spec256.c
-./video/ula.c
 ./da_itab.c
 ./debug.c
 ./disasm.c
