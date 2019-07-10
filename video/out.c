@@ -70,7 +70,10 @@ void video_out_pixel(video_out_t *vout, int x, int y, uint8_t color)
  */
 void video_out_end_field(video_out_t *vout)
 {
-	(void)vout;
+	vout->field_no ^= 1;
+
+	/* Enable rendering odd/even lines for the next field */
+	mgfx_selln(1 << vout->field_no);
 }
 
 /** Set the color palette.

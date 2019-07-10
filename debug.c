@@ -289,6 +289,7 @@ void debugger(void) {
   ic_ln = 0;
       
   while(1) {
+    mgfx_selln(3);
     d_regs();
     d_hex();
     d_instr();

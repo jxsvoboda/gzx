@@ -92,9 +92,6 @@ int slow_load=1;
 /** User interface lock */
 bool ui_lock = false;
 
-/* even(0) or odd(1) field */
-int field_n=0;
-
 /* Start up working directory */
 /* ... used as base for finding the ROM files */
 char *start_dir;
@@ -428,13 +425,10 @@ void zx_debug_key(int press, int key) {
 /* Machine step for the debugger */
 void zx_debug_mstep(void) {
   uint8_t tape_smp;
-  int frmno;
 
   if(CLOCK_GE(z80_clock-disp_t,ULA_FIELD_TICKS)) { /* every 50th of a second */
     disp_t+=ULA_FIELD_TICKS;
       
-    frmno=1;
-    if(frmno>=1) {
 //      unsigned long twstart;
 	
         /* sync with time */
@@ -452,17 +446,11 @@ void zx_debug_mstep(void) {
            frame displaying takes some time */	   
 //        zx_scr_disp_fast();	    
 #ifdef USE_GPU
-      zx_scr_disp_fast();
+    zx_scr_disp_fast();
 #endif
 
-      mgfx_updscr();
-	
-      /* Next field */
-      field_n=!field_n;
-      mgfx_selln(1<<(field_n)); /* Enable rendering odd/even lines */
-      frmno=0;
-    }
-    frmno++;
+    mgfx_updscr();
+
 #ifdef LOG
     if(cpus.iff1) fprintf(logfi,"interrupt\n");
 #endif
@@ -584,7 +572,6 @@ static void wav_tape_test(void)
 
 int main(int argc, char **argv) {
   int ic;
-  int frmno=0;
   int argi;
   timer frmt;
   uint8_t tape_smp;
@@ -626,8 +613,6 @@ int main(int argc, char **argv) {
   uoc=0;
   smc=0;
   
-  field_n=0;
- 
   logfi=fopen("log.txt","wt");
   
   start_dir = sys_getcwd(NULL,0);
@@ -657,7 +642,6 @@ int main(int argc, char **argv) {
     if(CLOCK_GE(z80_clock-disp_t,ULA_FIELD_TICKS)) { /* every 50th of a second */
       disp_t+=ULA_FIELD_TICKS;
       
-      if(frmno>=1) {
 //        unsigned long twstart;
 	
         /* sync with time */
@@ -675,19 +659,13 @@ int main(int argc, char **argv) {
            frame displaying takes some time */	   
 //        zx_scr_disp_fast();	    
 #ifdef USE_GPU
-        zx_scr_disp_fast();
+      zx_scr_disp_fast();
 #endif
 #ifdef WITH_MIDI
-	sysmidi_poll(z80_clock);
+      sysmidi_poll(z80_clock);
 #endif
-	mgfx_updscr();
-	
-	/* Next field */
-	field_n=!field_n;
-	mgfx_selln(1<<(field_n)); /* Enable rendering odd/even lines */
-	frmno=0;
-      }
-      frmno++;
+      mgfx_updscr();
+
       mgfx_input_update();
       while(w_getkey(&k)) key_handler(&k);
 #ifdef LOG

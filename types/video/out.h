@@ -44,6 +44,8 @@ typedef struct video_out {
 	 * larger than the video output
 	 */
 	int y0;
+	/** Field number, 0 or 1 */
+	int field_no;
 } video_out_t;
 
 enum {
