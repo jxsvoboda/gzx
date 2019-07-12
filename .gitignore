@@ -1,5 +1,8 @@
 *.o
+/distrib
 /gtap
+/gtap-hos
+/gtap.exe
 /gzx
 /gzx-g
 /gzx-hos
