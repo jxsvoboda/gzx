@@ -52,6 +52,8 @@
 
 #define MIN(x,y) ((x)<(y) ? (x) : (y))
 
+static void menu_undraw(void);
+
 /*** text editting line ***/
 
 #define TELINE_MAX 64
@@ -623,6 +625,7 @@ int file_sel(char **fname, char *caption) {
 
   fsel_caption = NULL;
 
+  menu_undraw();
   return res;
 }
 
@@ -682,6 +685,11 @@ static void menu_draw(int mpos) {
 
 //  sprintf(buf,"%lu",coreleft());
 //  gputs(scr_xs/2-8*4,scr_ys-8,10,0,buf);
+}
+
+static void menu_undraw(void)
+{
+	mgfx_fillrect(0, 0, scr_xs, scr_ys, 0);
 }
 
 static void menu_run_line(int l) {
@@ -753,6 +761,8 @@ void main_menu(void) {
 	break;
     }
   }
+
+  menu_undraw();
 }
 
 /***** tape menu *****/
@@ -857,6 +867,8 @@ void tape_menu(void) {
 	break;
     }
   }
+
+  menu_undraw();
 }
 
 
