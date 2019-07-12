@@ -10,6 +10,7 @@ CC_w32		= i686-w64-mingw32-gcc
 CC_helenos	= helenos-cc
 LD_helenos	= helenos-ld
 
+# Possible feature defines: -DXMAP
 CFLAGS		= -O2 -Wall -Werror -Wmissing-prototypes -I/usr/include/SDL -DWITH_MIDI
 CFLAGS_g	= $(CFLAGS) -DUSE_GPU
 CFLAGS_w32	= -O2 -Wall -Werror -Wmissing-prototypes
@@ -55,6 +56,7 @@ sources_generic = \
     strutil.c \
     video/out.c \
     video/ula.c \
+    xmap.c \
     zx.c \
     zx_kbd.c \
     zx_sound.c \

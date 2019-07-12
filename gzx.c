@@ -55,6 +55,7 @@
 #include "menus.h"
 #include "midi.h"
 #include "debug.h"
+#include "xmap.h"
 #include "z80g.h"
 #include "zx.h"
 #include "sys_all.h"
@@ -98,47 +99,6 @@ iorec_t *iorec;
 
 int key_lalt_held;
 int key_lshift_held;
-
-/******* execution map **********/
-
-//#define XMAP
-#ifdef XMAP
-
-static uint8_t xmap[8*1024];
-
-/* execution map */
-void xmap_clear(void) {
-  unsigned u;
-  
-  for(u=0;u<8*1024;u++)
-    xmap[u]=0;
-}
-
-void xmap_mark(void) {
-  uint8_t mask;
-  unsigned offs;
-
-  mask = 1<<(cpus.PC & 7);
-  offs = cpus.PC >> 3;
-  xmap[offs] = xmap[offs] | mask;
-}
-
-void xmap_save(void) {
-  FILE *f;
-  unsigned u,v;
-  
-  f=fopen("xmap.txt","wt");
-  for(u=0;u<8*1024;u++) {
-    fprintf(f,"%04X ",u*8);
-    for(v=0;v<8;v++) {
-      fputc((xmap[u]&(1<<v)) ? '1':'0',f);
-      fputc(v<7 ? ',' : '\n',f);
-    }
-  }
-  fclose(f);
-}
-
-#endif
 
 static void z80_fprintstatus(FILE *logfi) {
   fprintf(logfi,"AF %04x BC %04x DE %04x HL %04x IX %04x PC %04x R%02d iHL%02x\n",
