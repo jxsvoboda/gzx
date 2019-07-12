@@ -519,11 +519,11 @@ int file_sel(char **fname, char *caption) {
   
   fsscrpos=0;
   fscurspos=0;
-  fsscrlines=21;
+  fsscrlines=scr_ys/8-4;
   fscols=20;
 
   flist_cx0 = scr_xs/16 - fscols/2;
-  teline_init(&fn_line,flist_cx0,24,20);
+  teline_init(&fn_line,flist_cx0,fsscrlines+3,20);
   fn_line.focus=0;
   fsel_caption = caption;
 
