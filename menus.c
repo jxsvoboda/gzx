@@ -44,6 +44,7 @@
 #include "menus.h"
 #include "sys_all.h"
 #include "tape/deck.h"
+#include "ui/teline.h"
 #include "zx.h"
 
 #ifdef __MINGW32__
@@ -53,97 +54,6 @@
 #define MIN(x,y) ((x)<(y) ? (x) : (y))
 
 static void menu_undraw(void);
-
-/*** text editting line ***/
-
-#define TELINE_MAX 64
-typedef struct {
-  char buf[TELINE_MAX+1];
-  int maxlen,len,pos;
-  int x,y;
-  int focus;
-} teline_t;
-
-static void teline_empty(teline_t *t) {  
-  t->len = t->pos = 0;
-  memset(t->buf,' ',t->maxlen);
-  t->buf[t->maxlen]=0;
-}
-
-static void teline_settext(teline_t *t, char *s) {
-  int l;
-  
-  l=strlen(s);
-  if(l>t->maxlen) l=t->maxlen;
-  strncpy(t->buf,s,t->maxlen);
-  memset(t->buf+l,' ',t->maxlen-l);
-  t->pos=t->len=l;
-}
-
-
-static void teline_init(teline_t *t, int x, int y, int maxlen) {
-  if(maxlen>TELINE_MAX) maxlen = TELINE_MAX;
-  t->maxlen = maxlen;
-
-  t->x = x;
-  t->y = y;
-  t->focus=0;
-  
-  teline_empty(t);
-}
-
-static void teline_draw(teline_t *t) {
-  int p = t->pos;
-  
-  fgc=7; bgc=0;
-  gmovec(t->x,t->y);
-  gputs(t->buf);
-  if(t->focus) {
-    gmovec(t->x+p,t->y);
-    fgc=0; bgc=5;
-    gputc(t->buf[p]);
-  }
-}
-
-static void teline_rmchar(teline_t *t, int pos) {
-  int i;
-  
-  for(i=pos;i<t->len-1;i++)
-    t->buf[i]=t->buf[i+1];
-  t->buf[-- t->len] = ' ';
-}
-
-static void teline_key(teline_t *t, wkey_t *k) {
-  if(!k->press) return;
-  switch(k->key) {
-    case WKEY_BS:
-      if(t->pos>0)
-        teline_rmchar(t,--t->pos);
-      break;
-    case WKEY_DEL:
-      if(t->pos<t->len)
-        teline_rmchar(t,t->pos);
-      break;
-    case WKEY_LEFT:
-      if(t->pos>0) t->pos--;
-      break;
-    case WKEY_RIGHT:
-      if(t->pos<t->len) t->pos++;
-      break;
-      
-    default:
-      if(k->c>=' ' && k->c<128 && t->len < t->maxlen) {
-      int i;
-    
-      for(i=t->len;i>t->pos;i--)
-        t->buf[i] = t->buf[i-1];
-      
-      t->buf[t->pos++]=k->c;
-      t->len++;
-    }
-    break;
-  }
-}
 
 /***** file/dir selector *****/
 
