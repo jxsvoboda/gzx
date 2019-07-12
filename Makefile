@@ -42,6 +42,7 @@ sources_generic = \
     tape/tonegen.c \
     tape/tzx.c \
     tape/wav.c \
+    ui/fsel.c \
     ui/teline.c \
     wav/chunk.c \
     wav/rwave.c \

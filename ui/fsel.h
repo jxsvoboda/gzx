@@ -1,8 +1,8 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Menus
+ * Menus & file selector
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,14 +29,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MENUS_H
-#define MENUS_H
+#ifndef UI_FSEL_H
+#define UI_FSEL_H
 
-void select_tapefile_dialog(void);
-void load_snap_dialog(void);
-void save_snap_dialog(void);
-void save_tape_as_dialog(void);
-void main_menu(void);
-void tape_menu(void);
+extern int file_sel(char **, char *);
 
 #endif

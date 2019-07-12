@@ -18,6 +18,7 @@
 ./snap.c
 ./snap_ay.c
 ./sys_all.h
+./ui/fsel.c
 ./z80.c
 ./z80.h
 ./z80g.c
