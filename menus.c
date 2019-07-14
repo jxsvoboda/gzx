@@ -41,18 +41,15 @@
 #include "sys_all.h"
 #include "tape/deck.h"
 #include "ui/fsel.h"
+#include "ui/menu.h"
 #include "ui/teline.h"
 #include "zx.h"
-
-static void menu_undraw(void);
 
 /***** main menu *****/
 
 #define MENU_NENT 8
 
-static int menu_cx0;
-
-static char *mentry_text[MENU_NENT]= {
+static const char *mentry_text[MENU_NENT]= {
   "~Load Snapshot",
   "~Save Snapshot",
   "Select ~Tapefile",
@@ -67,48 +64,6 @@ static int mkeys[MENU_NENT]={
   WKEY_L,WKEY_S,WKEY_T,WKEY_4,WKEY_1,WKEY_W,WKEY_U,WKEY_Q
 };
 
-
-/*
-  Draw a string at fixed width, with ~=highlight
-*/
-static void gputs_hl(int n, int fgc_, int hlc, int bgc_, char *s) {
-  bgc=bgc_;
-  while(n>0) {
-    if(*s=='~') { fgc=hlc; s++; }
-      else fgc=fgc_;
-      
-    gputc(*s);
-    if(*s) s++;
-    n--;
-  }
-}
-
-//#include <alloc.h>
-static void menu_draw(int mpos) {
-  int i;
-  int fgc_,bgc_,hlc_;
-//  char buf[32];
-
-  mgfx_fillrect(menu_cx0*8,0,menu_cx0*8+8*20,scr_ys-1,1);
-  gmovec(scr_xs/16-(strlen("Main Menu")/2),0);
-  fgc=7; bgc=1; gputs("Main Menu");
-
-  for(i=0;i<MENU_NENT;i++) {
-    if(i==mpos) { fgc_=hlc_=1; bgc_=5; }
-      else { fgc_=7; hlc_=14; bgc_=1; }
-    gmovec(menu_cx0+1,2+i);
-    gputs_hl(18,fgc_,hlc_,bgc_,mentry_text[i]);
-  }
-
-//  sprintf(buf,"%lu",coreleft());
-//  gputs(scr_xs/2-8*4,scr_ys-8,10,0,buf);
-}
-
-static void menu_undraw(void)
-{
-	mgfx_fillrect(0, 0, scr_xs, scr_ys, 0);
-}
-
 static void menu_run_line(int l) {
   switch(l) {
     case 0: load_snap_dialog(); break;
@@ -122,71 +77,25 @@ static void menu_run_line(int l) {
   }
 }
 
-void main_menu(void) {
-  wkey_t k;
-  int end_menu = 0;
-  int j;
-  int mpos;
-  
-  mpos=0;
-  menu_cx0=scr_xs/16 - 10;
-  
-  mgfx_selln(3); /* Enable rendering odd and even lines */
+static menu_t main_menu_spec = {
+  .caption = "Main Menu",
+  .nent = MENU_NENT,
+  .mentry_text = mentry_text,
+  .mkeys = mkeys,
+  .run_line = menu_run_line
+};
 
-  while(!end_menu) {
-    menu_draw(mpos);
-    mgfx_updscr();
-    do {
-      mgfx_input_update();
-      sys_usleep(1000);
-    } while(!w_getkey(&k));
-    if(k.press)
-    switch(k.key) {
-      case WKEY_ESC:
-        end_menu=1;
-	break;
 
-      case WKEY_ENTER:
-	menu_run_line(mpos);
-	end_menu=1;
-	break;
-	
-      case WKEY_UP:
-        if(mpos>0) --mpos;
-	  else mpos=MENU_NENT-1;
-	break;
-	
-      case WKEY_DOWN:
-        if(mpos<MENU_NENT-1) ++mpos;
-	  else mpos=0;
-	break;
-
-      case WKEY_PGUP:
-        mpos=0;
-	break;
-	
-      case WKEY_PGDN:
-        mpos=MENU_NENT-1;
-	break;
-
-      default:
-	for(j=0;j<MENU_NENT;j++)
-	  if(k.key==mkeys[j]) {
-	    menu_run_line(j);
-	    end_menu=1;
-	  }
-	break;
-    }
-  }
-
-  menu_undraw();
+void main_menu(void)
+{
+	menu_run(&main_menu_spec);
 }
 
 /***** tape menu *****/
 
 #define TMENU_NENT 7
 
-static char *tmentry_text[TMENU_NENT]= {
+static const char *tmentry_text[TMENU_NENT]= {
   "~Play",
   "~Stop",
   "~Rewind",
@@ -200,22 +109,6 @@ static int tmkeys[TMENU_NENT]={
   WKEY_P,WKEY_S,WKEY_R,WKEY_Q,WKEY_N,WKEY_V,WKEY_A
 };
 
-static void tmenu_draw(int mpos) {
-  int i;
-  int fgc_,bgc_,hlc_;
-  
-  mgfx_fillrect(menu_cx0*8,0,menu_cx0*8+8*20,scr_ys-1,1);
-  gmovec(scr_xs/16-(strlen("Tape Menu")/2),0);
-  fgc=7; bgc=1; gputs("Tape Menu");
- 
-  for(i=0;i<TMENU_NENT;i++) {
-    if(i==mpos) { fgc_=hlc_=1; bgc_=5; }
-      else { fgc_=7; hlc_=14; bgc_=1; }
-    gmovec(menu_cx0+1,2+i);
-    gputs_hl(18,fgc_,hlc_,bgc_,tmentry_text[i]);
-  }
-}
-
 static void tmenu_run_line(int l) {
   switch(l) {
     case 0: tape_deck_play(tape_deck); break;
@@ -228,66 +121,18 @@ static void tmenu_run_line(int l) {
   }
 }
 
-void tape_menu(void) {
-  wkey_t k;
-  int end_menu = 0;
-  int j;
-  int mpos;
+static menu_t tape_menu_spec = {
+  .caption = "Tape Menu",
+  .nent = TMENU_NENT,
+  .mentry_text = tmentry_text,
+  .mkeys = tmkeys,
+  .run_line = tmenu_run_line
+};
 
-  mpos=0;
-  menu_cx0=scr_xs/16 - 10;
-  
-  mgfx_selln(3); /* Enable rendering odd and even lines */
-  
-  while(!end_menu) {
-    tmenu_draw(mpos);
-    mgfx_updscr();
-    do {
-      mgfx_input_update();
-      sys_usleep(1000);
-    } while(!w_getkey(&k));
-    if(k.press)
-    switch(k.key) {
-      case WKEY_ESC:
-        end_menu=1;
-	break;
-	
-      case WKEY_ENTER:
-        tmenu_run_line(mpos);
-	end_menu=1;
-	break;
-	
-      case WKEY_UP:
-        if(mpos>0) --mpos;
-	  else mpos=TMENU_NENT-1;
-	break;
-
-      case WKEY_DOWN:
-        if(mpos<TMENU_NENT-1) ++mpos;
-	  else mpos=0;
-	break;
-	
-      case WKEY_PGUP:
-        mpos=0;
-	break;
-	
-      case WKEY_PGDN:
-	mpos=MENU_NENT-1;
-	break;
-
-      default:
-	for(j=0;j<TMENU_NENT;j++)
-	  if(k.key==tmkeys[j]) {
-	    tmenu_run_line(j);
-	    end_menu=1;
-	  }
-	break;
-    }
-  }
-
-  menu_undraw();
+void tape_menu(void)
+{
+	menu_run(&tape_menu_spec);
 }
-
 
 /**** select tapefile dialog *****/
 

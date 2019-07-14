@@ -101,7 +101,7 @@ static uint8_t *gfont;
 static int gdx, gdy;
 uint8_t fgc,bgc;
 
-int gloadfont(char *name) {
+int gloadfont(const char *name) {
   FILE *f;
   
   gfont=malloc(768);
@@ -137,7 +137,7 @@ void gputc(char c) {
   gdx+=8;
 }
 
-void gputs(char *s) {
+void gputs(const char *s) {
   while(*s) gputc(*s++);
 }
 

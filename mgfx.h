@@ -49,10 +49,10 @@ void mgfx_drawpixel(int x, int y);
 void mgfx_fillrect(int x0, int y0, int x1, int y1, int color);
 
 extern uint8_t fgc, bgc;
-int gloadfont(char *name);
+int gloadfont(const char *name);
 void gmovec(int cx, int cy);
 void gputc(char c);
-void gputs(char *s);
+void gputs(const char *s);
 
 /* keyboard */
 int w_getkey(wkey_t *k);

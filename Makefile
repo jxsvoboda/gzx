@@ -43,6 +43,7 @@ sources_generic = \
     tape/tzx.c \
     tape/wav.c \
     ui/fsel.c \
+    ui/menu.c \
     ui/teline.c \
     wav/chunk.c \
     wav/rwave.c \
