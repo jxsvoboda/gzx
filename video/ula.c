@@ -68,6 +68,39 @@ static uint16_t vxswapb(uint16_t ofs)
 	return (ofs & 0xf81f) | ((ofs & 0x00e0) << 3) | ((ofs & 0x0700) >> 3);
 }
 
+/** Convert attribute to foreground and background color.
+ *
+ * Based on attributes (background, foreground, bright, flash) and ULA
+ * flash counter, produce background and foreground colors suitable for
+ * video output.
+ *
+ * @param ula ULA video generator
+ * @param attr Attribute
+ * @param fgc Place to store video-out foreground color
+ * @param bgc Place to store video-out background color
+ */
+static void video_ula_attr_to_colors(video_ula_t *ula, uint8_t attr,
+    uint8_t *fgc, uint8_t *bgc)
+{
+	uint8_t rev;
+	uint8_t br;
+	uint8_t fg;
+	uint8_t bg;
+
+	rev = (attr >> 7) && ula->fl_rev;
+	br = (attr >> 6) & 1;
+	fg = (attr & 7) | (br << 3);
+	bg = ((attr >> 3) & 7) | (br << 3);
+
+	if (rev == 0) {
+		*fgc = fg;
+		*bgc = bg;
+	} else {
+		*fgc = bg;
+		*bgc = fg;
+	}
+}
+
 /** Start generating next video field.
  *
  * @param ula ULA video generator
@@ -110,7 +143,8 @@ void video_ula_next_field(video_ula_t *ula)
 void video_ula_disp_fast(video_ula_t *ula)
 {
 	int x, y, xx, yy;
-	uint8_t a, b, fgc, bgc, br, fl;
+	uint8_t attr;
+	uint8_t a, b, fgc, bgc;
 
 	/*
 	 * Draw border
@@ -137,18 +171,14 @@ void video_ula_disp_fast(video_ula_t *ula)
 
 	for (y = 0; y < 24; y++) {
 		for (x = 0; x < 32; x++) {
-			a = zxscr[ZX_ATTR_START + y * 32 + x];
-			br = (a >> 6) & 1;
-			fgc = (a & 7) | (br << 3);
-			bgc = ((a >> 3) & 7) | (br << 3);
-			fl = a >> 7;
+			attr = zxscr[ZX_ATTR_START + y * 32 + x];
+			video_ula_attr_to_colors(ula, attr, &fgc, &bgc);
+
 			for (yy = 0; yy < 8; yy++) {
 				a = zxscr[ZX_PIXEL_START +
 				    vxswapb((y * 8 + yy) * 32 + x)];
 				for (xx = 0; xx < 8; xx++) {
 					b = (a & 0x80);
-					if (fl && ula->fl_rev)
-						b = !b;
 					video_out_pixel(ula->vout,
 					    zx_paper_x0 + x * 8 + xx,
 					    zx_paper_y0 + y * 8 + yy,
@@ -174,8 +204,7 @@ static void scr_dispscrelem(video_ula_t *ula, int x, int y)
 {
 	uint8_t attr;
 	uint8_t pix;
-	uint8_t rev;
-	uint8_t fgc, bgc, br;
+	uint8_t fgc, bgc;
 	uint8_t color;
 	uint8_t col;
 	uint8_t line;
@@ -186,16 +215,11 @@ static void scr_dispscrelem(video_ula_t *ula, int x, int y)
 
 	attr = zxscr[ZX_ATTR_START + (line >> 3) * 32 + col];
 	pix = zxscr[ZX_PIXEL_START + vxswapb(line * 32 + col)];
-	rev = ((attr >> 7) && ula->fl_rev) ? 0x80 : 0;
-	br = (attr >> 6) & 1;
-	fgc = (attr & 7) | (br << 3);
-	bgc = ((attr >> 3) & 7) | (br << 3);
+	video_ula_attr_to_colors(ula, attr, &fgc, &bgc);
 
 	for (i = 0; i < 8; i++) {
-		color = ((pix & 0x80) ^ rev) ? fgc : bgc;
-
+		color = (pix & 0x80) ? fgc : bgc;
 		video_out_pixel(ula->vout, x + i, y, color);
-
 		pix <<= 1;
 	}
 }
