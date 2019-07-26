@@ -332,3 +332,7 @@ int mgfx_toggle_fs(void) {
   SDL_SetColors(sdl_screen, color, 0, 256);
   return 0;
 }
+
+int mgfx_is_fs(void) {
+  return fs;
+}

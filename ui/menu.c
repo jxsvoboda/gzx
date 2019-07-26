@@ -61,10 +61,24 @@ static void menu_run_line(menu_t *menu, int l)
 	menu->run_line(l);
 }
 
+static void menu_prev_opt(menu_t *menu, int l)
+{
+	if (menu->prev_opt != NULL)
+		menu->prev_opt(l);
+}
+
+static void menu_next_opt(menu_t *menu, int l)
+{
+	if (menu->next_opt != NULL)
+		menu->next_opt(l);
+}
+
 static void menu_draw(menu_t *menu, int mpos)
 {
 	int i;
 	int fgc_, bgc_, hlc_;
+	int optc;
+	const char *opt;
 
 	mgfx_fillrect(menu->cx0 * 8, 0, menu->cx0 * 8 + 8 * 20, scr_ys - 1, 1);
 	gmovec(scr_xs / 16 - (strlen(menu->caption) / 2), 0);
@@ -74,15 +88,28 @@ static void menu_draw(menu_t *menu, int mpos)
 
 	for (i = 0; i < menu->nent; i++) {
 		if (i == mpos) {
-			fgc_ = hlc_ = 1;
+			fgc_ = hlc_ = optc = 1;
 			bgc_ = 5;
 		} else {
 			fgc_ = 7;
 			hlc_ = 14;
 			bgc_ = 1;
+			optc = 6;
 		}
+
 		gmovec(menu->cx0 + 1, 2 + i);
 		gputs_hl(18, fgc_, hlc_, bgc_, menu->mentry_text[i]);
+
+		opt = NULL;
+		if (menu->get_opt != NULL)
+			opt = menu->get_opt(i);
+
+		if (opt != NULL) {
+			gmovec(menu->cx0 + 19 - strlen(opt), 2 + i);
+			fgc = optc;
+			bgc = bgc_;
+			gputs(opt);
+		}
 	}
 }
 
@@ -135,6 +162,14 @@ void menu_run(menu_t *menu)
 					++mpos;
 				else
 					mpos = 0;
+				break;
+
+			case WKEY_LEFT:
+				menu_prev_opt(menu, mpos);
+				break;
+
+			case WKEY_RIGHT:
+				menu_next_opt(menu, mpos);
 				break;
 
 			case WKEY_PGUP:

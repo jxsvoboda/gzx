@@ -644,6 +644,10 @@ int mgfx_toggle_fs(void) {
   return 0;
 }
 
+int mgfx_is_fs(void) {
+  return lpdd != NULL;
+}
+
 void mgfx_updscr(void) {
   unsigned char *sp,*dp;
   int y,x;

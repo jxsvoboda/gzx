@@ -41,7 +41,7 @@
 #include "teline.h"
 
 #ifdef __MINGW32__
-#include "platform/win/sys_win.h"
+#include "../platform/win/sys_win.h"
 #endif
 
 /***** file/dir selector *****/

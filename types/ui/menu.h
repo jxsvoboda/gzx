@@ -48,6 +48,12 @@ typedef struct {
 	int *mkeys;
 	/** Called when an entry is selected */
 	void (*run_line)(int);
+	/** Select previous option on a line */
+	void (*prev_opt)(int);
+	/** Select next option on a line */
+	void (*next_opt)(int);
+	/** Get text of current option on a line */
+	const char *(*get_opt)(int);
 	/** Coordinate of left side of menu (character column) */
 	int cx0;
 } menu_t;

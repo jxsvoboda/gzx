@@ -55,7 +55,7 @@ static const char *mentry_text[MENU_NENT]= {
   "Select ~Tapefile",
   "Reset ~48",
   "Reset ~128",
-  "Toggle ~Windowed",
+  "~Windowed",
   "Lock ~UI",
   "~Quit",
 };
@@ -77,12 +77,34 @@ static void menu_run_line(int l) {
   }
 }
 
+static void menu_prev_opt(int l) {
+  switch(l) {
+    case 5: mgfx_toggle_fs(); break;
+  }
+}
+
+static void menu_next_opt(int l) {
+  switch(l) {
+    case 5: mgfx_toggle_fs(); break;
+  }
+}
+
+static const char *menu_get_opt(int l) {
+  switch(l) {
+    case 5: return mgfx_is_fs() ? "Off" : "On";
+    default: return NULL;
+  }
+}
+
 static menu_t main_menu_spec = {
   .caption = "Main Menu",
   .nent = MENU_NENT,
   .mentry_text = mentry_text,
   .mkeys = mkeys,
-  .run_line = menu_run_line
+  .run_line = menu_run_line,
+  .prev_opt = menu_prev_opt,
+  .next_opt = menu_next_opt,
+  .get_opt = menu_get_opt
 };
 
 
@@ -99,7 +121,7 @@ static const char *tmentry_text[TMENU_NENT]= {
   "~Play",
   "~Stop",
   "~Rewind",
-  "~Quick Load Toggle",
+  "~Quick Tape",
   "~New",
   "Sa~ve",
   "Save ~As"
@@ -121,12 +143,34 @@ static void tmenu_run_line(int l) {
   }
 }
 
+static void tmenu_prev_opt(int l) {
+  switch(l) {
+    case 3: slow_load = !slow_load; break;
+  }
+}
+
+static void tmenu_next_opt(int l) {
+  switch(l) {
+    case 3: slow_load = !slow_load; break;
+  }
+}
+
+static const char *tmenu_get_opt(int l) {
+  switch(l) {
+    case 3: return slow_load ? "Off" : "On";
+    default: return NULL;
+  }
+}
+
 static menu_t tape_menu_spec = {
   .caption = "Tape Menu",
   .nent = TMENU_NENT,
   .mentry_text = tmentry_text,
   .mkeys = tmkeys,
-  .run_line = tmenu_run_line
+  .run_line = tmenu_run_line,
+  .prev_opt = tmenu_prev_opt,
+  .next_opt = tmenu_next_opt,
+  .get_opt = tmenu_get_opt
 };
 
 void tape_menu(void)

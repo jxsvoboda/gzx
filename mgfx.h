@@ -74,6 +74,7 @@ int mgfx_init(void);
 void mgfx_updscr(void);
 void mgfx_setpal(int base, int cnt, int *pal);
 int mgfx_toggle_fs(void);
+int mgfx_is_fs(void);
 void mgfx_input_update(void);
 
 /* our own key scancodes */
