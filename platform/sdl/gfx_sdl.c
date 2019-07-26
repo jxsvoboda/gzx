@@ -196,6 +196,31 @@ static void init_video(void) {
     w_vga_problem();
 }
 
+static void init_vscr(void) {
+  vscr0=calloc(scr_xs*scr_ys, sizeof(uint8_t));
+  if(!vscr0) {
+    printf("malloc failed\n");
+    exit(1);
+  }
+  
+  if(dbl_ln) {
+    vscr1=calloc(scr_xs*scr_ys, sizeof(uint8_t));
+    if(!vscr1) {
+      printf("malloc failed\n");
+      exit(1);
+    }
+  }
+}
+
+static void fini_vscr(void) {
+  free(vscr0);
+  vscr0 = NULL;
+  if(dbl_ln) {
+    free(vscr1);
+    vscr1 = NULL;
+  }
+}
+
 static void quit_video(void) {
   SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
@@ -226,20 +251,7 @@ int mgfx_init(void) {
     txkey[ktabsrc[i*2]]=ktabsrc[i*2+1];
     
   /* set up virtual frame buffer */
-  
-  vscr0=calloc(scr_xs*scr_ys, sizeof(uint8_t));
-  if(!vscr0) {
-    printf("malloc failed\n");
-    exit(1);
-  }
-  
-  if(dbl_ln) {
-    vscr1=calloc(scr_xs*scr_ys, sizeof(uint8_t));
-    if(!vscr1) {
-      printf("malloc failed\n");
-      exit(1);
-    }
-  }
+  init_vscr();
   
   mgfx_selln(3);
 
@@ -329,6 +341,18 @@ int mgfx_toggle_fs(void) {
   quit_video();
   fs = !fs;
   init_video();
+  SDL_SetColors(sdl_screen, color, 0, 256);
+  return 0;
+}
+
+int mgfx_toggle_dbl_ln(void) {
+  quit_video();
+  fini_vscr();
+  dbl_ln = !dbl_ln;
+  /* Make sure to update write bits */
+  mgfx_selln(3);
+  init_video();
+  init_vscr();
   SDL_SetColors(sdl_screen, color, 0, 256);
   return 0;
 }

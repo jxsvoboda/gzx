@@ -51,7 +51,8 @@ static surface_t *surface;
 
 static color_t color[256];
 
-static int scale = 2;
+static int xscale;
+static int yscale;
 
 static int *txkey;
 static int txsize;
@@ -177,8 +178,20 @@ static int init_video(void)
 	scr_xs = 320;
 	scr_ys = 200;
 
-	vw = scr_xs * scale;
-	vh = scr_ys * scale;
+	if (dbl_ln) {
+		xscale = 2;
+		yscale = 1;
+	} else {
+		xscale = 2;
+		yscale = 2;
+	}
+
+	vw = scr_xs * xscale;
+	vh = scr_ys * yscale;
+
+	if (dbl_ln) {
+		vh *= 2;
+	}
 
 	window = window_open("comp:0/winreg", NULL,
 	    WINDOW_MAIN | WINDOW_DECORATED, "GZX");
@@ -214,6 +227,36 @@ static int init_video(void)
 	return 0;
 }
 
+static int init_vscr(void)
+{
+	/* set up virtual frame buffer */
+
+	vscr0=calloc(scr_xs*scr_ys, sizeof(uint8_t));
+	if (!vscr0) {
+		printf("malloc failed\n");
+		return -1;
+	}
+
+	if (dbl_ln) {
+		vscr1=calloc(scr_xs*scr_ys, sizeof(uint8_t));
+		if (!vscr1) {
+			printf("malloc failed\n");
+			return -1;
+		}
+	}
+}
+
+static void fini_vscr(void)
+{
+	free(vscr0);
+	vscr0 = NULL;
+
+	if (dbl_ln) {
+		free(vscr1);
+		vscr1 = NULL;
+	}
+}
+
 int mgfx_init(void)
 {
 	int i;
@@ -237,21 +280,8 @@ int mgfx_init(void)
 	for(i=0;ktabsrc[i*2+1]!=-1;i++)
 		txkey[ktabsrc[i*2]]=ktabsrc[i*2+1];
 
-	/* set up virtual frame buffer */
-
-	vscr0=calloc(scr_xs*scr_ys, sizeof(uint8_t));
-	if (!vscr0) {
-		printf("malloc failed\n");
+	if (init_vscr() < 0)
 		return -1;
-	}
-
-	if (dbl_ln) {
-		vscr1=calloc(scr_xs*scr_ys, sizeof(uint8_t));
-		if (!vscr1) {
-			printf("malloc failed\n");
-			return -1;
-		}
-	}
 
 	mgfx_selln(3);
 
@@ -268,12 +298,12 @@ static void render_display_line(int dy, uint8_t *spix)
   pixel_t pval;
   color_t *col;
   
-    for (j = 0; j < scale; j++) {
+    for (j = 0; j < yscale; j++) {
       for (i = 0; i < scr_xs; i++) {
-        for (k = 0; k < scale; k++) {
+        for (k = 0; k < xscale; k++) {
           col = &color[spix[i]];
           pval = PIXEL(255, col->r, col->g, col->b);
-          surface_put_pixel(surface, scale * i + k, scale * dy + j, pval);
+          surface_put_pixel(surface, xscale * i + k, yscale * dy + j, pval);
         }
       }
     }
@@ -317,6 +347,22 @@ void mgfx_input_update(void) {
 }
 
 int mgfx_toggle_fs(void) {
+  /* Not implemented */
+  return 0;
+}
+
+int mgfx_toggle_dbl_ln(void) {
+  fini_vscr();
+  dbl_ln = !dbl_ln;
+  if (dbl_ln) {
+    xscale = 2;
+    yscale = 1;
+  } else {
+    xscale = 2;
+    yscale = 2;
+  }
+  init_vscr();
+  mgfx_selln(3);
   return 0;
 }
 

@@ -127,6 +127,12 @@ void gzx_notify_mode_48k(bool mode48k)
 		tape_deck_set_48k(tape_deck, mode48k);
 }
 
+void gzx_toggle_dbl_ln(void)
+{
+	mgfx_toggle_dbl_ln();
+	zx_scr_disp_fast();
+}
+
 static void key_unmod(wkey_t *k)
 {
    switch(k->key) {
@@ -537,10 +543,7 @@ int main(int argc, char **argv) {
   dbl_ln=0;
 
   while (argc > argi && argv[argi][0] == '-') {
-    if (!strcmp(argv[argi],"-dl")) {
-      dbl_ln=1;
-      argi++;
-    } else if (!strcmp(argv[argi],"-midi")) {
+    if (!strcmp(argv[argi],"-midi")) {
 	    if (argc <= argi + 1) {
 		    printf("Option -midi missing argument.\n");
 		    exit(1);

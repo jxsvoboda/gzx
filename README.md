@@ -20,7 +20,8 @@ Some of the features of this emulator:
   * AY-3-8192
   * Read and write TZX, TAP, WAV tape formats
   * Z80, SNA, AY snapshots
-  * High vertical resolution, Spec256 (experimental)
+  * Double line mode (i.e. interlaced image emulation)
+  * Spec256 (not 100% done)
   * Emulate built-in MIDI port of 128K Spectrum
   * Record data sent to I/O ports
   * Built-in debugger
@@ -107,7 +108,6 @@ Supported command-line options:
   Option           | Description
   ---------------  | -----------
   -acap <file.wav> | Capture audio output to WAVE file
-  -dl              | Enable double-scanline mode
   -midi <device>   | Output to specified MIDI device
   <snapshot-file>  | Load snapshot file at startup
 
@@ -175,5 +175,25 @@ Key functions while in the debugger
   F9           | Go to cursor (run until PC = cursor position)
   F11          | View Spectrum screen (while paused)
 
+About the double scaline mode
+-----------------------------
+Some demos make use of the interlaced nature of PAL image by displaying
+different images on alternate fields. This allows to either display
+an image with higher vertical resolution (384 lines) or to display
+more than two colors in a single cell.
+
+These effects won't display correctly unless you enable double scanline mode
+by enabling setting Double Line to Yes in the main menu. This can, however,
+cause display artifacts so it should not be enabled all the time.
+
+About Spec256 emulation
+-----------------------
+Spec256 was a DOS-based emulator that allowed playing spectrum games that
+have been enhanced to 256 colors. GZX can play enhanced Spec256 games
+(albeit not perfectly). To load a Spec256 enhanced game, start GZX with
+Spec256 support (`gzx-g`), select Load Snapshot from the main menu
+and load the `.sna` file from the game folder. You can also use Alt-N,
+Alt-M keys to cycle between Spec256 backgrounds (as automatic switching
+is not implemented).
 
 [1]: https://github.com/jxsvoboda/sycek

@@ -42,6 +42,7 @@ void zx_debug_mstep(void);
 void zx_debug_key(int press, int key);
 void gzx_ui_lock(void);
 void gzx_notify_mode_48k(bool);
+void gzx_toggle_dbl_ln(void);
 
 extern char *start_dir;
 extern FILE *logfi;

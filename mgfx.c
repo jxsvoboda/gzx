@@ -60,6 +60,9 @@ void mgfx_selln(int mask) {
   if(dbl_ln) {
     write_l0=mask&1;
     write_l1=mask&2;
+  } else {
+    write_l0 = 1;
+    write_l1 = 0;
   }
 }
 

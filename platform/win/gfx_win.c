@@ -644,6 +644,13 @@ int mgfx_toggle_fs(void) {
   return 0;
 }
 
+int mgfx_toggle_dbl_ln(void) {
+  dbl_ln = !dbl_ln;
+  mgfx_selln(3);
+  mgfx_updscr();
+  return 0;
+}
+
 int mgfx_is_fs(void) {
   return lpdd != NULL;
 }

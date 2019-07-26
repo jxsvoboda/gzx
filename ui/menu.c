@@ -80,6 +80,8 @@ static void menu_draw(menu_t *menu, int mpos)
 	int optc;
 	const char *opt;
 
+	mgfx_selln(3); /* Enable rendering odd and even lines */
+
 	mgfx_fillrect(menu->cx0 * 8, 0, menu->cx0 * 8 + 8 * 20, scr_ys - 1, 1);
 	gmovec(scr_xs / 16 - (strlen(menu->caption) / 2), 0);
 	fgc = 7;
@@ -127,8 +129,6 @@ void menu_run(menu_t *menu)
 
 	mpos = 0;
 	menu->cx0 = scr_xs / 16 - 10;
-
-	mgfx_selln(3); /* Enable rendering odd and even lines */
 
 	while (!end_menu) {
 		menu_draw(menu, mpos);
