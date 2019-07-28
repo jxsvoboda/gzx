@@ -128,7 +128,8 @@ void video_ula_next_field(video_ula_t *ula)
 
 	z80_int(0xff);
 #ifdef USE_GPU
-	z80_g_int(0xff);
+	if (gpu_is_on())
+		z80_g_int(0xff);
 #endif
 }
 

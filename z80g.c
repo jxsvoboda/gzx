@@ -29,8 +29,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdlib.h>
 #include "memio.h"
 #include "z80g.h"
+#include "zx_scr.h"
 
 z80s gpus[NGP];		/* GPUs */
 z80s tmps;		/* temporary place to store the CPU */
@@ -40,10 +42,52 @@ u8 *gfxrom[NGP];
 u8 *gfxram[NGP];
 u8 *gfxscr[NGP];
 static u8 *gfxbnk[NGP][4];
-
+static bool gpu_on;
 
 /************************************************************************/
 /************************************************************************/
+
+void gpu_init(void)
+{
+  int i;
+
+  for(i=0;i<NGP;i++) {
+    gfxrom[i]=NULL;
+    gfxram[i]=NULL;
+  }
+
+  gpu_on = false;
+}
+
+int gpu_enable(void)
+{
+  if (mem_model != ZXM_48K)
+    return -1;
+  gfx_select_memmodel(ZXM_48K);
+  gfxrom_load("roms/rom0.gfx",0);
+  gpu_on = true;
+  return 0;
+}
+
+void gpu_disable(void)
+{
+  int i;
+
+  for(i=0;i<NGP;i++) {
+    free(gfxrom[i]);
+    gfxrom[i]=NULL;
+    free(gfxram[i]);
+    gfxram[i]=NULL;
+  }
+
+  gpu_on = false;
+  zx_scr_mode(0);
+}
+
+bool gpu_is_on(void)
+{
+  return gpu_on;
+}
 
 void gfx_select_memmodel(int model) {
   int i;

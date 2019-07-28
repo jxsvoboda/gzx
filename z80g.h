@@ -32,6 +32,7 @@
 #ifndef Z80G_H
 #define Z80G_H
 
+#include <stdbool.h>
 #include "intdef.h"
 #include "z80.h"
 
@@ -46,8 +47,11 @@ extern u8 *gfxrom[NGP];
 extern u8 *gfxram[NGP];
 extern u8 *gfxscr[NGP];
 
-
+void gpu_init(void);
+int gpu_enable(void);
+void gpu_disable(void);
 int gpu_reset(void);
+bool gpu_is_on(void);
 void z80_g_execinstr(void); /* execute both on CPU and GPU */
 void z80_g_int(u8 bus);       /* INT both on CPU and GPU */
 void gfx_select_memmodel(int model);

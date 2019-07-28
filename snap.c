@@ -703,12 +703,19 @@ int zx_load_snap(char *name) {
     gext = strrchr(gfxname, '.');
     assert(gext != 0);
     memcpy(gext + 1, "gfx", strlen("gfx"));
+
+    /* XXX Should check for GFX file before trying to enable GPU */
+    if (gpu_enable()< 0)
+      return 0;
+
+    printf("enabling gpu\n");
+
     if (gfxram_load(gfxname)) {
       memcpy(gext + 1, "GFX", strlen("GFX"));
       if (gfxram_load(gfxname)) {
-        memcpy(gext + 1, "GFX", strlen("GFX"));
         free(gfxname);
-        return -1;
+        printf("could not load gfx, disabling GPU\n");
+        gpu_disable();
       }
     }
 
@@ -739,6 +746,7 @@ int zx_load_snap(char *name) {
        for(i=0;i<NGP;i++)
          gpus[i]=cpus;
     }
+    printf("Setting screen mode 1\n");
     zx_scr_mode(1);
   }
 #endif

@@ -274,7 +274,10 @@ static unsigned long snd_t,tapp_t;
 
 void zx_reset(void) {
 #ifdef USE_GPU
-  gpu_reset();
+  if (gpu_is_on()) {
+    gpu_reset();
+    gpu_disable();
+  }
 #endif
   z80_reset();
   ay_reset(&ay0);
@@ -285,10 +288,6 @@ void zx_reset(void) {
 }
 
 static int zx_init(void) {
-#ifdef USE_GPU
-  int i;
-#endif
-
 //  printf("coreleft:%lu\n",coreleft());
 
   z80_init_tables();
@@ -298,13 +297,10 @@ static int zx_init(void) {
   zxram=NULL;
   zx_select_memmodel(ZXM_48K);
 
-#ifdef USE_GPU  
-  for(i=0;i<NGP;i++) {
-    gfxrom[i]=NULL;
-    gfxram[i]=NULL;
-  }
-  gfx_select_memmodel(ZXM_48K);
-  gfxrom_load("roms/rom0.gfx",0);
+#ifdef USE_GPU
+  gpu_init();
+//  if (gpu_enable() < 0)
+//    return -1;
 #endif  
   printf("load font\n");
   gloadfont("font.bin");
@@ -404,9 +400,12 @@ void zx_debug_mstep(void) {
            frame displaying takes some time */	   
 //        zx_scr_disp_fast();	    
 #ifdef USE_GPU
-    zx_scr_disp_fast();
+    if (gpu_is_on())
+      zx_scr_disp_fast();
 #endif
-
+#ifdef WITH_MIDI
+    sysmidi_poll(z80_clock);
+#endif
     mgfx_updscr();
 
 #ifdef LOG
@@ -414,14 +413,20 @@ void zx_debug_mstep(void) {
 #endif
     z80_int(0xff);
 #ifdef USE_GPU
-    z80_g_int(0xff);
+    if (gpu_is_on())
+      z80_g_int(0xff);
 #endif
   }
     
-#ifndef USE_GPU
-  while(CLOCK_LT(zx_scr_get_clock(),z80_clock))
-    zx_scr_disp();
-#endif      
+#ifdef USE_GPU
+  if (!gpu_is_on()) {
+#endif
+    while(CLOCK_LT(zx_scr_get_clock(),z80_clock)) {
+      zx_scr_disp();
+    }
+#ifdef USE_GPU
+  }
+#endif
     
   if(CLOCK_GE(z80_clock-snd_t,ZX_SOUND_TICKS_SMP)) { 
     zx_sound_smp(ay_get_sample(&ay0)+(tape_smp?+16:-16));
@@ -448,7 +453,10 @@ void zx_debug_mstep(void) {
 #endif
 
 #ifdef USE_GPU
-  z80_g_execinstr();
+  if (gpu_is_on())
+    z80_g_execinstr();
+  else
+    z80_execinstr();
 #else
   z80_execinstr();
 #endif
@@ -591,7 +599,6 @@ int main(int argc, char **argv) {
   timer_reset(&frmt);
   
   while(!quit) {
-
     if(CLOCK_GE(z80_clock-disp_t,ULA_FIELD_TICKS)) { /* every 50th of a second */
       disp_t+=ULA_FIELD_TICKS;
       
@@ -612,7 +619,8 @@ int main(int argc, char **argv) {
            frame displaying takes some time */	   
 //        zx_scr_disp_fast();	    
 #ifdef USE_GPU
-      zx_scr_disp_fast();
+      if (gpu_is_on())
+        zx_scr_disp_fast();
 #endif
 #ifdef WITH_MIDI
       sysmidi_poll(z80_clock);
@@ -627,13 +635,19 @@ int main(int argc, char **argv) {
 //      if(cpus.IFF1) printf("interrupt\n");
       z80_int(0xff);
 #ifdef USE_GPU
+    if (gpu_is_on())
       z80_g_int(0xff);
 #endif
     }
     
-#ifndef USE_GPU
-    while(CLOCK_LT(zx_scr_get_clock(),z80_clock))
-      zx_scr_disp();
+#ifdef USE_GPU
+    if (!gpu_is_on()) {
+#endif      
+      while(CLOCK_LT(zx_scr_get_clock(),z80_clock)) {
+        zx_scr_disp();
+      }
+#ifdef USE_GPU
+    }
 #endif      
     
     if(CLOCK_GE(z80_clock-snd_t,ZX_SOUND_TICKS_SMP)) { 
@@ -665,7 +679,10 @@ int main(int argc, char **argv) {
 #endif
 
 #ifdef USE_GPU    
-    z80_g_execinstr();
+    if (gpu_is_on())
+      z80_g_execinstr();
+    else
+      z80_execinstr();
 #else
     z80_execinstr();
 #endif

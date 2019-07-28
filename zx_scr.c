@@ -34,6 +34,7 @@
 #include "video/ula.h"
 #include "mgfx.h"
 #include "zx_scr.h"
+#include "z80g.h"
 
 #ifdef USE_GPU
 static void g_scr_disp_fast(void);
@@ -75,7 +76,7 @@ static void n_scr_disp(void)
 void zx_scr_mode(int mode)
 {
 #ifdef USE_GPU
-	if (mode) {
+	if (mode && gpu_is_on()) {
 		zx_scr_disp_fast = g_scr_disp_fast;
 		video_spec256_setpal(&video_spec256);
 	} else {
