@@ -42,14 +42,10 @@
 #include "snap_ay.h"
 #include "z80.h"
 #include "zx.h"
-
-#ifdef USE_GPU
 #include "z80g.h"
 #include "zx_scr.h"
 
 static int gfxram_load(char *);
-
-#endif
 
 /*
   Translate 48k page numbers (8,4,5) to our numbering system (0,1,2)
@@ -670,11 +666,9 @@ static int zx_save_snap_sna(char *name) {
 /* determines snapshot type by extension */
 int zx_load_snap(char *name) {
   char *ext;
-#ifdef USE_GPU
   char *gext;
   char *gfxname;
   int i;
-#endif
   int rc;
   
   ext=strrchr(name,'.');
@@ -697,7 +691,6 @@ int zx_load_snap(char *name) {
   if (rc != 0)
     return rc;
   
-#ifdef USE_GPU
   if (strcmpci(ext, ".ay") != 0) {
     gfxname = malloc(strlen(name) + 1);
     if (gfxname == NULL)
@@ -745,7 +738,7 @@ int zx_load_snap(char *name) {
     printf("Setting screen mode 1\n");
     zx_scr_mode(1);
   }
-#endif
+
   return 0;
 }
 
@@ -766,8 +759,6 @@ int zx_save_snap(char *name) {
   printf("unknown extension\n");
   return -1;
 }
-
-#ifdef USE_GPU
 
 static int gfxram_load(char *fname) {
   FILE *f;
@@ -799,5 +790,3 @@ static int gfxram_load(char *fname) {
   fclose(f);
   return 0;
 }
-
-#endif

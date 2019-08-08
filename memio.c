@@ -317,7 +317,6 @@ static int spec_rom_load(char *fname, int bank) {
   return rom_load(fname,bank,0x4000);
 }
 
-#ifdef USE_GPU
 int gfxrom_load(char *fname, unsigned bank) {
   FILE *f;
   unsigned u,v,w;
@@ -349,5 +348,3 @@ int gfxrom_load(char *fname, unsigned bank) {
   sys_chdir(cur_dir);
   return 0;
 }
-
-#endif

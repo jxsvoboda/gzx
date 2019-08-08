@@ -193,10 +193,8 @@ static void incr_R(u8 amount) {
 
 /*
  * In GPU case we need to take addresses from the CPU registers as a special
- * case.
+ * case. If GPU is not enabled, rcpus just points to the CPU state.
  */
-
-#ifdef USE_GPU
 
 #include "z80g.h"
 
@@ -224,35 +222,6 @@ static u16 get_addrIY(void)
 {
   return rcpus->IY;
 }
-
-#else
-
-static u16 get_addrBC(void)
-{
-  return ((u16)cpus.r[rB] << 8) | cpus.r[rC];
-}
-
-static u16 get_addrDE(void)
-{
-  return ((u16)cpus.r[rD] << 8) | cpus.r[rE];
-}
-
-static u16 get_addrHL(void)
-{
-  return ((u16)cpus.r[rH] << 8) | cpus.r[rL];
-}
-
-static u16 get_addrIX(void)
-{
-  return cpus.IX;
-}
-
-static u16 get_addrIY(void)
-{
-  return cpus.IY;
-}
-
-#endif
 
 /**************************** operand access ***************************/
 

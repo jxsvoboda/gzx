@@ -36,9 +36,7 @@
 #include "zx_scr.h"
 #include "z80g.h"
 
-#ifdef USE_GPU
 static void g_scr_disp_fast(void);
-#endif
 
 static void n_scr_disp_fast(void);
 static void n_scr_disp(void);
@@ -50,9 +48,7 @@ static video_out_t video_out;
 
 static video_ula_t video_ula;
 
-#ifdef USE_GPU
 static video_spec256_t video_spec256;
-#endif
 
 /* crude and fast display routine, called 50 times a second */
 static void n_scr_disp_fast(void)
@@ -60,12 +56,10 @@ static void n_scr_disp_fast(void)
 	video_ula_disp_fast(&video_ula);
 }
 
-#ifdef USE_GPU
 static void g_scr_disp_fast(void)
 {
 	video_spec256_disp_fast(&video_spec256);
 }
-#endif
 
 /* slow and fine display routine, called after each instruction! */
 static void n_scr_disp(void)
@@ -75,17 +69,13 @@ static void n_scr_disp(void)
 
 void zx_scr_mode(int mode)
 {
-#ifdef USE_GPU
 	if (mode && gpu_is_on()) {
 		zx_scr_disp_fast = g_scr_disp_fast;
 		video_spec256_setpal(&video_spec256);
 	} else {
-#endif
 		zx_scr_disp_fast = n_scr_disp_fast;
 		video_ula_setpal(&video_ula);
-#ifdef USE_GPU
 	}
-#endif
 }
 
 int zx_scr_init(unsigned long clock)
@@ -99,51 +89,35 @@ int zx_scr_init(unsigned long clock)
 	if (video_ula_init(&video_ula, clock, &video_out))
 		return -1;
 
-#ifdef USE_GPU
 	if (video_spec256_init(&video_spec256, &video_out))
 		return -1;
-#endif
 
 	return 0;
 }
 
 int zx_scr_init_spec256_pal(void)
 {
-#ifdef USE_GPU
 	return video_spec256_init_pal(&video_spec256);
-#else
-	return -1;
-#endif
 }
 
 int zx_scr_load_bg(const char *fname, int idx)
 {
-#ifdef USE_GPU
 	return video_spec256_load_bg(&video_spec256, fname, idx);
-#else
-	return 0;
-#endif
 }
 
 void zx_scr_prev_bg(void)
 {
-#ifdef USE_GPU
 	video_spec256_prev_bg(&video_spec256);
-#endif
 }
 
 void zx_scr_next_bg(void)
 {
-#ifdef USE_GPU
 	video_spec256_next_bg(&video_spec256);
-#endif
 }
 
 void zx_scr_clear_bg(void)
 {
-#ifdef USE_GPU
 	video_spec256_clear_bg(&video_spec256);
-#endif
 }
 
 unsigned long zx_scr_get_clock(void)

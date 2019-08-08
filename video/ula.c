@@ -39,9 +39,7 @@
 #include "out.h"
 #include "ula.h"
 
-#ifdef USE_GPU
 #include "../z80g.h"
-#endif
 
 /* 64 scanline times pass before paper starts - 48 lines of border are displayed */
 #define SCR_SCAN_TOP     16
@@ -127,10 +125,9 @@ void video_ula_next_field(video_ula_t *ula)
 	}
 
 	z80_int(0xff);
-#ifdef USE_GPU
+
 	if (gpu_is_on())
 		z80_g_int(0xff);
-#endif
 }
 
 /** Crude and fast ULA display routine, called 50 times a second.
