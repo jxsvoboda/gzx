@@ -32,6 +32,7 @@
 #define ZX_SCR_H
 
 extern int zx_scr_init(unsigned long);
+extern int zx_scr_init_spec256_pal(void);
 extern int zx_scr_load_bg(const char *, int);
 extern void zx_scr_prev_bg(void);
 extern void zx_scr_next_bg(void);

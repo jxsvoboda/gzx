@@ -35,6 +35,7 @@
 #include "../types/video/spec256.h"
 
 extern int video_spec256_init(video_spec256_t *, video_out_t *);
+extern int video_spec256_init_pal(video_spec256_t *);
 extern int video_spec256_load_bg(video_spec256_t *, const char *, int);
 extern void video_spec256_prev_bg(video_spec256_t *);
 extern void video_spec256_next_bg(video_spec256_t *);

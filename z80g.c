@@ -64,6 +64,8 @@ int gpu_enable(void)
   if (mem_model != ZXM_48K)
     return -1;
   gfx_select_memmodel(ZXM_48K);
+  if (zx_scr_init_spec256_pal() < 0)
+    return -1;
   gfxrom_load("roms/rom0.gfx",0);
   gpu_on = true;
   return 0;

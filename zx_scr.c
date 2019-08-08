@@ -107,6 +107,15 @@ int zx_scr_init(unsigned long clock)
 	return 0;
 }
 
+int zx_scr_init_spec256_pal(void)
+{
+#ifdef USE_GPU
+	return video_spec256_init_pal(&video_spec256);
+#else
+	return -1;
+#endif
+}
+
 int zx_scr_load_bg(const char *fname, int idx)
 {
 #ifdef USE_GPU

@@ -323,10 +323,16 @@ int gfxrom_load(char *fname, unsigned bank) {
   unsigned u,v,w;
   uint8_t buf[8];
   uint8_t b;
+  char *cur_dir;
+
+  cur_dir = sys_getcwd(NULL, 0);
+  if (start_dir)
+	sys_chdir(start_dir);
 
   f=fopen(fname,"rb");
   if(!f) {
     printf("gfxrom_load: cannot open file '%s'\n",fname);
+    sys_chdir(cur_dir);
     return -1;
   }
   for(u=0;u<16384;u++) {
@@ -340,6 +346,7 @@ int gfxrom_load(char *fname, unsigned bank) {
     }
   }
   fclose(f);
+  sys_chdir(cur_dir);
   return 0;
 }
 

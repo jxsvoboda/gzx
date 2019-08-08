@@ -38,7 +38,7 @@
 typedef struct {
 	struct video_out *vout;
 	unsigned long clock;
-	uint8_t gfxpal[3 * 256];
+	uint8_t *gfxpal;
 	/** Number of backgrounds */
 	int nbgs;
 	/** Backgrounds (320 x 200) */

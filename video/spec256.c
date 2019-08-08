@@ -35,7 +35,9 @@
 #include <string.h>
 #include "defs.h"
 #include "../clock.h"
+#include "../gzx.h"
 #include "../memio.h"
+#include "../sys_all.h"
 #include "../z80g.h"
 #include "out.h"
 #include "spec256.h"
@@ -153,30 +155,64 @@ void video_spec256_disp_fast(video_spec256_t *spec)
  *
  * @param spec Spec256 video generator
  * @param vout Video output
- * @return EOK on success or an error code
+ * @return Zero on success or an error code
  */
 int video_spec256_init(video_spec256_t *spec, video_out_t *vout)
 {
-	int b;
-	int i;
-	FILE *f;
-
-	f = fopen("sp256.pal", "rt");
-	if (!f)
-		return -1;
-
-	for (i = 0; i < 3 * 256; i++) {
-		fscanf(f, "%d", &b);
-		spec->gfxpal[i] = b >> 2;
-	}
-	fclose(f);
-
+	spec->gfxpal = NULL;
 	spec->vout = vout;
 	spec->background = NULL;
 	spec->cur_bg = -1;
 	spec->clock = 0;
 
 	return 0;
+}
+
+/** Initialize Spec256 video generator palette.
+ *
+ * @param spec Spec256 video generator
+ * @param vout Video output
+ * @return Zero on success or an error code
+ */
+int video_spec256_init_pal(video_spec256_t *spec)
+{
+	int b;
+	int i;
+	FILE *f = NULL;
+	char *cur_dir = NULL;
+
+	if (spec->gfxpal != NULL)
+		return 0;
+
+	cur_dir = sys_getcwd(NULL, 0);
+	if (start_dir)
+		sys_chdir(start_dir);
+
+	f = fopen("sp256.pal", "rt");
+	if (!f)
+		goto error;
+
+	spec->gfxpal = malloc(3 * 256);
+	if (spec->gfxpal == NULL)
+		goto error;
+
+	for (i = 0; i < 3 * 256; i++) {
+		fscanf(f, "%d", &b);
+		spec->gfxpal[i] = b >> 2;
+	}
+
+	fclose(f);
+	sys_chdir(cur_dir);
+	free(cur_dir);
+	return 0;
+error:
+	if (f != NULL)
+		fclose(f);
+	if (cur_dir != NULL) {
+		sys_chdir(cur_dir);
+		free(cur_dir);
+	}
+	return -1;
 }
 
 /** Load Spec256 background.
