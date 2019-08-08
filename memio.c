@@ -350,29 +350,4 @@ int gfxrom_load(char *fname, unsigned bank) {
   return 0;
 }
 
-int gfxram_load(char *fname) {
-  FILE *f;
-  unsigned u,v,w;
-  uint8_t buf[8];
-  uint8_t b;
-
-  f=fopen(fname,"rb");
-  if(!f) {
-    printf("gfxram_load: cannot open file '%s'\n",fname);
-    return -1;
-  }
-  for(u=0;u<3*16384U;u++) {
-    fread(buf,1,8,f);
-    for(v=0;v<8;v++) {
-      b=0;
-      for(w=0;w<8;w++) {
-        if(buf[w]&(1<<v)) b|=(1<<w);
-      }
-      gfxram[v][u]=b;
-    }
-  }
-  fclose(f);
-  return 0;
-}
-
 #endif

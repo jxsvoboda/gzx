@@ -46,6 +46,9 @@
 #ifdef USE_GPU
 #include "z80g.h"
 #include "zx_scr.h"
+
+static int gfxram_load(char *);
+
 #endif
 
 /*
@@ -704,18 +707,11 @@ int zx_load_snap(char *name) {
     assert(gext != 0);
     memcpy(gext + 1, "gfx", strlen("gfx"));
 
-    /* XXX Should check for GFX file before trying to enable GPU */
-    if (gpu_enable()< 0)
-      return 0;
-
-    printf("enabling gpu\n");
-
     if (gfxram_load(gfxname)) {
       memcpy(gext + 1, "GFX", strlen("GFX"));
       if (gfxram_load(gfxname)) {
         free(gfxname);
-        printf("could not load gfx, disabling GPU\n");
-        gpu_disable();
+        return 0;
       }
     }
 
@@ -770,3 +766,38 @@ int zx_save_snap(char *name) {
   printf("unknown extension\n");
   return -1;
 }
+
+#ifdef USE_GPU
+
+static int gfxram_load(char *fname) {
+  FILE *f;
+  unsigned u,v,w;
+  uint8_t buf[8];
+  uint8_t b;
+
+  f=fopen(fname,"rb");
+  if(!f) {
+    printf("gfxram_load: cannot open file '%s'\n",fname);
+    return -1;
+  }
+
+  if (gpu_enable() < 0) {
+    fclose(f);
+    return -1;
+  }
+ 
+  for(u=0;u<3*16384U;u++) {
+    fread(buf,1,8,f);
+    for(v=0;v<8;v++) {
+      b=0;
+      for(w=0;w<8;w++) {
+        if(buf[w]&(1<<v)) b|=(1<<w);
+      }
+      gfxram[v][u]=b;
+    }
+  }
+  fclose(f);
+  return 0;
+}
+
+#endif

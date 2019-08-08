@@ -55,7 +55,6 @@ uint8_t zx_in8(uint16_t addr);
 
 int zx_select_memmodel(int model);
 void zx_mem_page_select(uint8_t val);
-int gfxram_load(char *fname);
 int gfxrom_load(char *fname, unsigned bank);
 
 extern uint8_t page_reg;
