@@ -111,8 +111,6 @@ Supported command-line options:
   -midi <device>   | Output to specified MIDI device
   <snapshot-file>  | Load snapshot file at startup
 
-`gzx-g` and `gzx-g.exe` are variants with GPU/Spec256 support enabled
-
 Controls
 --------
 Note that most functions can be accessed via menus as well as via shortcuts.
@@ -190,10 +188,10 @@ About Spec256 emulation
 -----------------------
 Spec256 was a DOS-based emulator that allowed playing spectrum games that
 have been enhanced to 256 colors. GZX can play enhanced Spec256 games
-(albeit not perfectly). To load a Spec256 enhanced game, start GZX with
-Spec256 support (`gzx-g`), select Load Snapshot from the main menu
-and load the `.sna` file from the game folder. You can also use Alt-N,
-Alt-M keys to cycle between Spec256 backgrounds (as automatic switching
-is not implemented).
+(albeit not perfectly). To load a Spec256 enhanced game, select Load Snapshot
+from the main menu and load the `.sna` file from the Spec256 game folder
+(it should also contain a `.gfx` file). You can also use Alt-N, Alt-M keys
+to cycle between Spec256 backgrounds (as automatic switching is not
+implemented).
 
 [1]: https://github.com/jxsvoboda/sycek
