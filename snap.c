@@ -690,6 +690,8 @@ int zx_load_snap(char *name) {
   
   if (rc != 0)
     return rc;
+
+  gpu_disable();
   
   if (strcmpci(ext, ".ay") != 0) {
     gfxname = malloc(strlen(name) + 1);
