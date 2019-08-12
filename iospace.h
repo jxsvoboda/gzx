@@ -41,7 +41,12 @@
 /** Secondary Kempston joystick port (e.g. Didaktik Gama) */
 #define KEMPSTON_JOY_B_PORT 0x21
 
-#define ZX128K_PAGESEL_PORT 0x7ffd
+/*
+ * The nominal 128K page select port is 0x7ffd, but 128K just checks
+ * bits 15 and 1. Some software depends on this (e.g. The Cube / TGM).
+ */
+#define ZX128K_PAGESEL_PORT_MASK 0x8002
+#define ZX128K_PAGESEL_PORT_VAL  0x0000
 
 #define ULA_PORT_MASK 0x00ff
 #define ULA_PORT      0x00fe

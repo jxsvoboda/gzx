@@ -136,7 +136,7 @@ uint8_t zx_in8(uint16_t a) {
 //  z80_printstatus();
 //  getchar();
   if(a==AY_REG_READ_PORT) return ay_reg_read(&ay0);
-  if(a==ZX128K_PAGESEL_PORT) printf("bnk sw port read!!!!!!\n");
+  if((a&ZX128K_PAGESEL_PORT_MASK) == ZX128K_PAGESEL_PORT_VAL) printf("bnk sw port read!!!!!!\n");
   switch(a&0xff) {
     /* ULA */
     case ULA_PORT:
@@ -168,7 +168,7 @@ void zx_out8(uint16_t addr, uint8_t val) {
 //    printf("border %d, spk:%d, mic:%d\n",border,(val>>4)&1,(val>>3)&1);
 //    z80_printstatus();
 //    getchar();
-  } else if(addr==ZX128K_PAGESEL_PORT && has_banksw && !bnk_lock48)
+  } else if((addr&ZX128K_PAGESEL_PORT_MASK) == ZX128K_PAGESEL_PORT_VAL && has_banksw && !bnk_lock48)
     zx_mem_page_select(val);
   else if(addr==AY_REG_WRITE_PORT) {
     ay_reg_write(&ay0, val);
