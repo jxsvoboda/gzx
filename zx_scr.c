@@ -43,10 +43,11 @@ static void n_scr_disp(void);
 
 void (*zx_scr_disp_fast)(void) = n_scr_disp_fast;
 void (*zx_scr_disp)(void)      = n_scr_disp;
+static int video_mode = 0;
 
 static video_out_t video_out;
 
-static video_ula_t video_ula;
+video_ula_t video_ula;
 
 static video_spec256_t video_spec256;
 
@@ -72,10 +73,18 @@ void zx_scr_mode(int mode)
 	if (mode && gpu_is_on()) {
 		zx_scr_disp_fast = g_scr_disp_fast;
 		video_spec256_setpal(&video_spec256);
+		video_mode = 1;
 	} else {
 		zx_scr_disp_fast = n_scr_disp_fast;
 		video_ula_setpal(&video_ula);
+		video_mode = 0;
 	}
+}
+
+void zx_scr_update_pal(void)
+{
+	if (!video_mode)
+		video_ula_setpal(&video_ula);
 }
 
 int zx_scr_init(unsigned long clock)
@@ -93,6 +102,11 @@ int zx_scr_init(unsigned long clock)
 		return -1;
 
 	return 0;
+}
+
+void zx_scr_reset(void)
+{
+	video_ula_reset(&video_ula);
 }
 
 int zx_scr_init_spec256_pal(void)

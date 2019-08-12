@@ -1,6 +1,6 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * ULA video generator
+ * ULAplus
  *
  * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
@@ -28,18 +28,15 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef VIDEO_ULA_H
-#define VIDEO_ULA_H
+#ifndef VIDEO_ULAPLUS_H
+#define VIDEO_ULAPLUS_H
 
-#include "../types/video/out.h"
-#include "../types/video/ula.h"
+#include <stdint.h>
+#include "../types/video/ulaplus.h"
 
-extern int video_ula_init(video_ula_t *, unsigned long, video_out_t *);
-extern void video_ula_reset(video_ula_t *);
-extern void video_ula_next_field(video_ula_t *);
-extern void video_ula_disp_fast(video_ula_t *);
-extern void video_ula_disp(video_ula_t *);
-extern void video_ula_setpal(video_ula_t *);
-extern unsigned long video_ula_get_clock(video_ula_t *);
+extern void ulaplus_init(ulaplus_t *);
+extern void ulaplus_write_regsel(ulaplus_t *, uint8_t);
+extern void ulaplus_write_data(ulaplus_t *, uint8_t);
+extern void ulaplus_get_pal_rgb(ulaplus_t *, uint8_t, uint8_t *);
 
 #endif

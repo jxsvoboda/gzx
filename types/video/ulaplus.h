@@ -1,6 +1,6 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * ULA video generator
+ * ULAplus types
  *
  * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
@@ -28,18 +28,29 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef VIDEO_ULA_H
-#define VIDEO_ULA_H
 
-#include "../types/video/out.h"
-#include "../types/video/ula.h"
+#ifndef TYPES_VIDEO_ULAPLUS_H
+#define TYPES_VIDEO_ULAPLUS_H
 
-extern int video_ula_init(video_ula_t *, unsigned long, video_out_t *);
-extern void video_ula_reset(video_ula_t *);
-extern void video_ula_next_field(video_ula_t *);
-extern void video_ula_disp_fast(video_ula_t *);
-extern void video_ula_disp(video_ula_t *);
-extern void video_ula_setpal(video_ula_t *);
-extern unsigned long video_ula_get_clock(video_ula_t *);
+#include <stdint.h>
+
+/** ULAplus registers */
+typedef struct {
+	/** Selected register (last byte written to register select port) */
+	uint8_t selreg;
+	/** Palette registers */
+	uint8_t pal[64];
+	/** Mode register */
+	uint8_t mode;
+} ulaplus_t;
+
+#define ULAPLUS_GROUP 0xc0
+#define ULAPLUS_SUBGROUP 0x3f
+
+#define ULAPLUS_PAL_GROUP 0x00
+#define ULAPLUS_MODE_GROUP 0x40
+
+#define ULAPLUS_MODE_PALETTE 0x01
+#define ULAPLUS_MODE_GRAYSCALE 0x02
 
 #endif

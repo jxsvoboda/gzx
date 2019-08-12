@@ -38,6 +38,7 @@
 #include "memio.h"
 #include "strutil.h"
 #include "ay.h"
+#include "gzx.h"
 #include "snap.h"
 #include "snap_ay.h"
 #include "z80.h"
@@ -128,6 +129,8 @@ int zx_load_snap_z80(char *name) {
     printf("cannot open snapshot file '%s'\n",name);
     return -1;
   }
+  
+  zx_reset();
   
   cpus.r[rA]=fgetu8(f);
   cpus.F=fgetu8(f);
@@ -464,6 +467,8 @@ int zx_load_snap_sna(char *name) {
       return -1;
   }
    
+  zx_reset();
+  
   cpus.I=fgetu8(f);
   
   cpus.r_[rL]=fgetu8(f);
@@ -690,8 +695,6 @@ int zx_load_snap(char *name) {
   
   if (rc != 0)
     return rc;
-
-  gpu_disable();
   
   if (strcmpci(ext, ".ay") != 0) {
     gfxname = malloc(strlen(name) + 1);

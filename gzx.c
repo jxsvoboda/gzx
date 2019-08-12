@@ -277,6 +277,7 @@ void zx_reset(void) {
     gpu_reset();
     gpu_disable();
   }
+  zx_scr_reset();
   z80_reset();
   ay_reset(&ay0);
   

@@ -21,6 +21,7 @@ Some of the features of this emulator:
   * Read and write TZX, TAP, WAV tape formats
   * Z80, SNA, AY snapshots
   * Double line mode (i.e. interlaced image emulation)
+  * ULAplus
   * Spec256 (not 100% done)
   * Emulate built-in MIDI port of 128K Spectrum
   * Record data sent to I/O ports

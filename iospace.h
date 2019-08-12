@@ -41,4 +41,7 @@
 #define ULA_PORT_MASK 0x00ff
 #define ULA_PORT      0x00fe
 
+#define ULAPLUS_REGSEL_PORT 0xbf3b
+#define ULAPLUS_DATA_PORT   0xff3b
+
 #endif

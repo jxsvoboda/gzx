@@ -39,10 +39,12 @@
 #include "iospace.h"
 #include "memio.h"
 #include "sys_all.h"
+#include "video/ulaplus.h"
 #include "z80.h"
 #include "z80g.h"
 #include "zx.h"
 #include "zx_kbd.h"
+#include "zx_scr.h"
 
 uint8_t *zxram,*zxrom; /* whole memory */
 uint8_t *zxbnk[4];	  /* currently switched in banks */
@@ -168,6 +170,12 @@ void zx_out8(uint16_t addr, uint8_t val) {
     ay_reg_write(&ay0, val);
   } if(addr==AY_REG_SEL_PORT) {
     ay_reg_select(&ay0, val);
+  } else if (addr==ULAPLUS_REGSEL_PORT) {
+    ulaplus_write_regsel(&video_ula.plus, val);
+    zx_scr_update_pal();
+  } else if (addr==ULAPLUS_DATA_PORT) {
+    ulaplus_write_data(&video_ula.plus, val);
+    zx_scr_update_pal();
   } else {
 //    printf("out (0x%04x),0x%02x (no device there)\n",addr,val);
   }

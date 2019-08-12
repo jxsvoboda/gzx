@@ -38,6 +38,7 @@
 #include "../z80.h"
 #include "out.h"
 #include "ula.h"
+#include "ulaplus.h"
 
 #include "../z80g.h"
 
@@ -47,6 +48,8 @@
 #define SCR_SCAN_BOTTOM  304
 /* 48 left border + 256 screen + 48 right b. */
 #define SCR_SCAN_RIGHT   352
+
+#define PLUS_PAL_BASE 16
 
 /* ULA palette, taken from X128 */
 static const int zxpal[3 * 16] = {
@@ -84,18 +87,27 @@ static void video_ula_attr_to_colors(video_ula_t *ula, uint8_t attr,
 	uint8_t br;
 	uint8_t fg;
 	uint8_t bg;
+	uint8_t pal;
 
-	rev = (attr >> 7) && ula->fl_rev;
-	br = (attr >> 6) & 1;
-	fg = (attr & 7) | (br << 3);
-	bg = ((attr >> 3) & 7) | (br << 3);
+	if ((ula->plus.mode & ULAPLUS_MODE_PALETTE) == 0) {
+		/* Standard mode */
+		rev = (attr >> 7) && ula->fl_rev;
+		br = (attr >> 6) & 1;
+		fg = (attr & 7) | (br << 3);
+		bg = ((attr >> 3) & 7) | (br << 3);
 
-	if (rev == 0) {
-		*fgc = fg;
-		*bgc = bg;
+		if (rev == 0) {
+			*fgc = fg;
+			*bgc = bg;
+		} else {
+			*fgc = bg;
+			*bgc = fg;
+		}
 	} else {
-		*fgc = bg;
-		*bgc = fg;
+		/* ULAplus palette mode */
+		pal = attr >> 6;
+		*fgc = PLUS_PAL_BASE + pal * 16 + (attr & 0x7);
+		*bgc = PLUS_PAL_BASE + pal * 16 + 8 + ((attr >> 3) & 0x7);
 	}
 }
 
@@ -270,12 +282,22 @@ void video_ula_disp(video_ula_t *ula)
 int video_ula_init(video_ula_t *ula, unsigned long clock, video_out_t *vout)
 {
 	ula->vout = vout;
-	video_ula_setpal(ula);
 
 	ula->clock = 0;
 	ula->cbase = clock;
 
+	video_ula_reset(ula);
 	return 0;
+}
+
+/** Reset ULA video generator.
+ *
+ * @param ula ULA video generator
+ */
+void video_ula_reset(video_ula_t *ula)
+{
+	ulaplus_init(&ula->plus);
+	video_ula_setpal(ula);
 }
 
 /** Set up palette for ULA video generator.
@@ -289,12 +311,26 @@ int video_ula_init(video_ula_t *ula, unsigned long clock, video_out_t *vout)
 void video_ula_setpal(video_ula_t *ula)
 {
 	int i;
-	uint8_t pal[3 * 16];
+	uint8_t pal[3 * 16 + 3 * 64];
+	uint8_t rgb[3];
+	int ncolors;
 
 	for (i = 0; i < 3 * 16; i++)
 		pal[i] = zxpal[i] >> 2;
 
-	video_out_set_palette(ula->vout, 16, pal);
+	ncolors = 16;
+
+	if ((ula->plus.mode & ULAPLUS_MODE_PALETTE) != 0) {
+		for (i = 0; i < 64; i++) {
+			ulaplus_get_pal_rgb(&ula->plus, i, rgb);
+			pal[3 * (PLUS_PAL_BASE + i)] = rgb[0] >> 2;
+			pal[3 * (PLUS_PAL_BASE + i) + 1] = rgb[1] >> 2;
+			pal[3 * (PLUS_PAL_BASE + i) + 2] = rgb[2] >> 2;
+		}
+		ncolors += 64;
+	}
+
+	video_out_set_palette(ula->vout, ncolors, pal);
 }
 
 /** Get current ULA video clock.

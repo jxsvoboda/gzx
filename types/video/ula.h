@@ -33,6 +33,7 @@
 #define TYPES_VIDEO_ULA_H
 
 #include <stdbool.h>
+#include "ulaplus.h"
 
 /** ULA video generator */
 typedef struct {
@@ -45,6 +46,8 @@ typedef struct {
 	int field_no;
 	/** Frame number */
 	int frame_no;
+	/** ULAplus exensions */
+	ulaplus_t plus;
 } video_ula_t;
 
 #endif

@@ -31,13 +31,19 @@
 #ifndef ZX_SCR_H
 #define ZX_SCR_H
 
+#include "types/video/ula.h"
+
+extern video_ula_t video_ula;
+
 extern int zx_scr_init(unsigned long);
+extern void zx_scr_reset(void);
 extern int zx_scr_init_spec256_pal(void);
 extern int zx_scr_load_bg(const char *, int);
 extern void zx_scr_prev_bg(void);
 extern void zx_scr_next_bg(void);
 extern void zx_scr_clear_bg(void);
 extern void zx_scr_mode(int mode);
+extern void zx_scr_update_pal(void);
 extern unsigned long zx_scr_get_clock(void);
 
 extern void (*zx_scr_disp)(void);

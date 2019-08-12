@@ -58,6 +58,7 @@ sources_generic = \
     video/out.c \
     video/spec256.c \
     video/ula.c \
+    video/ulaplus.c \
     xmap.c \
     zx.c \
     zx_kbd.c \
