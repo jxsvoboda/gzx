@@ -17,6 +17,7 @@ Some of the features of this emulator:
 
   * Run in Windows (DirectDraw or GDI) and Linux (SDL 1.x)
   * ZX Spectrum 48K, 128K
+  * Joystick (Kempston) emulation
   * AY-3-8192
   * Read and write TZX, TAP, WAV tape formats
   * Z80, SNA, AY snapshots
@@ -173,6 +174,17 @@ Key functions while in the debugger
   F8           | Step over
   F9           | Go to cursor (run until PC = cursor position)
   F11          | View Spectrum screen (while paused)
+
+Joystick emulation
+------------------
+Cursor block keys are mapped to Kempston joystick, as follows:
+
+  Key          | Spectrum Key
+  ------------ | ------------
+  Arrow keys   | Direction
+  Insert       | Button 1
+  Delete       | Button 2
+  Home         | Button 3
 
 About the double scaline mode
 -----------------------------

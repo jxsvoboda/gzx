@@ -203,6 +203,34 @@ static void key_lalt_lshift(wkey_t *k)
     }
 }
 
+/** Currently we always map cursor keys to Kempston joystick */
+static void key_joy_state_set(int key, int press)
+{
+	switch (key) {
+	case WKEY_UP:
+		kempston_joy_set_reset(&kjoy0, kempston_up, press);
+		break;
+	case WKEY_DOWN:
+		kempston_joy_set_reset(&kjoy0, kempston_down, press);
+		break;
+	case WKEY_LEFT:
+		kempston_joy_set_reset(&kjoy0, kempston_left, press);
+		break;
+	case WKEY_RIGHT:
+		kempston_joy_set_reset(&kjoy0, kempston_right, press);
+		break;
+	case WKEY_INS:
+		kempston_joy_set_reset(&kjoy0, kempston_button_1, press);
+		break;
+	case WKEY_DEL:
+		kempston_joy_set_reset(&kjoy0, kempston_button_2, press);
+		break;
+	case WKEY_HOME:
+		kempston_joy_set_reset(&kjoy0, kempston_button_3, press);
+		break;
+	}
+}
+
 static void key_handler(wkey_t *k) {
   
   if (k->key == WKEY_LALT) {
@@ -230,6 +258,7 @@ static void key_handler(wkey_t *k) {
   }
   
   zx_key_state_set(&keys, k->key, k->press?1:0);
+  key_joy_state_set(k->key, k->press?1:0);
   
   if (k->press && !ui_lock) {
       key_unmod(k);
@@ -329,6 +358,8 @@ static int zx_init(void) {
   midi.midi_msg = gzx_midi_msg;
   midi.midi_msg_arg = &midi;
 
+  kempston_joy_init(&kjoy0);
+
   if(tape_deck_create(&tape_deck, true) != 0) return -1;
   tape_deck->delta_t = ZX_TAPE_TICKS_SMP;
 
@@ -371,6 +402,7 @@ void zx_debug_key(int press, int key) {
     return;
   }
   zx_key_state_set(&keys, key, press?1:0);
+  key_joy_state_set(key, press?1:0);
 }
 
 /* Machine step for the debugger */

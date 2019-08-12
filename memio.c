@@ -142,7 +142,11 @@ uint8_t zx_in8(uint16_t a) {
     case ULA_PORT:
       res=zx_key_in(&keys, a>>8) | 0xa0 | (ear?0x40:0x00); break;
     
-    default:  // printf("in 0x%04x\n (no device there)",a);
+    case KEMPSTON_JOY_A_PORT:
+      res=kempston_joy_read(&kjoy0);
+      printf("Reading kempston joystick -> 0x%02x\n", res);
+      break;
+    default:   printf("in 0x%04x\n (no device there)",a);
 //               res=0xff;          /* no device attached -> idle bus */
 	       //res=0x00;
 	       res=0xff;

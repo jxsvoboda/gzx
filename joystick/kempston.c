@@ -1,8 +1,8 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * I/O port definitions
+ * Kempston joystick interface
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,24 +29,42 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IOSPACE_H
-#define IOSPACE_H
+/**
+ * @file Kempston joystick interface.
+ */
 
-#define AY_REG_SEL_PORT   0xfffd
-#define AY_REG_READ_PORT  0xfffd
-#define AY_REG_WRITE_PORT 0xbffd
+#include <stdint.h>
+#include "kempston.h"
 
-/** Primary Kempston joystick port */
-#define KEMPSTON_JOY_A_PORT 0x1f
-/** Secondary Kempston joystick port (e.g. Didaktik Gama) */
-#define KEMPSTON_JOY_B_PORT 0x21
+/** Initialize Kempston joystick.
+ *
+ * @param joy Kempston joystick
+ */
+void kempston_joy_init(kempston_joy_t *joy)
+{
+	joy->state = 0;
+}
 
-#define ZX128K_PAGESEL_PORT 0x7ffd
+/** Read data from Kempston joystick port.
+ *
+ * @param joy Kempston joystick
+ * @return Data from Kempston joystick port
+ */
+uint8_t kempston_joy_read(kempston_joy_t *joy)
+{
+	return joy->state;
+}
 
-#define ULA_PORT_MASK 0x00ff
-#define ULA_PORT      0x00fe
-
-#define ULAPLUS_REGSEL_PORT 0xbf3b
-#define ULAPLUS_DATA_PORT   0xff3b
-
-#endif
+/** Set or clear bits in Kempston joystick state.
+ *
+ * @param joy Kempston joystick
+ * @param mask Mask of bits to set or clear
+ * @param set @c true to set bits, @c false to clear bits
+ */
+void kempston_joy_set_reset(kempston_joy_t *joy, uint8_t mask, bool set)
+{
+	if (set)
+		joy->state |= mask;
+	else
+		joy->state &= ~mask;
+}

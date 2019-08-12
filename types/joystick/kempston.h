@@ -1,8 +1,8 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * I/O port definitions
+ * Kempston joystick interface types
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,24 +29,29 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IOSPACE_H
-#define IOSPACE_H
+/**
+ * @file Kempston joystick interface types
+ */
 
-#define AY_REG_SEL_PORT   0xfffd
-#define AY_REG_READ_PORT  0xfffd
-#define AY_REG_WRITE_PORT 0xbffd
+#ifndef TYPES_JOYSTICK_KEMPSTON_H
+#define TYPES_JOYSTICK_KEMPSTON_H
 
-/** Primary Kempston joystick port */
-#define KEMPSTON_JOY_A_PORT 0x1f
-/** Secondary Kempston joystick port (e.g. Didaktik Gama) */
-#define KEMPSTON_JOY_B_PORT 0x21
+#include <stdint.h>
 
-#define ZX128K_PAGESEL_PORT 0x7ffd
+enum kempston_bits {
+	kempston_right = 0x01,
+	kempston_left = 0x02,
+	kempston_down = 0x04,
+	kempston_up = 0x08,
+	kempston_button_1 = 0x10,
+	kempston_button_2 = 0x20,
+	kempston_button_3 = 0x40
+};
 
-#define ULA_PORT_MASK 0x00ff
-#define ULA_PORT      0x00fe
-
-#define ULAPLUS_REGSEL_PORT 0xbf3b
-#define ULAPLUS_DATA_PORT   0xff3b
+/** Kempston joystick */
+typedef struct {
+	/** Last joystick state */
+	uint8_t state;
+} kempston_joy_t;
 
 #endif

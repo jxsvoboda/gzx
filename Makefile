@@ -31,6 +31,7 @@ distdir = $(distbase)/$(distname)
 
 sources_generic = \
     adt/list.c \
+    joystick/kempston.c \
     tape/deck.c \
     tape/player.c \
     tape/quick.c \

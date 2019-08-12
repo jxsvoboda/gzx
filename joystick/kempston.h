@@ -1,8 +1,8 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * I/O port definitions
+ * Kempston joystick interface
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,24 +29,19 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IOSPACE_H
-#define IOSPACE_H
+/**
+ * @file Kempston joystick interface.
+ */
 
-#define AY_REG_SEL_PORT   0xfffd
-#define AY_REG_READ_PORT  0xfffd
-#define AY_REG_WRITE_PORT 0xbffd
+#ifndef JOYSTICK_KEMPSTON_H
+#define JOYSTICK_KEMPSTON_H
 
-/** Primary Kempston joystick port */
-#define KEMPSTON_JOY_A_PORT 0x1f
-/** Secondary Kempston joystick port (e.g. Didaktik Gama) */
-#define KEMPSTON_JOY_B_PORT 0x21
+#include <stdbool.h>
+#include <stdint.h>
+#include "../types/joystick/kempston.h"
 
-#define ZX128K_PAGESEL_PORT 0x7ffd
-
-#define ULA_PORT_MASK 0x00ff
-#define ULA_PORT      0x00fe
-
-#define ULAPLUS_REGSEL_PORT 0xbf3b
-#define ULAPLUS_DATA_PORT   0xff3b
+extern void kempston_joy_init(kempston_joy_t *);
+extern uint8_t kempston_joy_read(kempston_joy_t *);
+extern void kempston_joy_set_reset(kempston_joy_t *, uint8_t, bool);
 
 #endif

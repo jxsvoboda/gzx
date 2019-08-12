@@ -33,12 +33,14 @@
 #define ZX_H
 
 #include "ay.h"
+#include "joystick/kempston.h"
 #include "midi.h"
 #include "rs232.h"
 #include "tape/deck.h"
 #include "zx_kbd.h"
 
 extern ay_t ay0;
+extern kempston_joy_t kjoy0;
 extern midi_port_t midi;
 extern rs232_t rs232;
 extern tape_deck_t *tape_deck;

@@ -30,6 +30,7 @@
  */
 
 #include "ay.h"
+#include "joystick/kempston.h"
 #include "rs232.h"
 #include "tape/deck.h"
 #include "zx.h"
@@ -37,6 +38,9 @@
 
 /** First AY */
 ay_t ay0;
+
+/** First Kempston joystick */
+kempston_joy_t kjoy0;
 
 /** MIDI port */
 midi_port_t midi;
