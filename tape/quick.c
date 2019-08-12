@@ -83,7 +83,7 @@ void tape_quick_ldbytes(tape_deck_t *deck)
 	req_flag = cpus.r_[rA];
 	toload = ((uint16_t)cpus.r[rD] << 8) | (uint16_t)cpus.r[rE];
 	addr = cpus.IX;
-	verify = (cpus.F_ & fC) != 0;
+	verify = (cpus.F_ & fC) == 0;
 
 	if (data->data_len < 1) {
 		printf("Data block too short.\n");
@@ -114,10 +114,9 @@ void tape_quick_ldbytes(tape_deck_t *deck)
 		}
 
 		b = data->data[1 + u];
-		if (!verify) {
+		if (!verify)
 			zx_memset8(addr + u, b);
-			x ^= b;
-		}
+		x ^= b;
 	}
 
 	if (1 + toload >= data->data_len) {
