@@ -1,6 +1,6 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Main menu
+ * Hardware options menu
  *
  * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
@@ -29,121 +29,71 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "../gzx.h"
-#include "../memio.h"
+#include <stdlib.h>
+
 #include "../mgfx.h"
-#include "fdlg.h"
-#include "hwopts.h"
-#include "mainmenu.h"
+#include "../zx.h"
 #include "menu.h"
+#include "hwopts.h"
 
-#define MENU_NENT 10
+static void hwopts_next_opt(int l);
 
-static const char *mentry_text[MENU_NENT] = {
-	"~Load Snapshot",
-	"~Save Snapshot",
-	"Select ~Tapefile",
-	"Reset ~48",
-	"Reset ~128",
-	"~Hardware",
-	"~Windowed",
-	"~Double Line",
-	"Lock ~UI",
-	"~Quit",
+#define HWOPTS_NENT 1
+
+static const char *hwopts_text[HWOPTS_NENT] = {
+	"~Kempston Joy."
 };
 
-static int mkeys[MENU_NENT] = {
-	WKEY_L, WKEY_S, WKEY_T, WKEY_4, WKEY_1, WKEY_H, WKEY_W, WKEY_D,
-	WKEY_U, WKEY_Q
+static int hwopts_keys[HWOPTS_NENT] = {
+	WKEY_K
 };
 
-static void menu_run_line(int l)
+static void hwopts_run_line(int l)
+{
+	hwopts_next_opt(l);
+}
+
+static void hwopts_prev_opt(int l)
 {
 	switch (l) {
 	case 0:
-		load_snap_dialog();
-		break;
-	case 1:
-		save_snap_dialog();
-		break;
-	case 2:
-		select_tapefile_dialog();
-		break;
-	case 3:
-		zx_select_memmodel(ZXM_48K);
-		zx_reset();
-		break;
-	case 4:
-		zx_select_memmodel(ZXM_128K);
-		zx_reset();
-		break;
-	case 5:
-		hwopts_menu();
-		break;
-	case 6:
-		mgfx_toggle_fs();
-		break;
-	case 7:
-		gzx_toggle_dbl_ln();
-		break;
-	case 8:
-		gzx_ui_lock();
-		break;
-	case 9:
-		quit = 1;
+		kjoy0_enable = !kjoy0_enable;
 		break;
 	}
 }
 
-static void menu_prev_opt(int l)
+static void hwopts_next_opt(int l)
 {
 	switch (l) {
-	case 6:
-		mgfx_toggle_fs();
-		break;
-	case 7:
-		gzx_toggle_dbl_ln();
+	case 0:
+		kjoy0_enable = !kjoy0_enable;
 		break;
 	}
 }
 
-static void menu_next_opt(int l)
+static const char *hwopts_get_opt(int l)
 {
 	switch (l) {
-	case 6:
-		mgfx_toggle_fs();
-		break;
-	case 7:
-		gzx_toggle_dbl_ln();
-		break;
-	}
-}
-
-static const char *menu_get_opt(int l)
-{
-	switch (l) {
-	case 6:
-		return mgfx_is_fs() ? "Off" : "On";
-	case 7:
-		return dbl_ln ? "On" : "Off";
+	case 0:
+		return kjoy0_enable ? "On" : "Off";
 	default:
 		return NULL;
 	}
 }
 
-static menu_t main_menu_spec = {
-	.caption = "Main Menu",
-	.nent = MENU_NENT,
-	.mentry_text = mentry_text,
-	.mkeys = mkeys,
-	.run_line = menu_run_line,
-	.prev_opt = menu_prev_opt,
-	.next_opt = menu_next_opt,
-	.get_opt = menu_get_opt
+static menu_t hwopts_menu_spec = {
+	.caption = "Hardware Options",
+	.nent = HWOPTS_NENT,
+	.mentry_text = hwopts_text,
+	.mkeys = hwopts_keys,
+	.run_line = hwopts_run_line,
+	.prev_opt = hwopts_prev_opt,
+	.next_opt = hwopts_next_opt,
+	.get_opt = hwopts_get_opt
 };
 
-/** Main menu */
-void main_menu(void)
+/** Hardware options menu */
+void hwopts_menu(void)
 {
-	menu_run(&main_menu_spec);
+	menu_run(&hwopts_menu_spec);
 }

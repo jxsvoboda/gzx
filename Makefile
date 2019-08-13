@@ -42,6 +42,7 @@ sources_generic = \
     tape/wav.c \
     ui/fdlg.c \
     ui/fsel.c \
+    ui/hwopts.c \
     ui/mainmenu.c \
     ui/menu.c \
     ui/tapemenu.c \

@@ -51,6 +51,7 @@
 #include "snap.h"
 #include "tape/quick.h"
 #include "ui/fdlg.h"
+#include "ui/hwopts.h"
 #include "ui/mainmenu.h"
 #include "ui/tapemenu.h"
 #include "zx_sound.h"
@@ -152,7 +153,7 @@ static void key_unmod(wkey_t *k)
 //      case WKEY_F5: z80_nmi(); break;
       case WKEY_F5: tape_menu(); break;
 //      case WKEY_F6: zx_reset(); break;
-      case WKEY_F6: zx_select_memmodel(ZXM_ZX81); zx_reset(); break;
+      case WKEY_F6: hwopts_menu(); break;
       case WKEY_F7: zx_select_memmodel(ZXM_48K); zx_reset(); break;
       case WKEY_F8: zx_select_memmodel(ZXM_128K); zx_reset(); break;
 //      case WKEY_F9: select_tapefile_dialog(); break;

@@ -1,8 +1,8 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * ZX machine state
+ * Hardware options menu
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,31 +29,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdbool.h>
+#ifndef UI_HWOPTS_H
+#define UI_HWOPTS_H
 
-#include "ay.h"
-#include "joystick/kempston.h"
-#include "rs232.h"
-#include "tape/deck.h"
-#include "zx.h"
-#include "zx_kbd.h"
+extern void hwopts_menu(void);
 
-/** First AY */
-ay_t ay0;
-
-/** First Kempston joystick */
-kempston_joy_t kjoy0;
-/** First Kempston joystick enabled */
-bool kjoy0_enable = true;
-
-/** MIDI port */
-midi_port_t midi;
-
-/** RS-232 port */
-rs232_t rs232;
-
-/** Virtual tape deck */
-tape_deck_t *tape_deck;
-
-/** Keyboard */
-zx_keys_t keys;
+#endif

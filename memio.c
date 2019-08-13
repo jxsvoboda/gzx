@@ -130,8 +130,6 @@ void zx_mem_page_select(uint8_t val) {
 */
 
 uint8_t zx_in8(uint16_t a) {
-  uint8_t res;
-
 //  printf("in 0x%04x\n",a);
 //  z80_printstatus();
 //  getchar();
@@ -140,20 +138,17 @@ uint8_t zx_in8(uint16_t a) {
   switch(a&0xff) {
     /* ULA */
     case ULA_PORT:
-      res=zx_key_in(&keys, a>>8) | 0xa0 | (ear?0x40:0x00); break;
+      return zx_key_in(&keys, a>>8) | 0xa0 | (ear?0x40:0x00);
     
     case KEMPSTON_JOY_A_PORT:
-      res=kempston_joy_read(&kjoy0);
-      printf("Reading kempston joystick -> 0x%02x\n", res);
+      if (kjoy0_enable)
+        return kempston_joy_read(&kjoy0);
+    default:
       break;
-    default:   printf("in 0x%04x\n (no device there)",a);
-//               res=0xff;          /* no device attached -> idle bus */
-	       //res=0x00;
-	       res=0xff;
-               break;
   }
 
-  return res;
+  printf("in 0x%04x\n (no device there)",a);
+  return 0xff;
 }
 
 void zx_out8(uint16_t addr, uint8_t val) {

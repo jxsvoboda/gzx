@@ -32,6 +32,8 @@
 #ifndef ZX_H
 #define ZX_H
 
+#include <stdbool.h>
+
 #include "ay.h"
 #include "joystick/kempston.h"
 #include "midi.h"
@@ -41,6 +43,7 @@
 
 extern ay_t ay0;
 extern kempston_joy_t kjoy0;
+extern bool kjoy0_enable;
 extern midi_port_t midi;
 extern rs232_t rs232;
 extern tape_deck_t *tape_deck;

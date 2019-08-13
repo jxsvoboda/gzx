@@ -123,6 +123,7 @@ Note that most functions can be accessed via menus as well as via shortcuts.
   F2          | Save snapshot
   F3          | Load snapshot
   F5          | Tape menu
+  F6          | Hardware options
   F7          | Reset to 48K mode
   F8          | Reset to 128K mode
   F10         | Quit
