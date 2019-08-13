@@ -82,7 +82,7 @@ FILE *logfi;
 static unsigned long disp_t;
 
 int quit=0;
-int slow_load=1;
+int slow_load=0;
 
 /** User interface lock */
 bool ui_lock = false;
