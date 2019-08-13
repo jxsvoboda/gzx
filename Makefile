@@ -40,8 +40,11 @@ sources_generic = \
     tape/tonegen.c \
     tape/tzx.c \
     tape/wav.c \
+    ui/fdlg.c \
     ui/fsel.c \
+    ui/mainmenu.c \
     ui/menu.c \
+    ui/tapemenu.c \
     ui/teline.c \
     wav/chunk.c \
     wav/rwave.c \
@@ -66,7 +69,6 @@ sources_generic = \
     zx_sound.c \
     zx_scr.c \
     ay.c \
-    menus.c \
     mgfx.c \
     debug.c \
     disasm.c \

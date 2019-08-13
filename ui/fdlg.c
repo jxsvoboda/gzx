@@ -1,6 +1,6 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Menus
+ * File dialogs
  *
  * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
@@ -33,215 +33,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "gzx.h"
-#include "memio.h"
-#include "mgfx.h"
-#include "snap.h"
-#include "menus.h"
-#include "sys_all.h"
-#include "tape/deck.h"
-#include "ui/fsel.h"
-#include "ui/menu.h"
-#include "ui/teline.h"
-#include "zx.h"
-
-/***** main menu *****/
-
-#define MENU_NENT 9
-
-static const char *mentry_text[MENU_NENT] = {
-	"~Load Snapshot",
-	"~Save Snapshot",
-	"Select ~Tapefile",
-	"Reset ~48",
-	"Reset ~128",
-	"~Windowed",
-	"~Double Line",
-	"Lock ~UI",
-	"~Quit",
-};
-
-static int mkeys[MENU_NENT] = {
-	WKEY_L, WKEY_S, WKEY_T, WKEY_4, WKEY_1, WKEY_W, WKEY_D, WKEY_U, WKEY_Q
-};
-
-static void menu_run_line(int l)
-{
-	switch (l) {
-	case 0:
-		load_snap_dialog();
-		break;
-	case 1:
-		save_snap_dialog();
-		break;
-	case 2:
-		select_tapefile_dialog();
-		break;
-	case 3:
-		zx_select_memmodel(ZXM_48K);
-		zx_reset();
-		break;
-	case 4:
-		zx_select_memmodel(ZXM_128K);
-		zx_reset();
-		break;
-	case 5:
-		mgfx_toggle_fs();
-		break;
-	case 6:
-		gzx_toggle_dbl_ln();
-		break;
-	case 7:
-		gzx_ui_lock();
-		break;
-	case 8:
-		quit = 1;
-		break;
-	}
-}
-
-static void menu_prev_opt(int l)
-{
-	switch (l) {
-	case 5:
-		mgfx_toggle_fs();
-		break;
-	case 6:
-		gzx_toggle_dbl_ln();
-		break;
-	}
-}
-
-static void menu_next_opt(int l)
-{
-	switch (l) {
-	case 5:
-		mgfx_toggle_fs();
-		break;
-	case 6:
-		gzx_toggle_dbl_ln();
-		break;
-	}
-}
-
-static const char *menu_get_opt(int l)
-{
-	switch (l) {
-	case 5:
-		return mgfx_is_fs() ? "Off" : "On";
-	case 6:
-		return dbl_ln ? "On" : "Off";
-	default:
-		return NULL;
-	}
-}
-
-static menu_t main_menu_spec = {
-	.caption = "Main Menu",
-	.nent = MENU_NENT,
-	.mentry_text = mentry_text,
-	.mkeys = mkeys,
-	.run_line = menu_run_line,
-	.prev_opt = menu_prev_opt,
-	.next_opt = menu_next_opt,
-	.get_opt = menu_get_opt
-};
-
-/** Main menu */
-void main_menu(void)
-{
-	menu_run(&main_menu_spec);
-}
-
-/***** tape menu *****/
-
-#define TMENU_NENT 7
-
-static const char *tmentry_text[TMENU_NENT] = {
-	"~Play",
-	"~Stop",
-	"~Rewind",
-	"~Quick Tape",
-	"~New",
-	"Sa~ve",
-	"Save ~As"
-};
-
-static int tmkeys[TMENU_NENT] = {
-	WKEY_P, WKEY_S, WKEY_R, WKEY_Q, WKEY_N, WKEY_V, WKEY_A
-};
-
-static void tmenu_run_line(int l)
-{
-	switch (l) {
-	case 0:
-		tape_deck_play(tape_deck);
-		break;
-	case 1:
-		tape_deck_stop(tape_deck);
-		break;
-	case 2:
-		tape_deck_rewind(tape_deck);
-		break;
-	case 3:
-		slow_load = !slow_load;
-		break;
-	case 4:
-		tape_deck_new(tape_deck);
-		break;
-	case 5:
-		tape_deck_save(tape_deck);
-		break;
-	case 6:
-		save_tape_as_dialog();
-		break;
-	}
-}
-
-static void tmenu_prev_opt(int l)
-{
-	switch (l) {
-	case 3:
-		slow_load = !slow_load;
-		break;
-	}
-}
-
-static void tmenu_next_opt(int l)
-{
-	switch (l) {
-	case 3:
-		slow_load = !slow_load;
-		break;
-	}
-}
-
-static const char *tmenu_get_opt(int l)
-{
-	switch (l) {
-	case 3:
-		return slow_load ? "Off" : "On";
-	default:
-		return NULL;
-	}
-}
-
-static menu_t tape_menu_spec = {
-	.caption = "Tape Menu",
-	.nent = TMENU_NENT,
-	.mentry_text = tmentry_text,
-	.mkeys = tmkeys,
-	.run_line = tmenu_run_line,
-	.prev_opt = tmenu_prev_opt,
-	.next_opt = tmenu_next_opt,
-	.get_opt = tmenu_get_opt
-};
-
-/** Tape menu */
-void tape_menu(void)
-{
-	menu_run(&tape_menu_spec);
-}
+#include "../gzx.h"
+#include "../mgfx.h"
+#include "../snap.h"
+#include "../sys_all.h"
+#include "../tape/deck.h"
+#include "../zx.h"
+#include "fdlg.h"
+#include "fsel.h"
+#include "menu.h"
+#include "teline.h"
 
 /** Select tapefile dialog */
 void select_tapefile_dialog(void)
