@@ -49,70 +49,105 @@
 
 #define MENU_NENT 9
 
-static const char *mentry_text[MENU_NENT]= {
-  "~Load Snapshot",
-  "~Save Snapshot",
-  "Select ~Tapefile",
-  "Reset ~48",
-  "Reset ~128",
-  "~Windowed",
-  "~Double Line",
-  "Lock ~UI",
-  "~Quit",
+static const char *mentry_text[MENU_NENT] = {
+	"~Load Snapshot",
+	"~Save Snapshot",
+	"Select ~Tapefile",
+	"Reset ~48",
+	"Reset ~128",
+	"~Windowed",
+	"~Double Line",
+	"Lock ~UI",
+	"~Quit",
 };
 
-static int mkeys[MENU_NENT]={
-  WKEY_L,WKEY_S,WKEY_T,WKEY_4,WKEY_1,WKEY_W,WKEY_D,WKEY_U,WKEY_Q
+static int mkeys[MENU_NENT] = {
+	WKEY_L, WKEY_S, WKEY_T, WKEY_4, WKEY_1, WKEY_W, WKEY_D, WKEY_U, WKEY_Q
 };
 
-static void menu_run_line(int l) {
-  switch(l) {
-    case 0: load_snap_dialog(); break;
-    case 1: save_snap_dialog(); break;
-    case 2: select_tapefile_dialog(); break;
-    case 3: zx_select_memmodel(ZXM_48K); zx_reset(); break;
-    case 4: zx_select_memmodel(ZXM_128K); zx_reset(); break;
-    case 5: mgfx_toggle_fs(); break;
-    case 6: gzx_toggle_dbl_ln(); break;
-    case 7: gzx_ui_lock(); break;
-    case 8: quit=1; break;
-  }
+static void menu_run_line(int l)
+{
+	switch (l) {
+	case 0:
+		load_snap_dialog();
+		break;
+	case 1:
+		save_snap_dialog();
+		break;
+	case 2:
+		select_tapefile_dialog();
+		break;
+	case 3:
+		zx_select_memmodel(ZXM_48K);
+		zx_reset();
+		break;
+	case 4:
+		zx_select_memmodel(ZXM_128K);
+		zx_reset();
+		break;
+	case 5:
+		mgfx_toggle_fs();
+		break;
+	case 6:
+		gzx_toggle_dbl_ln();
+		break;
+	case 7:
+		gzx_ui_lock();
+		break;
+	case 8:
+		quit = 1;
+		break;
+	}
 }
 
-static void menu_prev_opt(int l) {
-  switch(l) {
-    case 5: mgfx_toggle_fs(); break;
-    case 6: gzx_toggle_dbl_ln(); break;
-  }
+static void menu_prev_opt(int l)
+{
+	switch (l) {
+	case 5:
+		mgfx_toggle_fs();
+		break;
+	case 6:
+		gzx_toggle_dbl_ln();
+		break;
+	}
 }
 
-static void menu_next_opt(int l) {
-  switch(l) {
-    case 5: mgfx_toggle_fs(); break;
-    case 6: gzx_toggle_dbl_ln(); break;
-  }
+static void menu_next_opt(int l)
+{
+	switch (l) {
+	case 5:
+		mgfx_toggle_fs();
+		break;
+	case 6:
+		gzx_toggle_dbl_ln();
+		break;
+	}
 }
 
-static const char *menu_get_opt(int l) {
-  switch(l) {
-    case 5: return mgfx_is_fs() ? "Off" : "On";
-    case 6: return dbl_ln ? "On" : "Off";
-    default: return NULL;
-  }
+static const char *menu_get_opt(int l)
+{
+	switch (l) {
+	case 5:
+		return mgfx_is_fs() ? "Off" : "On";
+	case 6:
+		return dbl_ln ? "On" : "Off";
+	default:
+		return NULL;
+	}
 }
 
 static menu_t main_menu_spec = {
-  .caption = "Main Menu",
-  .nent = MENU_NENT,
-  .mentry_text = mentry_text,
-  .mkeys = mkeys,
-  .run_line = menu_run_line,
-  .prev_opt = menu_prev_opt,
-  .next_opt = menu_next_opt,
-  .get_opt = menu_get_opt
+	.caption = "Main Menu",
+	.nent = MENU_NENT,
+	.mentry_text = mentry_text,
+	.mkeys = mkeys,
+	.run_line = menu_run_line,
+	.prev_opt = menu_prev_opt,
+	.next_opt = menu_next_opt,
+	.get_opt = menu_get_opt
 };
 
-
+/** Main menu */
 void main_menu(void)
 {
 	menu_run(&main_menu_spec);
@@ -122,165 +157,204 @@ void main_menu(void)
 
 #define TMENU_NENT 7
 
-static const char *tmentry_text[TMENU_NENT]= {
-  "~Play",
-  "~Stop",
-  "~Rewind",
-  "~Quick Tape",
-  "~New",
-  "Sa~ve",
-  "Save ~As"
+static const char *tmentry_text[TMENU_NENT] = {
+	"~Play",
+	"~Stop",
+	"~Rewind",
+	"~Quick Tape",
+	"~New",
+	"Sa~ve",
+	"Save ~As"
 };
 
-static int tmkeys[TMENU_NENT]={
-  WKEY_P,WKEY_S,WKEY_R,WKEY_Q,WKEY_N,WKEY_V,WKEY_A
+static int tmkeys[TMENU_NENT] = {
+	WKEY_P, WKEY_S, WKEY_R, WKEY_Q, WKEY_N, WKEY_V, WKEY_A
 };
 
-static void tmenu_run_line(int l) {
-  switch(l) {
-    case 0: tape_deck_play(tape_deck); break;
-    case 1: tape_deck_stop(tape_deck); break;
-    case 2: tape_deck_rewind(tape_deck); break;
-    case 3: slow_load=!slow_load; break;
-    case 4: tape_deck_new(tape_deck); break;
-    case 5: tape_deck_save(tape_deck); break;
-    case 6: save_tape_as_dialog(); break;
-  }
+static void tmenu_run_line(int l)
+{
+	switch (l) {
+	case 0:
+		tape_deck_play(tape_deck);
+		break;
+	case 1:
+		tape_deck_stop(tape_deck);
+		break;
+	case 2:
+		tape_deck_rewind(tape_deck);
+		break;
+	case 3:
+		slow_load = !slow_load;
+		break;
+	case 4:
+		tape_deck_new(tape_deck);
+		break;
+	case 5:
+		tape_deck_save(tape_deck);
+		break;
+	case 6:
+		save_tape_as_dialog();
+		break;
+	}
 }
 
-static void tmenu_prev_opt(int l) {
-  switch(l) {
-    case 3: slow_load = !slow_load; break;
-  }
+static void tmenu_prev_opt(int l)
+{
+	switch (l) {
+	case 3:
+		slow_load = !slow_load;
+		break;
+	}
 }
 
-static void tmenu_next_opt(int l) {
-  switch(l) {
-    case 3: slow_load = !slow_load; break;
-  }
+static void tmenu_next_opt(int l)
+{
+	switch (l) {
+	case 3:
+		slow_load = !slow_load;
+		break;
+	}
 }
 
-static const char *tmenu_get_opt(int l) {
-  switch(l) {
-    case 3: return slow_load ? "Off" : "On";
-    default: return NULL;
-  }
+static const char *tmenu_get_opt(int l)
+{
+	switch (l) {
+	case 3:
+		return slow_load ? "Off" : "On";
+	default:
+		return NULL;
+	}
 }
 
 static menu_t tape_menu_spec = {
-  .caption = "Tape Menu",
-  .nent = TMENU_NENT,
-  .mentry_text = tmentry_text,
-  .mkeys = tmkeys,
-  .run_line = tmenu_run_line,
-  .prev_opt = tmenu_prev_opt,
-  .next_opt = tmenu_next_opt,
-  .get_opt = tmenu_get_opt
+	.caption = "Tape Menu",
+	.nent = TMENU_NENT,
+	.mentry_text = tmentry_text,
+	.mkeys = tmkeys,
+	.run_line = tmenu_run_line,
+	.prev_opt = tmenu_prev_opt,
+	.next_opt = tmenu_next_opt,
+	.get_opt = tmenu_get_opt
 };
 
+/** Tape menu */
 void tape_menu(void)
 {
 	menu_run(&tape_menu_spec);
 }
 
-/**** select tapefile dialog *****/
+/** Select tapefile dialog */
+void select_tapefile_dialog(void)
+{
+	char *fname;
 
-void select_tapefile_dialog(void) {
-  char *fname;
-  
-  if(file_sel(&fname,"Select Tapefile")>0) {
-    fprintf(logfi,"selecting tape file\n"); fflush(logfi);
-    (void) tape_deck_open(tape_deck, fname);
-    fprintf(logfi,"freeing filename\n"); fflush(logfi);
-    free(fname);
-  }
+	if (file_sel(&fname, "Select Tapefile") > 0) {
+		fprintf(logfi, "selecting tape file\n");
+		fflush(logfi);
+		(void) tape_deck_open(tape_deck, fname);
+		fprintf(logfi, "freeing filename\n");
+		fflush(logfi);
+		free(fname);
+	}
 }
 
-void load_snap_dialog(void) {
-  char *fname;
-  
-  if(file_sel(&fname,"Load Snapshot")>0) {
-    zx_load_snap(fname);
-    free(fname);
-  }
+/** Load snapshot dialog */
+void load_snap_dialog(void)
+{
+	char *fname;
+
+	if (file_sel(&fname, "Load Snapshot") > 0) {
+		zx_load_snap(fname);
+		free(fname);
+	}
 }
 
-void save_snap_dialog(void) {
-  wkey_t k;
-  int fscols;
-  int flist_cx0;
-  teline_t fn_line;
-  
-  fscols=20;
-  flist_cx0 = scr_xs/16 - fscols/2;
-  teline_init(&fn_line,flist_cx0,12,20);
-  fn_line.focus = 1;
-    
-  while(1) {
-    mgfx_fillrect(flist_cx0*8-8,0,flist_cx0*8+8*(fscols+1),scr_ys-1,1);
-    teline_draw(&fn_line);
-    gmovec(scr_xs/16-(strlen("Save Snapshot")/2),0);
-    fgc=7; bgc=1; gputs("Save Snapshot");
+/** Save snapshot dialog */
+void save_snap_dialog(void)
+{
+	wkey_t k;
+	int fscols;
+	int flist_cx0;
+	teline_t fn_line;
 
-    mgfx_updscr();
-    do {
-      mgfx_input_update();
-      sys_usleep(1000);
-    } while(!w_getkey(&k));
-    
-    if(k.press)
-    switch(k.key) {
-      case WKEY_ESC:
-	return;
+	fscols = 20;
+	flist_cx0 = scr_xs / 16 - fscols / 2;
+	teline_init(&fn_line, flist_cx0, 12, 20);
+	fn_line.focus = 1;
 
-      case WKEY_ENTER:
-        fn_line.buf[fn_line.len]=0;
-	zx_save_snap(fn_line.buf);
-	return;
-        
-      default:
-        teline_key(&fn_line,&k);
-	break;
-    }
-  }
+	while (1) {
+		mgfx_fillrect(flist_cx0 * 8 - 8, 0, flist_cx0 * 8 +
+		    8 * (fscols + 1), scr_ys - 1, 1);
+		teline_draw(&fn_line);
+		gmovec(scr_xs / 16 - (strlen("Save Snapshot") / 2), 0);
+		fgc = 7;
+		bgc = 1;
+		gputs("Save Snapshot");
+
+		mgfx_updscr();
+		do {
+			mgfx_input_update();
+			sys_usleep(1000);
+		} while (!w_getkey(&k));
+
+		if (k.press)
+			switch (k.key) {
+			case WKEY_ESC:
+				return;
+
+			case WKEY_ENTER:
+				fn_line.buf[fn_line.len] = 0;
+				zx_save_snap(fn_line.buf);
+				return;
+
+			default:
+				teline_key(&fn_line, &k);
+				break;
+			}
+	}
 }
 
-void save_tape_as_dialog(void) {
-  wkey_t k;
-  int fscols;
-  int flist_cx0;
-  teline_t fn_line;
-  
-  fscols=20;
-  flist_cx0 = scr_xs/16 - fscols/2;
-  teline_init(&fn_line,flist_cx0,12,20);
-  fn_line.focus = 1;
-    
-  while(1) {
-    mgfx_fillrect(flist_cx0*8-8,0,flist_cx0*8+8*(fscols+1),scr_ys-1,1);
-    teline_draw(&fn_line);
-    gmovec(scr_xs/16-(strlen("Save Tape As")/2),0);
-    fgc=7; bgc=1; gputs("Save Tape As");
+/** Save Tape As dialog. */
+void save_tape_as_dialog(void)
+{
+	wkey_t k;
+	int fscols;
+	int flist_cx0;
+	teline_t fn_line;
 
-    mgfx_updscr();
-    do {
-      mgfx_input_update();
-      sys_usleep(1000);
-    } while(!w_getkey(&k));
-    
-    if(k.press)
-    switch(k.key) {
-      case WKEY_ESC:
-	return;
+	fscols = 20;
+	flist_cx0 = scr_xs / 16 - fscols / 2;
+	teline_init(&fn_line, flist_cx0, 12, 20);
+	fn_line.focus = 1;
 
-      case WKEY_ENTER:
-        fn_line.buf[fn_line.len]=0;
-	tape_deck_save_as(tape_deck, fn_line.buf);
-	return;
-        
-      default:
-        teline_key(&fn_line,&k);
-	break;
-    }
-  }
+	while (1) {
+		mgfx_fillrect(flist_cx0 * 8 - 8, 0, flist_cx0 * 8 +
+		    8 * (fscols + 1), scr_ys - 1, 1);
+		teline_draw(&fn_line);
+		gmovec(scr_xs / 16 - (strlen("Save Tape As") / 2), 0);
+		fgc = 7;
+		bgc = 1;
+		gputs("Save Tape As");
+
+		mgfx_updscr();
+		do {
+			mgfx_input_update();
+			sys_usleep(1000);
+		} while (!w_getkey(&k));
+
+		if (k.press)
+			switch (k.key) {
+			case WKEY_ESC:
+				return;
+
+			case WKEY_ENTER:
+				fn_line.buf[fn_line.len] = 0;
+				tape_deck_save_as(tape_deck, fn_line.buf);
+				return;
+
+			default:
+				teline_key(&fn_line, &k);
+				break;
+			}
+	}
 }

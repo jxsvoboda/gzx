@@ -12,7 +12,6 @@
 ./gzx.c
 ./memio.c
 ./memio.h
-./menus.c
 ./mgfx.c
 ./mgfx.h
 ./snap.c
