@@ -102,10 +102,10 @@ void ulaplus_get_pal_rgb(ulaplus_t *plus, uint8_t idx, uint8_t *rgb)
 }
 
 /** Upscale 2-bit color value to 3-bit.
-*
-* @param c 2-bit color
-* @return 3-bit color
-*/
+ *
+ * @param c 2-bit color
+ * @return 3-bit color
+ */
 static uint8_t color_2_to_3bit(uint8_t c)
 {
 	/* Lowest bit becomes the or of the other bits */
@@ -113,10 +113,10 @@ static uint8_t color_2_to_3bit(uint8_t c)
 }
 
 /** Upscale 3-bit color value to 8-bit.
-*
-* @param c 3-bit color
-* @return 8-bit color
-*/
+ *
+ * @param c 3-bit color
+ * @return 8-bit color
+ */
 static uint8_t color_3_to_8bit(uint8_t c)
 {
 	/* Concatenate the bits repeatedly */
