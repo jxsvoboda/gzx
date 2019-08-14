@@ -285,6 +285,7 @@ int video_ula_init(video_ula_t *ula, unsigned long clock, video_out_t *vout)
 
 	ula->clock = 0;
 	ula->cbase = clock;
+	ula->plus_enable = true;
 
 	video_ula_reset(ula);
 	return 0;
@@ -341,4 +342,11 @@ void video_ula_setpal(video_ula_t *ula)
 unsigned long video_ula_get_clock(video_ula_t *ula)
 {
 	return ula->cbase + ula->clock;
+}
+
+void video_ula_enable_plus(video_ula_t *ula, bool enable)
+{
+	ula->plus_enable = enable;
+	if (!enable)
+		ulaplus_init(&ula->plus);
 }

@@ -40,6 +40,7 @@ sources_generic = \
     tape/tonegen.c \
     tape/tzx.c \
     tape/wav.c \
+    ui/display.c \
     ui/fdlg.c \
     ui/fsel.c \
     ui/hwopts.c \

@@ -705,7 +705,7 @@ int zx_load_snap(char *name) {
     assert(gext != 0);
     memcpy(gext + 1, "gfx", strlen("gfx"));
 
-    if (gfxram_load(gfxname)) {
+    if (gpu_allow && gfxram_load(gfxname)) {
       memcpy(gext + 1, "GFX", strlen("GFX"));
       if (gfxram_load(gfxname)) {
         free(gfxname);

@@ -42,6 +42,7 @@
 #include "zx_kbd.h"
 
 extern ay_t ay0;
+extern bool ay0_enable;
 extern kempston_joy_t kjoy0;
 extern bool kjoy0_enable;
 extern midi_port_t midi;

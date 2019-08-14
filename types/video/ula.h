@@ -48,6 +48,8 @@ typedef struct {
 	int frame_no;
 	/** ULAplus exensions */
 	ulaplus_t plus;
+	/** ULAplus extensions enabled */
+	bool plus_enable;
 } video_ula_t;
 
 #endif

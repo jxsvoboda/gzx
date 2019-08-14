@@ -50,6 +50,7 @@
 #include "rs232.h"
 #include "snap.h"
 #include "tape/quick.h"
+#include "ui/display.h"
 #include "ui/fdlg.h"
 #include "ui/hwopts.h"
 #include "ui/mainmenu.h"
@@ -149,14 +150,13 @@ static void key_unmod(wkey_t *k)
         save_snap_dialog();
         if (0) zx_scr_save(); // XXX
         break;
+      case WKEY_F4: display_menu(); break;
       case WKEY_F3: load_snap_dialog(); break;
-//      case WKEY_F5: z80_nmi(); break;
       case WKEY_F5: tape_menu(); break;
-//      case WKEY_F6: zx_reset(); break;
       case WKEY_F6: hwopts_menu(); break;
       case WKEY_F7: zx_select_memmodel(ZXM_48K); zx_reset(); break;
       case WKEY_F8: zx_select_memmodel(ZXM_128K); zx_reset(); break;
-//      case WKEY_F9: select_tapefile_dialog(); break;
+      case WKEY_F9: select_tapefile_dialog(); break;
       case WKEY_F10: printf("F10 pressed\n"); quit=1; break;
       case WKEY_F11: zx_scr_mode(0); break;
 //      case WKEY_F12: zx_scr_mode(1); break;

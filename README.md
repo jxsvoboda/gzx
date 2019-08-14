@@ -122,10 +122,12 @@ Note that most functions can be accessed via menus as well as via shortcuts.
   Esc         | Open main menu
   F2          | Save snapshot
   F3          | Load snapshot
+  F4          | Display options
   F5          | Tape menu
   F6          | Hardware options
   F7          | Reset to 48K mode
   F8          | Reset to 128K mode
+  F9          | Select tapefile
   F10         | Quit
   F12         | Enter debugger
   Alt-Shift-L | Lock down UI (disable emulator control keys)

@@ -40,6 +40,8 @@
 
 /** First AY */
 ay_t ay0;
+/** First AY enabled */
+bool ay0_enable = true;
 
 /** First Kempston joystick */
 kempston_joy_t kjoy0;

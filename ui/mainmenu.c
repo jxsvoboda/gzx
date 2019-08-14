@@ -32,12 +32,13 @@
 #include "../gzx.h"
 #include "../memio.h"
 #include "../mgfx.h"
+#include "display.h"
 #include "fdlg.h"
 #include "hwopts.h"
 #include "mainmenu.h"
 #include "menu.h"
 
-#define MENU_NENT 10
+#define MENU_NENT 9
 
 static const char *mentry_text[MENU_NENT] = {
 	"~Load Snapshot",
@@ -45,15 +46,14 @@ static const char *mentry_text[MENU_NENT] = {
 	"Select ~Tapefile",
 	"Reset ~48",
 	"Reset ~128",
+	"~Display",
 	"~Hardware",
-	"~Windowed",
-	"~Double Line",
 	"Lock ~UI",
 	"~Quit",
 };
 
 static int mkeys[MENU_NENT] = {
-	WKEY_L, WKEY_S, WKEY_T, WKEY_4, WKEY_1, WKEY_H, WKEY_W, WKEY_D,
+	WKEY_L, WKEY_S, WKEY_T, WKEY_4, WKEY_1, WKEY_D, WKEY_H,
 	WKEY_U, WKEY_Q
 };
 
@@ -78,18 +78,15 @@ static void menu_run_line(int l)
 		zx_reset();
 		break;
 	case 5:
-		hwopts_menu();
+		display_menu();
 		break;
 	case 6:
-		mgfx_toggle_fs();
+		hwopts_menu();
 		break;
 	case 7:
-		gzx_toggle_dbl_ln();
-		break;
-	case 8:
 		gzx_ui_lock();
 		break;
-	case 9:
+	case 8:
 		quit = 1;
 		break;
 	}
@@ -97,38 +94,15 @@ static void menu_run_line(int l)
 
 static void menu_prev_opt(int l)
 {
-	switch (l) {
-	case 6:
-		mgfx_toggle_fs();
-		break;
-	case 7:
-		gzx_toggle_dbl_ln();
-		break;
-	}
 }
 
 static void menu_next_opt(int l)
 {
-	switch (l) {
-	case 6:
-		mgfx_toggle_fs();
-		break;
-	case 7:
-		gzx_toggle_dbl_ln();
-		break;
-	}
 }
 
 static const char *menu_get_opt(int l)
 {
-	switch (l) {
-	case 6:
-		return mgfx_is_fs() ? "Off" : "On";
-	case 7:
-		return dbl_ln ? "On" : "Off";
-	default:
-		return NULL;
-	}
+	return NULL;
 }
 
 static menu_t main_menu_spec = {

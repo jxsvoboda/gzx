@@ -31,6 +31,8 @@
 #ifndef VIDEO_ULA_H
 #define VIDEO_ULA_H
 
+#include <stdbool.h>
+
 #include "../types/video/out.h"
 #include "../types/video/ula.h"
 
@@ -41,5 +43,6 @@ extern void video_ula_disp_fast(video_ula_t *);
 extern void video_ula_disp(video_ula_t *);
 extern void video_ula_setpal(video_ula_t *);
 extern unsigned long video_ula_get_clock(video_ula_t *);
+extern void video_ula_enable_plus(video_ula_t *, bool);
 
 #endif

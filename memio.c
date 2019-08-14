@@ -133,7 +133,7 @@ uint8_t zx_in8(uint16_t a) {
 //  printf("in 0x%04x\n",a);
 //  z80_printstatus();
 //  getchar();
-  if(a==AY_REG_READ_PORT) return ay_reg_read(&ay0);
+  if(a==AY_REG_READ_PORT && ay0_enable) return ay_reg_read(&ay0);
   if((a&ZX128K_PAGESEL_PORT_MASK) == ZX128K_PAGESEL_PORT_VAL) printf("bnk sw port read!!!!!!\n");
   switch(a&0xff) {
     /* ULA */
@@ -165,14 +165,14 @@ void zx_out8(uint16_t addr, uint8_t val) {
 //    getchar();
   } else if((addr&ZX128K_PAGESEL_PORT_MASK) == ZX128K_PAGESEL_PORT_VAL && has_banksw && !bnk_lock48)
     zx_mem_page_select(val);
-  else if(addr==AY_REG_WRITE_PORT) {
+  else if(addr==AY_REG_WRITE_PORT && ay0_enable) {
     ay_reg_write(&ay0, val);
-  } if(addr==AY_REG_SEL_PORT) {
+  } if(addr==AY_REG_SEL_PORT && ay0_enable) {
     ay_reg_select(&ay0, val);
-  } else if (addr==ULAPLUS_REGSEL_PORT) {
+  } else if (addr==ULAPLUS_REGSEL_PORT && video_ula.plus_enable) {
     ulaplus_write_regsel(&video_ula.plus, val);
     zx_scr_update_pal();
-  } else if (addr==ULAPLUS_DATA_PORT) {
+  } else if (addr==ULAPLUS_DATA_PORT && video_ula.plus_enable) {
     ulaplus_write_data(&video_ula.plus, val);
     zx_scr_update_pal();
   } else {

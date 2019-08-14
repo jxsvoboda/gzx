@@ -1,8 +1,8 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Sound output
+ * Display menu
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,69 +29,78 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include "memio.h"
-#include "sndw.h"
-#include "zx_sound.h"
-#include "wav/rwave.h"
-#include "zx.h"
+#include "../mgfx.h"
+#include "../gzx.h"
+#include "display.h"
+#include "menu.h"
 
-static uint8_t *snd_buf;
-static int snd_bufs,snd_bff;
-static rwavew_t *rwave;
+static void display_prev_opt(int l);
 
-int zx_sound_init(void) {
-  snd_bufs=560*2;
+#define DISPLAY_NENT 2
 
-  if(sndw_init(snd_bufs)<0) return -1;
-    
-  snd_bff=0;
-  snd_buf=malloc(snd_bufs);
+static const char *display_text[DISPLAY_NENT] = {
+	"~Double Line",
+	"~Windowed"
+};
 
-  if(!snd_buf) {
-    fprintf(stderr,"malloc failed\n");
-    return -1;
-  }
-  return 0;
-}
+static int display_keys[DISPLAY_NENT] = {
+	WKEY_D, WKEY_W
+};
 
-void zx_sound_done(void) {
-  sndw_done();
-  if (rwave != NULL)
-    rwave_wclose(rwave);
-  free(snd_buf);
-}
-
-void zx_sound_smp(int ay_out) {
-  
-  /* mixing */
-  snd_buf[snd_bff++]=128 + (ay0_enable ? ay_out : 0) +
-    (spk?-16:+16)+(mic?-16:+16);
-  
-  if(snd_bff>=snd_bufs) {
-    snd_bff=0;
-    
-    sndw_write(snd_buf);
-
-    if (rwave != NULL)
-      (void) rwave_write_samples(rwave, snd_buf, snd_bufs);
-  }
-}
-
-int zx_sound_start_capture(const char *fname)
+static void display_run_line(int l)
 {
-	rwave_params_t params;
-	int rc;
+	display_prev_opt(l);
+}
 
-	params.channels = 1;
-	params.bits_smp = 8;
-	params.smp_freq = 28000;
+static void display_prev_opt(int l)
+{
+	switch (l) {
+	case 0:
+		gzx_toggle_dbl_ln();
+		break;
+	case 1:
+		mgfx_toggle_fs();
+		break;
+	}
+}
 
-	rc = rwave_wopen(fname, &params, &rwave);
-	if (rc != 0)
-		return -1;
+static void display_next_opt(int l)
+{
+	switch (l) {
+	case 0:
+		gzx_toggle_dbl_ln();
+		break;
+	case 1:
+		mgfx_toggle_fs();
+		break;
+	}
+}
 
-	return 0;
+static const char *display_get_opt(int l)
+{
+	switch (l) {
+	case 0:
+		return dbl_ln ? "On" : "Off";
+	case 1:
+		return mgfx_is_fs() ? "Off" : "On";
+	default:
+		return NULL;
+	}
+}
+
+static menu_t display_menu_spec = {
+	.caption = "Display Options",
+	.nent = DISPLAY_NENT,
+	.mentry_text = display_text,
+	.mkeys = display_keys,
+	.run_line = display_run_line,
+	.prev_opt = display_prev_opt,
+	.next_opt = display_next_opt,
+	.get_opt = display_get_opt
+};
+
+/** Display options menu */
+void display_menu(void)
+{
+	menu_run(&display_menu_spec);
 }

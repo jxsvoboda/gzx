@@ -32,20 +32,26 @@
 #include <stdlib.h>
 
 #include "../mgfx.h"
+#include "../video/ula.h"
+#include "../z80g.h"
 #include "../zx.h"
+#include "../zx_scr.h"
 #include "menu.h"
 #include "hwopts.h"
 
 static void hwopts_next_opt(int l);
 
-#define HWOPTS_NENT 1
+#define HWOPTS_NENT 4
 
 static const char *hwopts_text[HWOPTS_NENT] = {
-	"~Kempston Joy."
+	"~AY-3-8192 PSG",
+	"~Kempston Joy.",
+	"~ULAplus",
+	"Spec256 ~GPU"
 };
 
 static int hwopts_keys[HWOPTS_NENT] = {
-	WKEY_K
+	WKEY_A, WKEY_K, WKEY_U, WKEY_G
 };
 
 static void hwopts_run_line(int l)
@@ -57,7 +63,16 @@ static void hwopts_prev_opt(int l)
 {
 	switch (l) {
 	case 0:
+		ay0_enable = !ay0_enable;
+		break;
+	case 1:
 		kjoy0_enable = !kjoy0_enable;
+		break;
+	case 2:
+		video_ula_enable_plus(&video_ula, !video_ula.plus_enable);
+		break;
+	case 3:
+		gpu_set_allow(!gpu_allow);
 		break;
 	}
 }
@@ -66,7 +81,16 @@ static void hwopts_next_opt(int l)
 {
 	switch (l) {
 	case 0:
+		ay0_enable = !ay0_enable;
+		break;
+	case 1:
 		kjoy0_enable = !kjoy0_enable;
+		break;
+	case 2:
+		video_ula_enable_plus(&video_ula, !video_ula.plus_enable);
+		break;
+	case 3:
+		gpu_set_allow(!gpu_allow);
 		break;
 	}
 }
@@ -75,7 +99,13 @@ static const char *hwopts_get_opt(int l)
 {
 	switch (l) {
 	case 0:
+		return ay0_enable ? "On" : "Off";
+	case 1:
 		return kjoy0_enable ? "On" : "Off";
+	case 2:
+		return video_ula.plus_enable ? "On" : "Off";
+	case 3:
+		return gpu_allow ? "Auto" : "Off";
 	default:
 		return NULL;
 	}

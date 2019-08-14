@@ -29,10 +29,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdbool.h>
 #include <stdlib.h>
+
 #include "memio.h"
 #include "z80g.h"
 #include "zx_scr.h"
+
+/** Allow probing for GFX and turning on GPU when needed */
+bool gpu_allow = true;
 
 z80s gpus[NGP];		/* GPUs */
 z80s tmps;		/* temporary place to store the CPU */
@@ -46,6 +51,13 @@ static bool gpu_on;
 
 /************************************************************************/
 /************************************************************************/
+
+void gpu_set_allow(bool allow)
+{
+	gpu_allow = allow;
+	if (!allow && gpu_on)
+		gpu_disable();
+}
 
 void gpu_init(void)
 {

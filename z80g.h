@@ -39,6 +39,7 @@
 /* Number of graphical planes */
 #define NGP 8
 
+extern bool gpu_allow;
 extern z80s gpus[NGP];
 /** Always points to real CPU, never GPU */
 extern z80s *rcpus;
@@ -47,6 +48,7 @@ extern u8 *gfxrom[NGP];
 extern u8 *gfxram[NGP];
 extern u8 *gfxscr[NGP];
 
+void gpu_set_allow(bool);
 void gpu_init(void);
 int gpu_enable(void);
 void gpu_disable(void);
