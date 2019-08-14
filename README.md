@@ -129,6 +129,7 @@ Note that most functions can be accessed via menus as well as via shortcuts.
   F8          | Reset to 128K mode
   F9          | Select tapefile
   F10         | Quit
+  F11         | Toggle fullscreen mode
   F12         | Enter debugger
   Alt-Shift-L | Lock down UI (disable emulator control keys)
   Alt-Shift-U | Unlock UI (reenable emulator control keys)

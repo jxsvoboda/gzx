@@ -158,8 +158,7 @@ static void key_unmod(wkey_t *k)
       case WKEY_F8: zx_select_memmodel(ZXM_128K); zx_reset(); break;
       case WKEY_F9: select_tapefile_dialog(); break;
       case WKEY_F10: printf("F10 pressed\n"); quit=1; break;
-      case WKEY_F11: zx_scr_mode(0); break;
-//      case WKEY_F12: zx_scr_mode(1); break;
+      case WKEY_F11: mgfx_toggle_fs(); break;
       case WKEY_NPLUS: tape_deck_play(tape_deck); break;
       case WKEY_NMINUS: tape_deck_stop(tape_deck); break;
       case WKEY_NSTAR: tape_deck_rewind(tape_deck); break;
@@ -190,6 +189,12 @@ static void key_lalt(wkey_t *k)
         break;
       case WKEY_M:
         zx_scr_next_bg();
+        break;
+      case WKEY_9:
+        zx_scr_mode(0);
+        break;
+      case WKEY_0:
+        zx_scr_mode(1);
         break;
     }
 }
