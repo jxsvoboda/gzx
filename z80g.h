@@ -55,7 +55,7 @@ void gpu_disable(void);
 int gpu_reset(void);
 bool gpu_is_on(void);
 void z80_g_execinstr(void); /* execute both on CPU and GPU */
-void z80_g_int(u8 bus);       /* INT both on CPU and GPU */
+void z80_g_int(void);       /* INT both on CPU and GPU */
 void gfx_select_memmodel(int model);
 
 #endif

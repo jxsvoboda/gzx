@@ -136,10 +136,10 @@ void video_ula_next_field(video_ula_t *ula)
 		ula->fl_rev = !ula->fl_rev;
 	}
 
-	z80_int(0xff);
+	z80_int();
 
 	if (gpu_is_on())
-		z80_g_int(0xff);
+		z80_g_int();
 }
 
 /** Crude and fast ULA display routine, called 50 times a second.

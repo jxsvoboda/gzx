@@ -446,9 +446,9 @@ void zx_debug_mstep(void) {
 #ifdef LOG
     if(cpus.iff1) fprintf(logfi,"interrupt\n");
 #endif
-    z80_int(0xff);
+    z80_int();
     if (gpu_is_on())
-      z80_g_int(0xff);
+      z80_g_int();
   }
     
   if (!gpu_is_on()) {
@@ -656,9 +656,9 @@ int main(int argc, char **argv) {
       if(cpus.iff1) fprintf(logfi,"interrupt\n");
 #endif
 //      if(cpus.IFF1) printf("interrupt\n");
-      z80_int(0xff);
+      z80_int();
     if (gpu_is_on())
-      z80_g_int(0xff);
+      z80_g_int();
     }
     
     if (!gpu_is_on()) {

@@ -54,6 +54,8 @@
 #include "z80dep.h"
 
 static int z80_readinstr(void);
+static void z80_check_nmi(void);
+static void z80_check_int(void);
 
 static u8 opcode;
 z80s cpus;
@@ -5297,6 +5299,10 @@ int z80_readinstr(void) {
 void z80_execinstr(void) {
   int lastuoc;
 
+  /* Process pending NMI or interrupt */
+  z80_check_nmi();
+  z80_check_int();
+
   cpus.int_lock=0;
 
   if(cpus.halted) { /* NOP */
@@ -5334,14 +5340,17 @@ void z80_execinstr(void) {
 #endif
 }
 
-int z80_int(u8 data) {
+static void z80_check_int(void) {
   u16 addr;
+  u8 data;
 //  printf("interrupt->DI\n");
 
-  if(cpus.int_lock) return -1; /* after EI or DI or inside an instruction */
-  if(!cpus.IFF1) return -1; /* IFF2 just tells the NMI service routine
+  if(!cpus.int_pending) return;
+  if(cpus.int_lock) return; /* after EI or DI or inside an instruction */
+  if(!cpus.IFF1) return; /* IFF2 just tells the NMI service routine
                                whether the interrupted program disabled
 			       maskable interrupts */
+  cpus.int_pending=0;
   cpus.halted=0;
   cpus.IFF1=cpus.IFF2=0;
 
@@ -5363,21 +5372,22 @@ int z80_int(u8 data) {
     case 2:
       incr_R(2);
       _push16(cpus.PC);
+      data = z80_snoop8();
       addr=((u16)cpus.I<<8) | (u16)data;
       cpus.PC=z80_memget16(addr);
 //      printf("IM 2 INT: I=%02x D8=%02x tabi=%04x dst=%04x\n",cpus.I,data,addr,cpus.PC);
       z80_clock_inc(19);
       break;
   }
-  
-  return 0;
 }
 
-int z80_nmi(void) {
+static void z80_check_nmi(void) {
 
-  if(cpus.int_lock) return -1;
+  if(!cpus.nmi_pending) return;
+  if(cpus.int_lock) return;
 //  printf("NMI!\n");
   
+  cpus.nmi_pending=0;
   cpus.halted=0;
   cpus.IFF1=0;
 
@@ -5386,13 +5396,23 @@ int z80_nmi(void) {
   
   incr_R(2);
   z80_clock_inc(11);
-  
-  return 0;
+}
+
+void z80_int(void)
+{
+  cpus.int_pending = 1;
+}
+
+void z80_nmi(void)
+{
+  cpus.nmi_pending = 1;
 }
 
 int z80_reset(void) {
   cpus.IFF1=cpus.IFF2=0;
   cpus.int_mode=0;
+  cpus.int_pending=0;
+  cpus.nmi_pending=0;
   cpus.PC=0;
 
   cpus.SP=0;

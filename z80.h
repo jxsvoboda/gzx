@@ -75,6 +75,8 @@ typedef struct _z80s {     /*** registers of the Z80 CPU ***/
   int IFF1,IFF2;	   /* interrupt flip-flops */
   int int_mode;		   /* interrupt mode */
   int int_lock;		   /* forbids INT&NMI (after EI/DI/DD/FD) */
+  int int_pending;         /* an interrupt is pending */
+  int nmi_pending;         /* an NMI is pending */
   int modifier;            /* 0/0xdd/0xfd */
   int halted;		   /* halted by the HALT instruction? */
 } z80s;
@@ -87,8 +89,8 @@ extern unsigned long smc;
 void z80_init_tables(void);
 void z80_execinstr(void);
 int z80_reset(void);
-int z80_nmi(void);
-int z80_int(u8 data);
+void z80_nmi(void);
+void z80_int(void);
 
 void z80_resetstat(void);
 unsigned z80_getstat(int, u8);

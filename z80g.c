@@ -212,7 +212,7 @@ void z80_g_execinstr(void) {
 }
 
 /* execute instruction using both CPU and GPU */
-void z80_g_int(u8 bus) {
+void z80_g_int(void) {
   int i;
   unsigned long tmp_clock;
   u8 *tmpbnk[4];
@@ -235,7 +235,7 @@ void z80_g_int(u8 bus) {
   
     cpus=gpus[i];
     
-    z80_int(bus);
+    z80_int();
     
     gpus[i]=cpus;
   }
@@ -249,7 +249,7 @@ void z80_g_int(u8 bus) {
   z80_clock=tmp_clock;
   
   /* execute on CPU */
-  z80_int(bus);
+  z80_int();
 }
 
 int gpu_reset(void) {

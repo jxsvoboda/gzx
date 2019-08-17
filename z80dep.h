@@ -48,4 +48,6 @@ void z80_memset8(uint16_t addr, uint8_t val);
 void z80_out8(uint16_t addr, uint8_t val);
 uint8_t z80_in8(uint16_t addr);
 
+uint8_t z80_snoop8(void);
+
 #endif
