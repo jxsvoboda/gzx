@@ -70,6 +70,8 @@ static LPWNDCLASSEX winclassex;
 
 static int inited=0;
 
+static int video_w, video_h;
+
 static int sxs,sys;
 static unsigned char *vscr2;
 
@@ -487,6 +489,32 @@ static int mwin_init(int fs) {
   return 0;
 }
 
+static int init_vscr(void)
+{
+  /* setup virtual framebuffer */
+  
+  vscr0=calloc(scr_xs*scr_ys, sizeof(uint8_t));
+  if(!vscr0) return 1;
+  
+  vscr1=calloc(scr_xs*scr_ys, sizeof(uint8_t));
+  if(!vscr1) return 1;
+ 
+  vscr2=calloc(sxs*sys, sizeof(uint8_t));
+  if(!vscr2) return 1;
+
+  return 0;
+}
+
+static void fini_vscr(void)
+{
+  free(vscr0);
+  vscr0 = NULL;
+  free(vscr1);
+  vscr1 = NULL;
+  free(vscr2);
+  vscr2 = NULL;
+}
+
 static void mwin_draw(void) {
   HDC dc;
   PAINTSTRUCT ps;
@@ -562,13 +590,15 @@ void mgfx_close(void) {
   inited=0;
 }
 
-int mgfx_init(void) {
+int mgfx_init(int w, int h) {
   int i;
   
   if(inited) return 0;
+  video_w = w;
+  video_h = h;
   
-  scr_xs=320;
-  scr_ys=200;
+  scr_xs=video_w;
+  scr_ys=video_h;
   
   mgfx_selln(3);
   
@@ -600,17 +630,8 @@ int mgfx_init(void) {
   w_initkey();
     
   /* setup virtual framebuffer */
-  
-  vscr0=calloc(scr_xs*scr_ys, sizeof(uint8_t));
-  if(!vscr0) return 1;
-  
-  vscr1=calloc(scr_xs*scr_ys, sizeof(uint8_t));
-  if(!vscr1) return 1;
- 
-
-  vscr2=calloc(sxs*sys, sizeof(uint8_t));
-  if(!vscr2) return 1;
-  
+  if (init_vscr() != 0)
+    return 1;
 
   clip_x0=clip_y0=0;
   clip_x1=scr_xs-1;
@@ -655,12 +676,46 @@ int mgfx_is_fs(void) {
   return lpdd != NULL;
 }
 
+int mgfx_set_disp_size(int w, int h) {
+  int want_fs;
+  
+  want_fs = !!lpdd;
+  if(want_fs && dd_rtload()<0) return -1;
+  dd_close();
+  fini_vscr();
+  inited=0; /* prevent program termination */
+  if(hwnd) { DestroyWindow(hwnd); hwnd=0; }
+  UnregisterClass(WINDOW_CLASS_NAME,hinst);
+  if(!want_fs) ShowCursor(1);
+  mgfx_input_update(); /* catch WM_DESTROY */
+  
+  video_w = w;
+  video_h = h;
+  scr_xs=video_w;
+  scr_ys=video_h;
+  sxs = scr_xs << 1;
+  sys = scr_ys << 1;
+  if(mwin_init(want_fs)<0) exit(1);
+  if (init_vscr() != 0)
+    return -1;
+
+  clip_x0=clip_y0=0;
+  clip_x1=scr_xs-1;
+  clip_y1=scr_ys-1;
+
+  inited=1;
+  ShowWindow(hwnd,SW_SHOWNORMAL);
+  UpdateWindow(hwnd);
+  return 0;
+}
+
+
 void mgfx_updscr(void) {
   unsigned char *sp,*dp;
   int y,x;
 
   if(!dbl_ln) {
-    dp=vscr2+(scr_ys-1)*2*scr_xs*2;
+    dp=vscr2+(2*scr_ys-1)*scr_xs*2;
     sp=vscr0;
   
     for(y=0;y<scr_ys;y++) {
@@ -697,7 +752,7 @@ void mgfx_updscr(void) {
 }
 
 void mgfx_setpal(int base, int cnt, int *p) {
-  int i;
+   int i;
   
   for(i=base;i<base+cnt;i++) {
     wpal[i].rgbRed=(*p++)<<2;

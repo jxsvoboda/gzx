@@ -29,22 +29,25 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "../video/display.h"
 #include "../mgfx.h"
 #include "../gzx.h"
+#include "../zx_scr.h"
 #include "display.h"
 #include "menu.h"
 
 static void display_prev_opt(int l);
 
-#define DISPLAY_NENT 2
+#define DISPLAY_NENT 3
 
 static const char *display_text[DISPLAY_NENT] = {
+	"~Area",
 	"~Double Line",
 	"~Windowed"
 };
 
 static int display_keys[DISPLAY_NENT] = {
-	WKEY_D, WKEY_W
+	WKEY_A, WKEY_D, WKEY_W
 };
 
 static void display_run_line(int l)
@@ -56,9 +59,12 @@ static void display_prev_opt(int l)
 {
 	switch (l) {
 	case 0:
-		gzx_toggle_dbl_ln();
+		zx_scr_set_area(video_area_prev(video_out_area));
 		break;
 	case 1:
+		gzx_toggle_dbl_ln();
+		break;
+	case 2:
 		mgfx_toggle_fs();
 		break;
 	}
@@ -68,9 +74,12 @@ static void display_next_opt(int l)
 {
 	switch (l) {
 	case 0:
-		gzx_toggle_dbl_ln();
+		zx_scr_set_area(video_area_next(video_out_area));
 		break;
 	case 1:
+		gzx_toggle_dbl_ln();
+		break;
+	case 2:
 		mgfx_toggle_fs();
 		break;
 	}
@@ -80,8 +89,10 @@ static const char *display_get_opt(int l)
 {
 	switch (l) {
 	case 0:
-		return dbl_ln ? "On" : "Off";
+		return video_area_str(video_out_area);
 	case 1:
+		return dbl_ln ? "On" : "Off";
+	case 2:
 		return mgfx_is_fs() ? "Off" : "On";
 	default:
 		return NULL;

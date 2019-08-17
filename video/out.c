@@ -1,6 +1,6 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * ULA video generator
+ * Video output
  *
  * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.

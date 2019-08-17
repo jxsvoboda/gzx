@@ -42,6 +42,7 @@ static int fs = 0;
 static  SDL_Color color[256];
 static int xscale;
 static int yscale;
+static int video_w, video_h;
 
 static int *txkey;
 static int txsize;
@@ -170,8 +171,8 @@ static void init_video(void) {
   }
   
   flags = SDL_SWSURFACE | (fs ? SDL_FULLSCREEN : 0);
-  scr_xs = 320;
-  scr_ys = 200;
+  scr_xs = video_w;
+  scr_ys = video_h;
   
   if (dbl_ln) {
     xscale = 2;
@@ -225,13 +226,15 @@ static void quit_video(void) {
   SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
-int mgfx_init(void) {
+int mgfx_init(int w, int h) {
   int i;
   
   printf("mgfx_init()\n");
   
   atexit(SDL_Quit);
   
+  video_w = w;
+  video_h = h;
   init_video();
   
   w_initkey();
@@ -359,4 +362,19 @@ int mgfx_toggle_dbl_ln(void) {
 
 int mgfx_is_fs(void) {
   return fs;
+}
+
+int mgfx_set_disp_size(int w, int h)
+{
+  video_w = w;
+  video_h = h;
+  quit_video();
+  fini_vscr();
+  init_video();
+  init_vscr();
+  clip_x0=clip_y0=0;
+  clip_x1=scr_xs-1;
+  clip_y1=scr_ys-1;
+  SDL_SetColors(sdl_screen, color, 0, 256);
+  return 0;
 }

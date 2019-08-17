@@ -1,8 +1,8 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Spectrum Screen
+ * Video display options
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,28 +28,15 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef ZX_SCR_H
-#define ZX_SCR_H
 
-#include "types/video/display.h"
-#include "types/video/ula.h"
+#ifndef VIDEO_OUT_H
+#define VIDEO_OUT_H
 
-extern video_ula_t video_ula;
-extern video_area_t video_out_area;
+#include "../types/video/display.h"
 
-extern int zx_scr_init(unsigned long);
-extern void zx_scr_reset(void);
-extern int zx_scr_init_spec256_pal(void);
-extern int zx_scr_load_bg(const char *, int);
-extern void zx_scr_prev_bg(void);
-extern void zx_scr_next_bg(void);
-extern void zx_scr_clear_bg(void);
-extern void zx_scr_mode(int mode);
-extern void zx_scr_update_pal(void);
-extern unsigned long zx_scr_get_clock(void);
-extern int zx_scr_set_area(video_area_t);
-
-extern void (*zx_scr_disp)(void);
-extern void (*zx_scr_disp_fast)(void);
+extern const char *video_area_str(video_area_t);
+extern void video_area_size(video_area_t, int *, int *);
+extern video_area_t video_area_prev(video_area_t);
+extern video_area_t video_area_next(video_area_t);
 
 #endif

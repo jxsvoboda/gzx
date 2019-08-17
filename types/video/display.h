@@ -1,8 +1,8 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Spectrum Screen
+ * Video display options types
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,28 +28,20 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef ZX_SCR_H
-#define ZX_SCR_H
 
-#include "types/video/display.h"
-#include "types/video/ula.h"
+#ifndef TYPES_VIDEO_DISPLAY_H
+#define TYPES_VIDEO_DISPLAY_H
 
-extern video_ula_t video_ula;
-extern video_area_t video_out_area;
-
-extern int zx_scr_init(unsigned long);
-extern void zx_scr_reset(void);
-extern int zx_scr_init_spec256_pal(void);
-extern int zx_scr_load_bg(const char *, int);
-extern void zx_scr_prev_bg(void);
-extern void zx_scr_next_bg(void);
-extern void zx_scr_clear_bg(void);
-extern void zx_scr_mode(int mode);
-extern void zx_scr_update_pal(void);
-extern unsigned long zx_scr_get_clock(void);
-extern int zx_scr_set_area(video_area_t);
-
-extern void (*zx_scr_disp)(void);
-extern void (*zx_scr_disp_fast)(void);
+/** Video display area options.
+ *
+ * We have a couple of fixed options as to how much of the video frame
+ * is displayed.
+ */
+typedef enum {
+	varea_320x200,
+	varea_320x240,
+	varea_336x252,
+	varea_352x288
+} video_area_t;
 
 #endif

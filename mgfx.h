@@ -70,9 +70,10 @@ extern int thpos,tvpos;
 
 /* gfx-api-dependent .. contained in gfx_win.c/gfx_vga.c */
 
-int mgfx_init(void);
+int mgfx_init(int w, int h);
 void mgfx_updscr(void);
 void mgfx_setpal(int base, int cnt, int *pal);
+int mgfx_set_disp_size(int w, int h);
 int mgfx_toggle_fs(void);
 int mgfx_is_fs(void);
 int mgfx_toggle_dbl_ln(void);

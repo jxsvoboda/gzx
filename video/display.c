@@ -1,8 +1,8 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Spectrum Screen
+ * Video display options
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,28 +28,61 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef ZX_SCR_H
-#define ZX_SCR_H
 
-#include "types/video/display.h"
-#include "types/video/ula.h"
+#include <stdlib.h>
+#include "display.h"
 
-extern video_ula_t video_ula;
-extern video_area_t video_out_area;
+const char *video_area_str(video_area_t area)
+{
+	switch (area) {
+	case varea_320x200:
+		return "320x200";
+	case varea_320x240:
+		return "320x240";
+	case varea_336x252:
+		return "336x252";
+	case varea_352x288:
+		return "352x288";
+	}
 
-extern int zx_scr_init(unsigned long);
-extern void zx_scr_reset(void);
-extern int zx_scr_init_spec256_pal(void);
-extern int zx_scr_load_bg(const char *, int);
-extern void zx_scr_prev_bg(void);
-extern void zx_scr_next_bg(void);
-extern void zx_scr_clear_bg(void);
-extern void zx_scr_mode(int mode);
-extern void zx_scr_update_pal(void);
-extern unsigned long zx_scr_get_clock(void);
-extern int zx_scr_set_area(video_area_t);
+	return NULL;
+}
 
-extern void (*zx_scr_disp)(void);
-extern void (*zx_scr_disp_fast)(void);
+void video_area_size(video_area_t area, int *x, int *y)
+{
+	switch (area) {
+	case varea_320x200:
+		*x = 320;
+		*y = 200;
+		break;
+	case varea_320x240:
+		*x = 320;
+		*y = 240;
+		break;
+	case varea_336x252:
+		*x = 336;
+		*y = 252;
+		break;
+	case varea_352x288:
+		*x = 352;
+		*y = 288;
+		break;
 
-#endif
+	}
+}
+
+video_area_t video_area_prev(video_area_t area)
+{
+	if (area > varea_320x200)
+		return area - 1;
+	else
+		return varea_352x288;
+}
+
+video_area_t video_area_next(video_area_t area)
+{
+	if (area < varea_352x288)
+		return area + 1;
+	else
+		return varea_320x200;
+}

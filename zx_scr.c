@@ -30,6 +30,7 @@
  */
 
 #include "video/defs.h"
+#include "video/display.h"
 #include "video/spec256.h"
 #include "video/ula.h"
 #include "mgfx.h"
@@ -46,6 +47,7 @@ void (*zx_scr_disp)(void)      = n_scr_disp;
 static int video_mode = 0;
 
 static video_out_t video_out;
+video_area_t video_out_area = varea_320x200;
 
 video_ula_t video_ula;
 
@@ -89,7 +91,11 @@ void zx_scr_update_pal(void)
 
 int zx_scr_init(unsigned long clock)
 {
-	if (mgfx_init())
+	int w, h;
+
+	video_area_size(video_out_area, &w, &h);
+
+	if (mgfx_init(w, h))
 		return -1;
 
 	video_out.x0 = scr_xs / 2 - zx_field_w / 2;
@@ -100,6 +106,21 @@ int zx_scr_init(unsigned long clock)
 
 	if (video_spec256_init(&video_spec256, &video_out))
 		return -1;
+
+	return 0;
+}
+
+int zx_scr_set_area(video_area_t area)
+{
+	int w, h;
+
+	video_area_size(area, &w, &h);
+	if (mgfx_set_disp_size(w, h) < 0)
+		return -1;
+
+	video_out_area = area;
+	video_out.x0 = scr_xs / 2 - zx_field_w / 2;
+	video_out.y0 = scr_ys / 2 - zx_field_h / 2;
 
 	return 0;
 }

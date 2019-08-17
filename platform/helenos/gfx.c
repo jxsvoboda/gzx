@@ -51,6 +51,9 @@ static surface_t *surface;
 
 static color_t color[256];
 
+static int video_w;
+static int video_h;
+
 static int xscale;
 static int yscale;
 
@@ -175,8 +178,8 @@ static int init_video(void)
 	pixel_t *pixbuf;
 	int vw, vh;
 
-	scr_xs = 320;
-	scr_ys = 200;
+	scr_xs = video_w;
+	scr_ys = video_h;
 
 	if (dbl_ln) {
 		xscale = 2;
@@ -257,9 +260,12 @@ static void fini_vscr(void)
 	}
 }
 
-int mgfx_init(void)
+int mgfx_init(int w, int h)
 {
 	int i;
+
+	video_w = w;
+	video_h = h;
 
 	if (init_video() < 0)
 		return -1;
@@ -291,6 +297,65 @@ int mgfx_init(void)
 
 	return 0;
 }
+
+int mgfx_set_disp_size(int w, int h)
+{
+	int vw, vh;
+	pixel_t *pixbuf;
+
+	fini_vscr();
+	surface_destroy(surface);
+	surface = NULL;
+
+	video_w = w;
+	video_h = h;
+
+	scr_xs = video_w;
+	scr_ys = video_h;
+
+	if (dbl_ln) {
+		xscale = 2;
+		yscale = 1;
+	} else {
+		xscale = 2;
+		yscale = 2;
+	}
+
+	vw = scr_xs * xscale;
+	vh = scr_ys * yscale;
+
+	if (dbl_ln) {
+		vh *= 2;
+	}
+
+	pixbuf = calloc(vw * vh, sizeof(pixel_t));
+	if (pixbuf == NULL) {
+		printf("Error allocating memory for pixel buffer.\n");
+		return -1;
+	}
+
+	surface = surface_create(vw, vh, pixbuf, 0);
+	if (surface == NULL) {
+		printf("Error creating surface.\n");
+		return -1;
+	}
+
+	if (init_vscr() < 0)
+		return -1;
+
+	clip_x0=clip_y0=0;
+	clip_x1=scr_xs-1;
+	clip_y1=scr_ys-1;
+
+	canvas->width = vw;
+	canvas->height = vh;
+	update_canvas(canvas, surface);
+
+	window_resize(window, 0, 0, vw + 10, vh + 30, WINDOW_PLACEMENT_ANY);
+
+	return 0;
+}
+
 
 static void render_display_line(int dy, uint8_t *spix)
 {
