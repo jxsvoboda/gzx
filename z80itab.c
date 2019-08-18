@@ -196,7 +196,7 @@ void (*const ei_edop[256])(void) PROGMEM = {
   Ui_neg,	Ui_reti,	ei_im_2,	ei_ld_A_R, 	/* 0x5C */
   ei_in_H_iC,	ei_out_iC_H,	ei_sbc_HL_HL,	ei_ld_iNN_HL, 	/* 0x60 */
   Ui_neg,	Ui_retn,	Ui_im_0,	ei_rrd, 	/* 0x64 */
-  ei_in_L_iC,	ei_out_iC_L,	ei_adc_HL_HL,	ei_ld_HL_iNN, 	/* 0x68 */
+  ei_in_L_iC,	ei_out_iC_L,	ei_adc_HL_HL,	ei_ld_HL_iNN_x,	/* 0x68 */
   Ui_neg,	Ui_reti,	Ui_im_0,	ei_rld, 	/* 0x6C */
   Ui_in_iC,	Ui_out_iC_0,	ei_sbc_HL_SP,	ei_ld_iNN_SP, 	/* 0x70 */
   Ui_neg,	Ui_retn,	Ui_im_1,	Ui_ednop, 	/* 0x74 */

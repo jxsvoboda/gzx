@@ -2569,6 +2569,15 @@ static void ei_ld_HL_iNN(void) {
 
   addr=z80_iget16();
   setHL(z80_memget16(addr));
+  z80_clock_inc(16);
+}
+
+/* ED prefixed variant, takes 4 more T states */
+static void ei_ld_HL_iNN_x(void) {
+  u16 addr;
+
+  addr=z80_iget16();
+  setHL(z80_memget16(addr));
   z80_clock_inc(20);
 }
 
