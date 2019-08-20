@@ -145,7 +145,7 @@ binary_test = test-gzx
 objects = $(sources:.c=.o)
 objects_gtap = $(sources_gtap:.c=.o)
 objects_w32 = $(sources_w32:.c=.w32.o)
-objects_w32_gtap = $(sources_w32_gtap:.c=.g.w32.o)
+objects_w32_gtap = $(sources_w32_gtap:.c=.w32.o)
 objects_helenos = $(sources_helenos:.c=.hos.o)
 objects_helenos_gtap = $(sources_helenos_gtap:.c=.hos.o)
 objects_test = $(sources_test:.c=.o)
