@@ -48,8 +48,8 @@
     - timing of undocumented instructions
 */
 
+#include <stdint.h>
 #include <stdlib.h>
-#include "intdef.h"
 #include "z80.h"
 #include "z80dep.h"
 
@@ -57,15 +57,15 @@ static int z80_readinstr(void);
 static void z80_check_nmi(void);
 static void z80_check_int(void);
 
-static u8 opcode;
+static uint8_t opcode;
 z80s cpus;
-static u8 cbop;
+static uint8_t cbop;
 unsigned long z80_clock;
 
 /* debugging & statistics */
 unsigned long uoc;	/* unsupported opcode counter */
 unsigned long smc;	/* stray modifier counter */
-static u8 prefix1,prefix2;
+static uint8_t prefix1,prefix2;
 
 static void (*const *ei_tab)(void);
 
@@ -75,22 +75,22 @@ static int stat_i;
 #endif
 
 /* fast flag computation lookup table */
-static u8 ox_tab[256]; /* OR,XOR and more */
+static uint8_t ox_tab[256]; /* OR,XOR and more */
 
-static u16 z80_memget16(u16 addr) {
-  return (u16)z80_memget8(addr)+(((u16)z80_memget8(addr+1))<<8);
+static uint16_t z80_memget16(uint16_t addr) {
+  return (uint16_t)z80_memget8(addr)+(((uint16_t)z80_memget8(addr+1))<<8);
 }
 
-static u16 z80_imemget16(u16 addr) {
-  return (u16)z80_imemget8(addr)+(((u16)z80_imemget8(addr+1))<<8);
+static uint16_t z80_imemget16(uint16_t addr) {
+  return (uint16_t)z80_imemget8(addr)+(((uint16_t)z80_imemget8(addr+1))<<8);
 }
 
-static void z80_memset16(u16 addr, u16 val) {
+static void z80_memset16(uint16_t addr, uint16_t val) {
   z80_memset8(addr, val & 0xff);
   z80_memset8(addr+1, val >> 8);
 }
 
-static inline void z80_clock_inc(u8 inc)
+static inline void z80_clock_inc(uint8_t inc)
 {
 #ifndef NO_Z80CLOCK
 	z80_clock += inc;
@@ -99,12 +99,12 @@ static inline void z80_clock_inc(u8 inc)
 
 /* returns the signed value of the byte: 0..127 ->0..127
                                          128..255 ->-128..-1 */
-static int u8sval(u8 u) {
+static int u8sval(uint8_t u) {
   if(u<0x80) return u;
     else return (int)(u&0x7f)-128;
 }
 
-static int u16sval(u16 u) {
+static int u16sval(uint16_t u) {
   if(u<0x8000) return u;
     else return (int)(u&0x7fff)-32768;
 }
@@ -114,44 +114,44 @@ static int u16sval(u16 u) {
 /*  these functions return 1 when sign overflow occurs */
 /*  (the result would be >127 or <-128) */
 
-static int add_v8(u8 a, u8 b) {
+static int add_v8(uint8_t a, uint8_t b) {
   int sign_r;
   sign_r=u8sval(a)+u8sval(b);
   return sign_r<-128 || sign_r>127;
 }
 
-static int sub_v8(u8 a, u8 b) {
+static int sub_v8(uint8_t a, uint8_t b) {
   int sign_r;
   sign_r=u8sval(a)-u8sval(b);
   return sign_r<-128 || sign_r>127;
 }
 
-static int adc_v8(u8 a, u8 b, u8 c) {
+static int adc_v8(uint8_t a, uint8_t b, uint8_t c) {
   int sign_r;
   sign_r=u8sval(a)+u8sval(b)+u8sval(c);
   return sign_r<-128 || sign_r>127;
 }
 
-static int sbc_v8(u8 a, u8 b, u8 c) {
+static int sbc_v8(uint8_t a, uint8_t b, uint8_t c) {
   int sign_r;
   sign_r=u8sval(a)-u8sval(b)-c;
   return sign_r<-128 || sign_r>127;
 }
 
-static int adc_v16(u16 a, u16 b, u16 c) {
+static int adc_v16(uint16_t a, uint16_t b, uint16_t c) {
   int sign_r;
   sign_r=u16sval(a)+u16sval(b)+u16sval(c);
   return sign_r<-32768 || sign_r>32767;
 }
 
-static int sbc_v16(u16 a, u16 b, u16 c) {
+static int sbc_v16(uint16_t a, uint16_t b, uint16_t c) {
   int sign_r;
   sign_r=u16sval(a)-u16sval(b)-c;
   return sign_r<-32768 || sign_r>32767;
 }
 
 /* calculates an even parity for the given 8-bit number */
-static int oddp8(u8 x) {
+static int oddp8(uint8_t x) {
   x^=x>>4;
   x^=x>>2;
   x^=x>>1;
@@ -171,7 +171,7 @@ static void setflags(int s, int z, int hc, int pv, int n, int c) {
 
 #ifndef NO_Z80UNDOC
 
-static void setundocflags8(u8 res) {
+static void setundocflags8(uint8_t res) {
   cpus.F &= fD;		/* leave only documented flags */
   cpus.F |= (res & fU);     /* set undocumented flags */
 }
@@ -187,7 +187,7 @@ static void ei_undoc(void)
 
 #endif
 
-static void incr_R(u8 amount) {
+static void incr_R(uint8_t amount) {
   cpus.R = (cpus.R & 0x80) | ((cpus.R+amount)&0x7f);
 }
 
@@ -200,27 +200,27 @@ static void incr_R(u8 amount) {
 
 #include "z80g.h"
 
-static u16 get_addrBC(void)
+static uint16_t get_addrBC(void)
 {
-  return ((u16)rcpus->r[rB] << 8) | rcpus->r[rC];
+  return ((uint16_t)rcpus->r[rB] << 8) | rcpus->r[rC];
 }
 
-static u16 get_addrDE(void)
+static uint16_t get_addrDE(void)
 {
-  return ((u16)rcpus->r[rD] << 8) | rcpus->r[rE];
+  return ((uint16_t)rcpus->r[rD] << 8) | rcpus->r[rE];
 }
 
-static u16 get_addrHL(void)
+static uint16_t get_addrHL(void)
 {
-  return ((u16)rcpus->r[rH] << 8) | rcpus->r[rL];
+  return ((uint16_t)rcpus->r[rH] << 8) | rcpus->r[rL];
 }
 
-static u16 get_addrIX(void)
+static uint16_t get_addrIX(void)
 {
   return rcpus->IX;
 }
 
-static u16 get_addrIY(void)
+static uint16_t get_addrIY(void)
 {
   return rcpus->IY;
 }
@@ -228,168 +228,168 @@ static u16 get_addrIY(void)
 /**************************** operand access ***************************/
 
 /* returns (HL)(8) */
-static u8 _iHL8(void) {
+static uint8_t _iHL8(void) {
   return z80_memget8(get_addrHL());
 }
 
 /* returns (BC) */
-static u8 _iBC8(void) {
+static uint8_t _iBC8(void) {
   return z80_memget8(get_addrBC());
 }
 
 /* returns (DE) */
-static u8 _iDE8(void) {
+static uint8_t _iDE8(void) {
   return z80_memget8(get_addrDE());
 }
 
 /* returns (IX+N) */
-static u8 _iIXN8(u16 N) {
+static uint8_t _iIXN8(uint16_t N) {
   return z80_memget8(get_addrIX()+u8sval(N));
 }
 
 /* returns (IY+N) */
-static u8 _iIYN8(u16 N) {
+static uint8_t _iIYN8(uint16_t N) {
   return z80_memget8(get_addrIY()+u8sval(N));
 }
 
 /* (IX+N) <- val*/
-static void s_iIXN8(u16 N, u8 val) {
+static void s_iIXN8(uint16_t N, uint8_t val) {
   z80_memset8(get_addrIX()+u8sval(N),val);
 }
 
 /* (IY+N) <- val*/
-static void s_iIYN8(u16 N, u8 val) {
+static void s_iIYN8(uint16_t N, uint8_t val) {
   z80_memset8(get_addrIY()+u8sval(N),val);
 }
 
 
 /* (HL) <- val */
-static void s_iHL8(u8 val) {
+static void s_iHL8(uint8_t val) {
   z80_memset8(get_addrHL(),val);
 }
 
 /* (BC) <- val */
-static void s_iBC8(u8 val) {
+static void s_iBC8(uint8_t val) {
   z80_memset8(get_addrBC(),val);
 }
 
 /* (DE) <- val */
-static void s_iDE8(u8 val) {
+static void s_iDE8(uint8_t val) {
   z80_memset8(get_addrDE(),val);
 }
 
 /* returns (SP)(16-bits) */
-static u16 _iSP16(void) {
+static uint16_t _iSP16(void) {
   return z80_memget16(cpus.SP);
 }
 
 /* (SP)(16-bits) <- val */
-static void s_iSP16(u16 val) {
+static void s_iSP16(uint16_t val) {
   z80_memset16(cpus.SP,val);
 }
 
-static u16 getAF(void) {
-  return ((u16)cpus.r[rA] << 8)|(u16)cpus.F;
+static uint16_t getAF(void) {
+  return ((uint16_t)cpus.r[rA] << 8)|(uint16_t)cpus.F;
 }
 
-static u16 getBC(void) {
-  return ((u16)cpus.r[rB] << 8)|(u16)cpus.r[rC];
+static uint16_t getBC(void) {
+  return ((uint16_t)cpus.r[rB] << 8)|(uint16_t)cpus.r[rC];
 }
 
-static u16 getDE(void) {
-  return ((u16)cpus.r[rD] << 8)|(u16)cpus.r[rE];
+static uint16_t getDE(void) {
+  return ((uint16_t)cpus.r[rD] << 8)|(uint16_t)cpus.r[rE];
 }
 
-static u16 getHL(void) {
-  return ((u16)cpus.r[rH] << 8)|(u16)cpus.r[rL];
+static uint16_t getHL(void) {
+  return ((uint16_t)cpus.r[rH] << 8)|(uint16_t)cpus.r[rL];
 }
 
-static u16 getAF_(void) {
-  return ((u16)cpus.r_[rA] << 8)|(u16)cpus.F_;
+static uint16_t getAF_(void) {
+  return ((uint16_t)cpus.r_[rA] << 8)|(uint16_t)cpus.F_;
 }
 
-static u16 getBC_(void) {
-  return ((u16)cpus.r_[rB] << 8)|(u16)cpus.r_[rC];
+static uint16_t getBC_(void) {
+  return ((uint16_t)cpus.r_[rB] << 8)|(uint16_t)cpus.r_[rC];
 }
 
-static u16 getDE_(void) {
-  return ((u16)cpus.r_[rD] << 8)|(u16)cpus.r_[rE];
+static uint16_t getDE_(void) {
+  return ((uint16_t)cpus.r_[rD] << 8)|(uint16_t)cpus.r_[rE];
 }
 
-static u16 getHL_(void) {
-  return ((u16)cpus.r_[rH] << 8)|(u16)cpus.r_[rL];
+static uint16_t getHL_(void) {
+  return ((uint16_t)cpus.r_[rH] << 8)|(uint16_t)cpus.r_[rL];
 }
 
-static void setAF(u16 val) {
+static void setAF(uint16_t val) {
   cpus.r[rA]=val>>8;
   cpus.F=val & 0xff;
 }
 
-static void setBC(u16 val) {
+static void setBC(uint16_t val) {
   cpus.r[rB]=val>>8;
   cpus.r[rC]=val & 0xff;
 }
 
-static void setDE(u16 val) {
+static void setDE(uint16_t val) {
   cpus.r[rD]=val>>8;
   cpus.r[rE]=val & 0xff;
 }
 
-static void setHL(u16 val) {
+static void setHL(uint16_t val) {
   cpus.r[rH]=val>>8;
   cpus.r[rL]=val & 0xff;
 }
 
-u16 z80_getAF(void)
+uint16_t z80_getAF(void)
 {
 	return getAF();
 }
 
-u16 z80_getBC(void)
+uint16_t z80_getBC(void)
 {
 	return getBC();
 }
 
-u16 z80_getDE(void)
+uint16_t z80_getDE(void)
 {
 	return getDE();
 }
 
-u16 z80_getHL(void)
+uint16_t z80_getHL(void)
 {
 	return getHL();
 }
 
-u16 z80_getAF_(void)
+uint16_t z80_getAF_(void)
 {
 	return getAF_();
 }
 
-u16 z80_getBC_(void)
+uint16_t z80_getBC_(void)
 {
 	return getBC_();
 }
 
-u16 z80_getDE_(void)
+uint16_t z80_getDE_(void)
 {
 	return getDE_();
 }
 
-u16 z80_getHL_(void)
+uint16_t z80_getHL_(void)
 {
 	return getHL_();
 }
 
-static u8 z80_iget8(void) {
-  u8 tmp;
+static uint8_t z80_iget8(void) {
+  uint8_t tmp;
 
   tmp=z80_imemget8(cpus.PC);
   cpus.PC++;
   return tmp;
 }
 
-static u16 z80_iget16(void) {
-  u16 tmp;
+static uint16_t z80_iget16(void) {
+  uint16_t tmp;
 
   tmp=z80_imemget16(cpus.PC);
   cpus.PC+=2;
@@ -400,42 +400,42 @@ static u16 z80_iget16(void) {
 
 #ifndef NO_Z80UNDOC
 
-static void setIXh(u8 val) {
-  cpus.IX = (cpus.IX & 0x00ff) | ((u16)val<<8);
+static void setIXh(uint8_t val) {
+  cpus.IX = (cpus.IX & 0x00ff) | ((uint16_t)val<<8);
 }
 
-static void setIYh(u8 val) {
-  cpus.IY = (cpus.IY & 0x00ff) | ((u16)val<<8);
+static void setIYh(uint8_t val) {
+  cpus.IY = (cpus.IY & 0x00ff) | ((uint16_t)val<<8);
 }
 
-static void setIXl(u8 val) {
-  cpus.IX = (cpus.IX & 0xff00) | (u16)val;
+static void setIXl(uint8_t val) {
+  cpus.IX = (cpus.IX & 0xff00) | (uint16_t)val;
 }
 
-static void setIYl(u8 val) {
-  cpus.IY = (cpus.IY & 0xff00) | (u16)val;
+static void setIYl(uint8_t val) {
+  cpus.IY = (cpus.IY & 0xff00) | (uint16_t)val;
 }
 
-static u8 getIXh(void) {
+static uint8_t getIXh(void) {
   return cpus.IX>>8;
 }
 
-static u8 getIYh(void) {
+static uint8_t getIYh(void) {
   return cpus.IY>>8;
 }
 
-static u8 getIXl(void) {
+static uint8_t getIXl(void) {
   return cpus.IX&0xff;
 }
 
-static u8 getIYl(void) {
+static uint8_t getIYl(void) {
   return cpus.IY&0xff;
 }
 
 #endif
 
 /************************************************************************/
-static void _push16(u16 val);
+static void _push16(uint16_t val);
 /************************************************************************/
 
 
@@ -451,9 +451,9 @@ void z80_init_tables(void) {
 
 /************************ operations ************************************/
 
-static u8 _adc8(u16 a, u16 b) {
-  u16 res;
-  u16 c;
+static uint8_t _adc8(uint16_t a, uint16_t b) {
+  uint16_t res;
+  uint16_t c;
   
   c=(cpus.F&fC)?1:0;
 
@@ -468,8 +468,8 @@ static u8 _adc8(u16 a, u16 b) {
   return res & 0xff;
 }
 
-static u16 _adc16(u16 a, u16 b) {
-  u16 res0,res1,a1,b1,c,c1;
+static uint16_t _adc16(uint16_t a, uint16_t b) {
+  uint16_t res0,res1,a1,b1,c,c1;
   
   c=((cpus.F&fC)?1:0);
 
@@ -488,8 +488,8 @@ static u16 _adc16(u16 a, u16 b) {
 
 /************************************************************************/
 
-static u8 _add8(u16 a, u16 b) {
-  u16 res;
+static uint8_t _add8(uint16_t a, uint16_t b) {
+  uint16_t res;
 
   res=a+b;
   setflags((res>>7)&1,
@@ -502,8 +502,8 @@ static u8 _add8(u16 a, u16 b) {
   return res & 0xff;
 }
 
-static u16 _add16(u16 a, u16 b) {
-  u16 res0,res1,a1,b1;
+static uint16_t _add16(uint16_t a, uint16_t b) {
+  uint16_t res0,res1,a1,b1;
 
   res0=(a&0xff)+(b&0xff);
   a1=a>>8; b1=b>>8;
@@ -520,8 +520,8 @@ static u16 _add16(u16 a, u16 b) {
 
 /************************************************************************/
 
-static u8 _and8(u8 a, u8 b) {
-  u8 res;
+static uint8_t _and8(uint8_t a, uint8_t b) {
+  uint8_t res;
 
   res=a&b;
   cpus.F=ox_tab[res]|fHC;
@@ -530,8 +530,8 @@ static u8 _and8(u8 a, u8 b) {
 
 /************************************************************************/
 
-static u8 _bit8(u8 a, u8 b) {
-  u8 res;
+static uint8_t _bit8(uint8_t a, uint8_t b) {
+  uint8_t res;
 
   res=b & (1<<a);
   cpus.F=(cpus.F&fC)|ox_tab[res]; /* CF does not change */
@@ -548,15 +548,15 @@ static u8 _bit8(u8 a, u8 b) {
 
 /************************************************************************/
 
-static void _call16(u16 addr) {
+static void _call16(uint16_t addr) {
   _push16(cpus.PC);
   cpus.PC=addr;
 }
 
 /************************************************************************/
 
-static u8 _cp8(u16 a, u16 b) {
-  u16 res;
+static uint8_t _cp8(uint16_t a, uint16_t b) {
+  uint16_t res;
 
   res=a-b;
   setflags((res>>7)&1,
@@ -571,8 +571,8 @@ static u8 _cp8(u16 a, u16 b) {
 
 /************************************************************************/
 
-static u8 _dec8(u16 a) {
-  u16 res;
+static uint8_t _dec8(uint16_t a) {
+  uint16_t res;
 
   res=(a-1)&0xff;
   setflags(res>>7,
@@ -587,12 +587,12 @@ static u8 _dec8(u16 a) {
 
 /************************************************************************/
 
-static u8 _in8pf(u16 a) {
+static uint8_t _in8pf(uint16_t a) {
   return z80_in8(a);		/* query ZX */
 }
 
-static u8 _in8(u16 a) {
-  u16 res;
+static uint8_t _in8(uint16_t a) {
+  uint16_t res;
 
   res=_in8pf(a)&0xff;
   setflags(res>>7,
@@ -606,8 +606,8 @@ static u8 _in8(u16 a) {
 
 /************************************************************************/
 
-static u8 _inc8(u16 a) {
-  u16 res;
+static uint8_t _inc8(uint16_t a) {
+  uint16_t res;
 
   res=(a+1)&0xff;
   setflags(res>>7,
@@ -623,20 +623,20 @@ static u8 _inc8(u16 a) {
 /************************************************************************/
 
 
-static void _jp16(u16 addr) {
+static void _jp16(uint16_t addr) {
   cpus.PC=addr;
 }
 
 /************************************************************************/
 
-static void _jr8(u8 ofs) {
+static void _jr8(uint8_t ofs) {
   cpus.PC+=u8sval(ofs);
 }
 
 /************************************************************************/
 
-static u8 _or8(u8 a, u8 b) {
-  u8 res;
+static uint8_t _or8(uint8_t a, uint8_t b) {
+  uint8_t res;
 
   res=a|b;
   cpus.F=ox_tab[res];
@@ -645,19 +645,19 @@ static u8 _or8(u8 a, u8 b) {
 
 /************************************************************************/
 
-static void _out8(u16 addr, u8 val) {
+static void _out8(uint16_t addr, uint8_t val) {
   z80_out8(addr,val);			/* pass it to ZX */
 }
 
 /************************************************************************/
 
-static void _push16(u16 val) {
+static void _push16(uint16_t val) {
   cpus.SP-=2;
   z80_memset16(cpus.SP,val);
 }
 
-static u16 _pop16(void) {
-  u16 res;
+static uint16_t _pop16(void) {
+  uint16_t res;
 
   res=z80_memget16(cpus.SP);
   cpus.SP+=2;
@@ -666,8 +666,8 @@ static u16 _pop16(void) {
 
 /************************************************************************/
 
-static u8 _res8(u16 a, u16 b) {
-  u16 res;
+static uint8_t _res8(uint16_t a, uint16_t b) {
+  uint16_t res;
 
   res=b & ((1<<a)^0xff);
   return res;
@@ -675,8 +675,8 @@ static u8 _res8(u16 a, u16 b) {
 
 /************************************************************************/
 
-static u8 _rla8(u8 a) {
-  u8 nC,oC;
+static uint8_t _rla8(uint8_t a) {
+  uint8_t nC,oC;
 
   nC=a>>7;
   oC=(cpus.F & fC)?1:0;
@@ -685,8 +685,8 @@ static u8 _rla8(u8 a) {
   return a;
 }
 
-static u8 _rl8(u8 a) {
-  u8 nC,oC;
+static uint8_t _rl8(uint8_t a) {
+  uint8_t nC,oC;
 
   nC=a>>7;
   oC=(cpus.F & fC)?1:0;
@@ -695,8 +695,8 @@ static u8 _rl8(u8 a) {
   return a;
 }
 
-static u8 _rlca8(u8 a) {
-  u8 tmp;
+static uint8_t _rlca8(uint8_t a) {
+  uint8_t tmp;
 
   tmp=a>>7;
   a=(a<<1)|tmp;
@@ -704,8 +704,8 @@ static u8 _rlca8(u8 a) {
   return a;
 }
 
-static u8 _rlc8(u8 a) {
-  u8 tmp;
+static uint8_t _rlc8(uint8_t a) {
+  uint8_t tmp;
 
   tmp=a>>7;
   a=(a<<1)|tmp;
@@ -713,8 +713,8 @@ static u8 _rlc8(u8 a) {
   return a;
 }
 
-static u8 _rra8(u8 a) {
-  u8 nC,oC;
+static uint8_t _rra8(uint8_t a) {
+  uint8_t nC,oC;
 
   nC=a&1;
   oC=(cpus.F & fC)?1:0;
@@ -723,8 +723,8 @@ static u8 _rra8(u8 a) {
   return a;
 }
 
-static u8 _rr8(u8 a) {
-  u8 nC,oC;
+static uint8_t _rr8(uint8_t a) {
+  uint8_t nC,oC;
 
   nC=a&1;
   oC=(cpus.F & fC)?1:0;
@@ -733,8 +733,8 @@ static u8 _rr8(u8 a) {
   return a;
 }
 
-static u8 _rrca8(u8 a) {
-  u8 tmp;
+static uint8_t _rrca8(uint8_t a) {
+  uint8_t tmp;
 
   tmp=a&1;
   a=(a>>1)|(tmp<<7);
@@ -742,8 +742,8 @@ static u8 _rrca8(u8 a) {
   return a;
 }
 
-static u8 _rrc8(u8 a) {
-  u8 tmp;
+static uint8_t _rrc8(uint8_t a) {
+  uint8_t tmp;
 
   tmp=a&1;
   a=(a>>1)|(tmp<<7);
@@ -755,8 +755,8 @@ static u8 _rrc8(u8 a) {
 
 /************************************************************************/
 
-static u8 _sla8(u8 a) {
-  u8 nC;
+static uint8_t _sla8(uint8_t a) {
+  uint8_t nC;
 
   nC=a>>7;
   a<<=1;
@@ -764,8 +764,8 @@ static u8 _sla8(u8 a) {
   return a;
 }
 
-static u8 _sra8(u8 a) {
-  u8 nC;
+static uint8_t _sra8(uint8_t a) {
+  uint8_t nC;
 
   nC=a&1;
   a=(a&0x80) | (a>>1);
@@ -775,8 +775,8 @@ static u8 _sra8(u8 a) {
 
 #ifndef NO_Z80UNDOC
 
-static u8 _sll8(u8 a) {
-  u8 nC,oC;
+static uint8_t _sll8(uint8_t a) {
+  uint8_t nC,oC;
 
   nC=a>>7;
   oC=(cpus.F & fC)?1:0;
@@ -787,8 +787,8 @@ static u8 _sll8(u8 a) {
 
 #endif
 
-static u8 _srl8(u16 a) {
-  u16 nC;
+static uint8_t _srl8(uint16_t a) {
+  uint16_t nC;
 
   nC=a&1;
   a>>=1;
@@ -798,9 +798,9 @@ static u8 _srl8(u16 a) {
 
 /************************************************************************/
 
-static u8 _sbc8(u16 a, u16 b) {
-  u16 res;
-  u16 c;
+static uint8_t _sbc8(uint16_t a, uint16_t b) {
+  uint16_t res;
+  uint16_t c;
   
   c=((cpus.F&fC)!=0);
 
@@ -815,8 +815,8 @@ static u8 _sbc8(u16 a, u16 b) {
   return res & 0xff;
 }
 
-static u16 _sbc16(u16 a, u16 b) {
-  u16 res0,res1,a1,b1,c,c1;
+static uint16_t _sbc16(uint16_t a, uint16_t b) {
+  uint16_t res0,res1,a1,b1,c,c1;
   
   c=((cpus.F&fC)?1:0);
 
@@ -835,8 +835,8 @@ static u16 _sbc16(u16 a, u16 b) {
 
 /************************************************************************/
 
-static u8 _set8(u16 a, u16 b) {
-  u16 res;
+static uint8_t _set8(uint16_t a, uint16_t b) {
+  uint16_t res;
 
   res=b | (1<<a);
   return res;
@@ -845,8 +845,8 @@ static u8 _set8(u16 a, u16 b) {
 /************************************************************************/
 
 
-static u8 _sub8(u16 a, u16 b) {
-  u16 res;
+static uint8_t _sub8(uint16_t a, uint16_t b) {
+  uint16_t res;
 
   res=a-b;
   setflags((res>>7)&1,
@@ -861,8 +861,8 @@ static u8 _sub8(u16 a, u16 b) {
 
 /************************************************************************/
 
-static u8 _xor8(u8 a, u8 b) {
-  u8 res;
+static uint8_t _xor8(uint8_t a, uint8_t b) {
+  uint8_t res;
 
   res=a^b;
   cpus.F=ox_tab[res];
@@ -876,7 +876,7 @@ static u8 _xor8(u8 a, u8 b) {
 /********************* documented opcodes *******************************/
 
 static void ei_adc_A_r(void) {
-  u8 res;
+  uint8_t res;
 
   res=_adc8(cpus.r[rA],cpus.r[opcode & 0x07]);
   cpus.r[rA]=res;
@@ -885,7 +885,7 @@ static void ei_adc_A_r(void) {
 }
 
 static void ei_adc_A_N(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -896,7 +896,7 @@ static void ei_adc_A_N(void) {
 }
 
 static void ei_adc_A_iHL(void) {
-  u8 res;
+  uint8_t res;
 
   res=_adc8(cpus.r[rA],_iHL8());
   cpus.r[rA]=res;
@@ -905,7 +905,7 @@ static void ei_adc_A_iHL(void) {
 }
 
 static void ei_adc_A_iIXN(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -916,7 +916,7 @@ static void ei_adc_A_iIXN(void) {
 }
 
 static void ei_adc_A_iIYN(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -927,7 +927,7 @@ static void ei_adc_A_iIYN(void) {
 }
 
 static void ei_adc_HL_BC(void) {
-  u16 res;
+  uint16_t res;
 
   res=_adc16(getHL(),getBC());
   setHL(res);
@@ -936,7 +936,7 @@ static void ei_adc_HL_BC(void) {
 }
 
 static void ei_adc_HL_DE(void) {
-  u16 res;
+  uint16_t res;
 
   res=_adc16(getHL(),getDE());
   setHL(res);
@@ -945,7 +945,7 @@ static void ei_adc_HL_DE(void) {
 }
 
 static void ei_adc_HL_HL(void) {
-  u16 res;
+  uint16_t res;
 
   res=_adc16(getHL(),getHL());
   setHL(res);
@@ -954,7 +954,7 @@ static void ei_adc_HL_HL(void) {
 }
 
 static void ei_adc_HL_SP(void) {
-  u16 res;
+  uint16_t res;
 
   res=_adc16(getHL(),cpus.SP);
   setHL(res);
@@ -965,7 +965,7 @@ static void ei_adc_HL_SP(void) {
 /************************************************************************/
 
 static void ei_add_A_r(void) {
-  u8 res;
+  uint8_t res;
 
   res=_add8(cpus.r[rA],cpus.r[opcode & 0x07]);
   cpus.r[rA]=res;
@@ -974,7 +974,7 @@ static void ei_add_A_r(void) {
 }
 
 static void ei_add_A_N(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -985,7 +985,7 @@ static void ei_add_A_N(void) {
 }
 
 static void ei_add_A_iHL(void) {
-  u8 res;
+  uint8_t res;
 
   res=_add8(cpus.r[rA],_iHL8());
   cpus.r[rA]=res;
@@ -994,7 +994,7 @@ static void ei_add_A_iHL(void) {
 }
 
 static void ei_add_A_iIXN(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -1005,7 +1005,7 @@ static void ei_add_A_iIXN(void) {
 }
 
 static void ei_add_A_iIYN(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -1016,7 +1016,7 @@ static void ei_add_A_iIYN(void) {
 }
 
 static void ei_add_HL_BC(void) {
-  u16 res;
+  uint16_t res;
 
   res=_add16(getHL(),getBC());
   setHL(res);
@@ -1025,7 +1025,7 @@ static void ei_add_HL_BC(void) {
 }
 
 static void ei_add_HL_DE(void) {
-  u16 res;
+  uint16_t res;
 
   res=_add16(getHL(),getDE());
   setHL(res);
@@ -1034,7 +1034,7 @@ static void ei_add_HL_DE(void) {
 }
 
 static void ei_add_HL_HL(void) {
-  u16 res;
+  uint16_t res;
 
   res=_add16(getHL(),getHL());
   setHL(res);
@@ -1043,7 +1043,7 @@ static void ei_add_HL_HL(void) {
 }
 
 static void ei_add_HL_SP(void) {
-  u16 res;
+  uint16_t res;
 
   res=_add16(getHL(),cpus.SP);
   setHL(res);
@@ -1052,7 +1052,7 @@ static void ei_add_HL_SP(void) {
 }
 
 static void ei_add_IX_BC(void) {
-  u16 res;
+  uint16_t res;
 
   res=_add16(cpus.IX,getBC());
   cpus.IX=res;
@@ -1061,7 +1061,7 @@ static void ei_add_IX_BC(void) {
 }
 
 static void ei_add_IX_DE(void) {
-  u16 res;
+  uint16_t res;
 
   res=_add16(cpus.IX,getDE());
   cpus.IX=res;
@@ -1070,7 +1070,7 @@ static void ei_add_IX_DE(void) {
 }
 
 static void ei_add_IX_IX(void) {
-  u16 res;
+  uint16_t res;
 
   res=_add16(cpus.IX,cpus.IX);
   cpus.IX=res;
@@ -1079,7 +1079,7 @@ static void ei_add_IX_IX(void) {
 }
 
 static void ei_add_IX_SP(void) {
-  u16 res;
+  uint16_t res;
 
   res=_add16(cpus.IX,cpus.SP);
   cpus.IX=res;
@@ -1088,7 +1088,7 @@ static void ei_add_IX_SP(void) {
 }
 
 static void ei_add_IY_BC(void) {
-  u16 res;
+  uint16_t res;
 
   res=_add16(cpus.IY,getBC());
   cpus.IY=res;
@@ -1097,7 +1097,7 @@ static void ei_add_IY_BC(void) {
 }
 
 static void ei_add_IY_DE(void) {
-  u16 res;
+  uint16_t res;
 
   res=_add16(cpus.IY,getDE());
   cpus.IY=res;
@@ -1106,7 +1106,7 @@ static void ei_add_IY_DE(void) {
 }
 
 static void ei_add_IY_IY(void) {
-  u16 res;
+  uint16_t res;
 
   res=_add16(cpus.IY,cpus.IY);
   cpus.IY=res;
@@ -1115,7 +1115,7 @@ static void ei_add_IY_IY(void) {
 }
 
 static void ei_add_IY_SP(void) {
-  u16 res;
+  uint16_t res;
 
   res=_add16(cpus.IY,cpus.SP);
   cpus.IY=res;
@@ -1126,7 +1126,7 @@ static void ei_add_IY_SP(void) {
 /************************************************************************/
 
 static void ei_and_r(void) {
-  u8 res;
+  uint8_t res;
 
   res=_and8(cpus.r[rA],cpus.r[opcode & 0x07]);
   cpus.r[rA]=res;
@@ -1135,7 +1135,7 @@ static void ei_and_r(void) {
 }
 
 static void ei_and_N(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -1146,7 +1146,7 @@ static void ei_and_N(void) {
 }
 
 static void ei_and_iHL(void) {
-  u8 res;
+  uint8_t res;
 
   res=_and8(cpus.r[rA],_iHL8());
   cpus.r[rA]=res;
@@ -1155,7 +1155,7 @@ static void ei_and_iHL(void) {
 }
 
 static void ei_and_iIXN(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -1166,7 +1166,7 @@ static void ei_and_iIXN(void) {
 }
 
 static void ei_and_iIYN(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -1212,7 +1212,7 @@ static void ei_bit_b_iIYN(void) {
 /************************************************************************/
 
 static void ei_call_NN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   _call16(addr);
@@ -1220,7 +1220,7 @@ static void ei_call_NN(void) {
 }
 
 static void ei_call_C_NN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   if(cpus.F & fC) {
@@ -1230,7 +1230,7 @@ static void ei_call_C_NN(void) {
 }
 
 static void ei_call_NC_NN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   if(!(cpus.F & fC)) {
@@ -1240,7 +1240,7 @@ static void ei_call_NC_NN(void) {
 }
 
 static void ei_call_M_NN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   if(cpus.F & fS) {
@@ -1250,7 +1250,7 @@ static void ei_call_M_NN(void) {
 }
 
 static void ei_call_P_NN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   if(!(cpus.F & fS)) {
@@ -1260,7 +1260,7 @@ static void ei_call_P_NN(void) {
 }
 
 static void ei_call_Z_NN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   if(cpus.F & fZ) {
@@ -1270,7 +1270,7 @@ static void ei_call_Z_NN(void) {
 }
 
 static void ei_call_NZ_NN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   if(!(cpus.F & fZ)) {
@@ -1280,7 +1280,7 @@ static void ei_call_NZ_NN(void) {
 }
 
 static void ei_call_PE_NN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   if(cpus.F & fPV) {
@@ -1290,7 +1290,7 @@ static void ei_call_PE_NN(void) {
 }
 
 static void ei_call_PO_NN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   if(!(cpus.F & fPV)) {
@@ -1302,7 +1302,7 @@ static void ei_call_PO_NN(void) {
 /************************************************************************/
 
 static void ei_ccf(void) { /* complement carry flag */
-  u8 nHC;
+  uint8_t nHC;
   
   nHC=(cpus.F&fC)?fHC:0;
   cpus.F= ((cpus.F ^ fC) & ~(fU1|fHC|fU2|fN)) | nHC | (cpus.r[rA]&(fU1|fU2));
@@ -1317,7 +1317,7 @@ static void ei_cp_r(void) {
 }
 
 static void ei_cp_N(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
 
@@ -1331,7 +1331,7 @@ static void ei_cp_iHL(void) {
 }
 
 static void ei_cp_iIXN(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
 
@@ -1340,7 +1340,7 @@ static void ei_cp_iIXN(void) {
 }
 
 static void ei_cp_iIYN(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
 
@@ -1349,8 +1349,8 @@ static void ei_cp_iIYN(void) {
 }
 
 static void ei_cpd(void) {
-  u8 a,b,ufr,res;
-  u16 newBC;
+  uint8_t a,b,ufr,res;
+  uint16_t newBC;
 
   a=cpus.r[rA];
   b=_iHL8();
@@ -1373,8 +1373,8 @@ static void ei_cpd(void) {
 }
 
 static void ei_cpdr(void) {
-  u8 a,b,ufr,res;
-  u16 newBC;
+  uint8_t a,b,ufr,res;
+  uint16_t newBC;
 
   a=cpus.r[rA];
   b=_iHL8();
@@ -1402,8 +1402,8 @@ static void ei_cpdr(void) {
 }
 
 static void ei_cpi(void) {
-  u8 a,b,ufr,res;
-  u16 newBC;
+  uint8_t a,b,ufr,res;
+  uint16_t newBC;
 
   a=cpus.r[rA];
   b=_iHL8();
@@ -1426,8 +1426,8 @@ static void ei_cpi(void) {
 }
 
 static void ei_cpir(void) {
-  u8 a,b,ufr,res;
-  u16 newBC;
+  uint8_t a,b,ufr,res;
+  uint16_t newBC;
 
   a=cpus.r[rA];
   b=_iHL8();
@@ -1472,7 +1472,7 @@ static void ei_cpl(void) { /* A <- cpl(A) ... one's complement */
 /************************************************************************/
 
 static void ei_daa(void) {
-  u16 res;
+  uint16_t res;
   
   res=cpus.r[rA];
   
@@ -1505,7 +1505,7 @@ static void ei_daa(void) {
 /************************************************************************/
 
 static void ei_dec_A(void) {
-  u8 res;
+  uint8_t res;
 
   res=_dec8(cpus.r[rA]);
   cpus.r[rA]=res;
@@ -1514,7 +1514,7 @@ static void ei_dec_A(void) {
 }
 
 static void ei_dec_B(void) {
-  u8 res;
+  uint8_t res;
 
   res=_dec8(cpus.r[rB]);
   cpus.r[rB]=res;
@@ -1523,7 +1523,7 @@ static void ei_dec_B(void) {
 }
 
 static void ei_dec_C(void) {
-  u8 res;
+  uint8_t res;
 
   res=_dec8(cpus.r[rC]);
   cpus.r[rC]=res;
@@ -1532,7 +1532,7 @@ static void ei_dec_C(void) {
 }
 
 static void ei_dec_D(void) {
-  u8 res;
+  uint8_t res;
 
   res=_dec8(cpus.r[rD]);
   cpus.r[rD]=res;
@@ -1541,7 +1541,7 @@ static void ei_dec_D(void) {
 }
 
 static void ei_dec_E(void) {
-  u8 res;
+  uint8_t res;
 
   res=_dec8(cpus.r[rE]);
   cpus.r[rE]=res;
@@ -1550,7 +1550,7 @@ static void ei_dec_E(void) {
 }
 
 static void ei_dec_H(void) {
-  u8 res;
+  uint8_t res;
 
   res=_dec8(cpus.r[rH]);
   cpus.r[rH]=res;
@@ -1559,7 +1559,7 @@ static void ei_dec_H(void) {
 }
 
 static void ei_dec_L(void) {
-  u8 res;
+  uint8_t res;
 
   res=_dec8(cpus.r[rL]);
   cpus.r[rL]=res;
@@ -1568,7 +1568,7 @@ static void ei_dec_L(void) {
 }
 
 static void ei_dec_iHL(void) {
-  u8 res;
+  uint8_t res;
 
   res=_dec8(_iHL8());
   s_iHL8(res);
@@ -1577,7 +1577,7 @@ static void ei_dec_iHL(void) {
 }
 
 static void ei_dec_iIXN(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -1588,7 +1588,7 @@ static void ei_dec_iIXN(void) {
 }
 
 static void ei_dec_iIYN(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -1645,7 +1645,7 @@ static void ei_di(void) {
 /************************************************************************/
 
 static void ei_djnz(void) {
-  u8 ofs;
+  uint8_t ofs;
   
   ofs=z80_iget8();
   cpus.r[rB]--;
@@ -1666,7 +1666,7 @@ static void ei_ei(void) {
 /************************************************************************/
 
 static void ei_ex_iSP_HL(void) {
-  u16 tmp;
+  uint16_t tmp;
 
   tmp=_iSP16();
   s_iSP16(getHL());
@@ -1676,7 +1676,7 @@ static void ei_ex_iSP_HL(void) {
 }
 
 static void ei_ex_iSP_IX(void) {
-  u16 tmp;
+  uint16_t tmp;
 
   tmp=_iSP16();
   s_iSP16(cpus.IX);
@@ -1686,7 +1686,7 @@ static void ei_ex_iSP_IX(void) {
 }
 
 static void ei_ex_iSP_IY(void) {
-  u16 tmp;
+  uint16_t tmp;
 
   tmp=_iSP16();
   s_iSP16(cpus.IY);
@@ -1696,7 +1696,7 @@ static void ei_ex_iSP_IY(void) {
 }
 
 static void ei_ex_AF_xAF(void) {
-  u8 tmp;
+  uint8_t tmp;
 
   tmp=cpus.r[rA]; cpus.r[rA]=cpus.r_[rA]; cpus.r_[rA]=tmp;
   tmp=cpus.F; cpus.F=cpus.F_; cpus.F_=tmp;
@@ -1705,14 +1705,14 @@ static void ei_ex_AF_xAF(void) {
 }
 
 static void ei_ex_DE_HL(void) {
-  u16 tmp;
+  uint16_t tmp;
 
   tmp=getDE(); setDE(getHL()); setHL(tmp);
   z80_clock_inc(4);
 }
 
 static void ei_exx(void) {
-  u8 tmp;
+  uint8_t tmp;
 
   tmp=cpus.r[rB]; cpus.r[rB]=cpus.r_[rB]; cpus.r_[rB]=tmp;
   tmp=cpus.r[rC]; cpus.r[rC]=cpus.r_[rC]; cpus.r_[rC]=tmp;
@@ -1755,12 +1755,12 @@ static void ei_im_2(void) {
 /************************************************************************/
 
 static void ei_in_A_iN(void) {
-  u8 res;
-  u16 op;
+  uint8_t res;
+  uint16_t op;
 
   op=z80_iget8();
 
-  res=_in8pf(((u16)cpus.r[rA]<<8)|(u16)op);
+  res=_in8pf(((uint16_t)cpus.r[rA]<<8)|(uint16_t)op);
   cpus.r[rA]=res;
 
   z80_clock_inc(11);
@@ -1776,7 +1776,7 @@ static void Ui_in_iC(void) {
 }
 
 static void ei_in_A_iC(void) {
-  u8 res;
+  uint8_t res;
 
   res=_in8(getBC());
   cpus.r[rA]=res;
@@ -1785,7 +1785,7 @@ static void ei_in_A_iC(void) {
 }
 
 static void ei_in_B_iC(void) {
-  u8 res;
+  uint8_t res;
 
   res=_in8(getBC());
   cpus.r[rB]=res;
@@ -1794,7 +1794,7 @@ static void ei_in_B_iC(void) {
 }
 
 static void ei_in_C_iC(void) {
-  u8 res;
+  uint8_t res;
 
   res=_in8(getBC());
   cpus.r[rC]=res;
@@ -1803,7 +1803,7 @@ static void ei_in_C_iC(void) {
 }
 
 static void ei_in_D_iC(void) {
-  u8 res;
+  uint8_t res;
 
   res=_in8(getBC());
   cpus.r[rD]=res;
@@ -1812,7 +1812,7 @@ static void ei_in_D_iC(void) {
 }
 
 static void ei_in_E_iC(void) {
-  u8 res;
+  uint8_t res;
 
   res=_in8(getBC());
   cpus.r[rE]=res;
@@ -1821,7 +1821,7 @@ static void ei_in_E_iC(void) {
 }
 
 static void ei_in_H_iC(void) {
-  u8 res;
+  uint8_t res;
 
   res=_in8(getBC());
   cpus.r[rH]=res;
@@ -1830,7 +1830,7 @@ static void ei_in_H_iC(void) {
 }
 
 static void ei_in_L_iC(void) {
-  u8 res;
+  uint8_t res;
 
   res=_in8(getBC());
   cpus.r[rL]=res;
@@ -1841,7 +1841,7 @@ static void ei_in_L_iC(void) {
 /************************************************************************/
 
 static void ei_inc_A(void) {
-  u8 res;
+  uint8_t res;
 
   res=_inc8(cpus.r[rA]);
   cpus.r[rA]=res;
@@ -1850,7 +1850,7 @@ static void ei_inc_A(void) {
 }
 
 static void ei_inc_B(void) {
-  u8 res;
+  uint8_t res;
 
   res=_inc8(cpus.r[rB]);
   cpus.r[rB]=res;
@@ -1859,7 +1859,7 @@ static void ei_inc_B(void) {
 }
 
 static void ei_inc_C(void) {
-  u8 res;
+  uint8_t res;
 
   res=_inc8(cpus.r[rC]);
   cpus.r[rC]=res;
@@ -1868,7 +1868,7 @@ static void ei_inc_C(void) {
 }
 
 static void ei_inc_D(void) {
-  u8 res;
+  uint8_t res;
 
   res=_inc8(cpus.r[rD]);
   cpus.r[rD]=res;
@@ -1877,7 +1877,7 @@ static void ei_inc_D(void) {
 }
 
 static void ei_inc_E(void) {
-  u8 res;
+  uint8_t res;
 
   res=_inc8(cpus.r[rE]);
   cpus.r[rE]=res;
@@ -1886,7 +1886,7 @@ static void ei_inc_E(void) {
 }
 
 static void ei_inc_H(void) {
-  u8 res;
+  uint8_t res;
 
   res=_inc8(cpus.r[rH]);
   cpus.r[rH]=res;
@@ -1895,7 +1895,7 @@ static void ei_inc_H(void) {
 }
 
 static void ei_inc_L(void) {
-  u8 res;
+  uint8_t res;
 
   res=_inc8(cpus.r[rL]);
   cpus.r[rL]=res;
@@ -1904,7 +1904,7 @@ static void ei_inc_L(void) {
 }
 
 static void ei_inc_iHL(void) {
-  u8 res;
+  uint8_t res;
 
   res=_inc8(_iHL8());
   s_iHL8(res);
@@ -1913,7 +1913,7 @@ static void ei_inc_iHL(void) {
 }
 
 static void ei_inc_iIXN(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -1924,7 +1924,7 @@ static void ei_inc_iIXN(void) {
 }
 
 static void ei_inc_iIYN(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -1974,7 +1974,7 @@ static void ei_inc_IY(void) {
 /************************************************************************/
 
 static void ei_ind(void) {
-  u8 res,tmp;
+  uint8_t res,tmp;
 
   tmp=_in8(getBC());
   s_iHL8(tmp);
@@ -1994,7 +1994,7 @@ static void ei_ind(void) {
 }
 
 static void ei_indr(void) {
-  u8 res;
+  uint8_t res;
   
   res=_in8(getBC());
   s_iHL8(res);
@@ -2013,7 +2013,7 @@ static void ei_indr(void) {
 }
 
 static void ei_ini(void) {
-  u8 res,tmp;
+  uint8_t res,tmp;
 
   tmp=_in8(getBC());
   s_iHL8(tmp);
@@ -2033,7 +2033,7 @@ static void ei_ini(void) {
 }
 
 static void ei_inir(void) {
-  u8 res;
+  uint8_t res;
   
   res=_in8(getBC());
   s_iHL8(res);
@@ -2054,7 +2054,7 @@ static void ei_inir(void) {
 /************************************************************************/
 
 static void ei_jp_NN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
  // printf("jp 0x%04x\n",addr);
@@ -2063,7 +2063,7 @@ static void ei_jp_NN(void) {
 }
 
 static void ei_jp_HL(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=getHL();
 //  printf("%04x:jp HL [0x%04x]\n",cpus.PC,addr);
@@ -2072,7 +2072,7 @@ static void ei_jp_HL(void) {
 }
 
 static void ei_jp_IX(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=cpus.IX;
   _jp16(addr);
@@ -2080,7 +2080,7 @@ static void ei_jp_IX(void) {
 }
 
 static void ei_jp_IY(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=cpus.IY;
   _jp16(addr);
@@ -2088,7 +2088,7 @@ static void ei_jp_IY(void) {
 }
 
 static void ei_jp_C_NN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   if(cpus.F & fC) {
@@ -2098,7 +2098,7 @@ static void ei_jp_C_NN(void) {
 }
 
 static void ei_jp_NC_NN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   if(!(cpus.F & fC)) {
@@ -2108,7 +2108,7 @@ static void ei_jp_NC_NN(void) {
 }
 
 static void ei_jp_M_NN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   if(cpus.F & fS) {
@@ -2118,7 +2118,7 @@ static void ei_jp_M_NN(void) {
 }
 
 static void ei_jp_P_NN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   if(!(cpus.F & fS)) {
@@ -2128,7 +2128,7 @@ static void ei_jp_P_NN(void) {
 }
 
 static void ei_jp_Z_NN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   if(cpus.F & fZ) {
@@ -2138,7 +2138,7 @@ static void ei_jp_Z_NN(void) {
 }
 
 static void ei_jp_NZ_NN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   if(!(cpus.F & fZ)) {
@@ -2148,7 +2148,7 @@ static void ei_jp_NZ_NN(void) {
 }
 
 static void ei_jp_PE_NN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   if(cpus.F & fPV) {
@@ -2158,7 +2158,7 @@ static void ei_jp_PE_NN(void) {
 }
 
 static void ei_jp_PO_NN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   if(!(cpus.F & fPV)) {
@@ -2170,7 +2170,7 @@ static void ei_jp_PO_NN(void) {
 /************************************************************************/
 
 static void ei_jr_N(void) {
-  u8 ofs;
+  uint8_t ofs;
 
   ofs=z80_iget8();
   _jr8(ofs);
@@ -2178,7 +2178,7 @@ static void ei_jr_N(void) {
 }
 
 static void ei_jr_C_N(void) {
-  u8 ofs;
+  uint8_t ofs;
 
   ofs=z80_iget8();
   if(cpus.F & fC) {
@@ -2188,7 +2188,7 @@ static void ei_jr_C_N(void) {
 }
 
 static void ei_jr_NC_N(void) {
-  u8 ofs;
+  uint8_t ofs;
 
   ofs=z80_iget8();
   if(!(cpus.F & fC)) {
@@ -2198,7 +2198,7 @@ static void ei_jr_NC_N(void) {
 }
 
 static void ei_jr_Z_N(void) {
-  u8 ofs;
+  uint8_t ofs;
 
   ofs=z80_iget8();
   if(cpus.F & fZ) {
@@ -2208,7 +2208,7 @@ static void ei_jr_Z_N(void) {
 }
 
 static void ei_jr_NZ_N(void) {
-  u8 ofs;
+  uint8_t ofs;
 
   ofs=z80_iget8();
   if(!(cpus.F & fZ)) {
@@ -2265,7 +2265,7 @@ static void ei_ld_A_r(void) {
 }
 
 static void ei_ld_A_N(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   cpus.r[rA]=op;
@@ -2291,7 +2291,7 @@ static void ei_ld_A_iHL(void) {
 }
 
 static void ei_ld_A_iIXN(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   cpus.r[rA]=_iIXN8(op);
@@ -2299,7 +2299,7 @@ static void ei_ld_A_iIXN(void) {
 }
 
 static void ei_ld_A_iIYN(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   cpus.r[rA]=_iIYN8(op);
@@ -2307,7 +2307,7 @@ static void ei_ld_A_iIYN(void) {
 }
 
 static void ei_ld_A_iNN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   cpus.r[rA]=z80_memget8(addr);
@@ -2321,7 +2321,7 @@ static void ei_ld_B_r(void) {
 }
 
 static void ei_ld_B_N(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   cpus.r[rB]=op;
@@ -2335,7 +2335,7 @@ static void ei_ld_B_iHL(void) {
 }
 
 static void ei_ld_B_iIXN(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   cpus.r[rB]=_iIXN8(op);
@@ -2343,7 +2343,7 @@ static void ei_ld_B_iIXN(void) {
 }
 
 static void ei_ld_B_iIYN(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   cpus.r[rB]=_iIYN8(op);
@@ -2357,7 +2357,7 @@ static void ei_ld_C_r(void) {
 }
 
 static void ei_ld_C_N(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   cpus.r[rC]=op;
@@ -2371,7 +2371,7 @@ static void ei_ld_C_iHL(void) {
 }
 
 static void ei_ld_C_iIXN(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   cpus.r[rC]=_iIXN8(op);
@@ -2379,7 +2379,7 @@ static void ei_ld_C_iIXN(void) {
 }
 
 static void ei_ld_C_iIYN(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   cpus.r[rC]=_iIYN8(op);
@@ -2393,7 +2393,7 @@ static void ei_ld_D_r(void) {
 }
 
 static void ei_ld_D_N(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   cpus.r[rD]=op;
@@ -2407,7 +2407,7 @@ static void ei_ld_D_iHL(void) {
 }
 
 static void ei_ld_D_iIXN(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   cpus.r[rD]=_iIXN8(op);
@@ -2415,7 +2415,7 @@ static void ei_ld_D_iIXN(void) {
 }
 
 static void ei_ld_D_iIYN(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   cpus.r[rD]=_iIYN8(op);
@@ -2429,7 +2429,7 @@ static void ei_ld_E_r(void) {
 }
 
 static void ei_ld_E_N(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   cpus.r[rE]=op;
@@ -2443,7 +2443,7 @@ static void ei_ld_E_iHL(void) {
 }
 
 static void ei_ld_E_iIXN(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   cpus.r[rE]=_iIXN8(op);
@@ -2451,7 +2451,7 @@ static void ei_ld_E_iIXN(void) {
 }
 
 static void ei_ld_E_iIYN(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   cpus.r[rE]=_iIYN8(op);
@@ -2465,7 +2465,7 @@ static void ei_ld_H_r(void) {
 }
 
 static void ei_ld_H_N(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   cpus.r[rH]=op;
@@ -2479,7 +2479,7 @@ static void ei_ld_H_iHL(void) {
 }
 
 static void ei_ld_H_iIXN(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   cpus.r[rH]=_iIXN8(op);
@@ -2487,7 +2487,7 @@ static void ei_ld_H_iIXN(void) {
 }
 
 static void ei_ld_H_iIYN(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   cpus.r[rH]=_iIYN8(op);
@@ -2501,7 +2501,7 @@ static void ei_ld_L_r(void) {
 }
 
 static void ei_ld_L_N(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   cpus.r[rL]=op;
@@ -2515,7 +2515,7 @@ static void ei_ld_L_iHL(void) {
 }
 
 static void ei_ld_L_iIXN(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   cpus.r[rL]=_iIXN8(op);
@@ -2523,7 +2523,7 @@ static void ei_ld_L_iIXN(void) {
 }
 
 static void ei_ld_L_iIYN(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
 
@@ -2533,7 +2533,7 @@ static void ei_ld_L_iIYN(void) {
 }
 
 static void ei_ld_BC_iNN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   setBC(z80_memget16(addr));
@@ -2541,7 +2541,7 @@ static void ei_ld_BC_iNN(void) {
 }
 
 static void ei_ld_BC_NN(void) {
-  u16 data;
+  uint16_t data;
 
   data=z80_iget16();
   setBC(data);
@@ -2549,7 +2549,7 @@ static void ei_ld_BC_NN(void) {
 }
 
 static void ei_ld_DE_iNN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   setDE(z80_memget16(addr));
@@ -2557,7 +2557,7 @@ static void ei_ld_DE_iNN(void) {
 }
 
 static void ei_ld_DE_NN(void) {
-  u16 data;
+  uint16_t data;
 
   data=z80_iget16();
   setDE(data);
@@ -2565,7 +2565,7 @@ static void ei_ld_DE_NN(void) {
 }
 
 static void ei_ld_HL_iNN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   setHL(z80_memget16(addr));
@@ -2574,7 +2574,7 @@ static void ei_ld_HL_iNN(void) {
 
 /* ED prefixed variant, takes 4 more T states */
 static void ei_ld_HL_iNN_x(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   setHL(z80_memget16(addr));
@@ -2582,7 +2582,7 @@ static void ei_ld_HL_iNN_x(void) {
 }
 
 static void ei_ld_HL_NN(void) {
-  u16 data;
+  uint16_t data;
 
   data=z80_iget16();
   setHL(data);
@@ -2590,7 +2590,7 @@ static void ei_ld_HL_NN(void) {
 }
 
 static void ei_ld_SP_iNN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   cpus.SP=z80_memget16(addr);
@@ -2598,7 +2598,7 @@ static void ei_ld_SP_iNN(void) {
 }
 
 static void ei_ld_SP_NN(void) {
-  u16 data;
+  uint16_t data;
 
   data=z80_iget16();
   cpus.SP=data;
@@ -2624,7 +2624,7 @@ static void ei_ld_SP_IY(void) {
 }
 
 static void ei_ld_IX_iNN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   cpus.IX=z80_memget16(addr);
@@ -2632,7 +2632,7 @@ static void ei_ld_IX_iNN(void) {
 }
 
 static void ei_ld_IX_NN(void) {
-  u16 data;
+  uint16_t data;
 
   data=z80_iget16();
   cpus.IX=data;
@@ -2640,7 +2640,7 @@ static void ei_ld_IX_NN(void) {
 }
 
 static void ei_ld_IY_iNN(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   cpus.IY=z80_memget16(addr);
@@ -2648,7 +2648,7 @@ static void ei_ld_IY_iNN(void) {
 }
 
 static void ei_ld_IY_NN(void) {
-  u16 data;
+  uint16_t data;
 
   data=z80_iget16();
   cpus.IY=data;
@@ -2662,7 +2662,7 @@ static void ei_ld_iHL_r(void) {
 }
 
 static void ei_ld_iHL_N(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   s_iHL8(op);
@@ -2682,7 +2682,7 @@ static void ei_ld_iDE_A(void) {
 }
 
 static void ei_ld_iNN_A(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   z80_memset8(addr,cpus.r[rA]);
@@ -2690,7 +2690,7 @@ static void ei_ld_iNN_A(void) {
 }
 
 static void ei_ld_iNN_BC(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   z80_memset16(addr,getBC());
@@ -2698,7 +2698,7 @@ static void ei_ld_iNN_BC(void) {
 }
 
 static void ei_ld_iNN_DE(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   z80_memset16(addr,getDE());
@@ -2706,7 +2706,7 @@ static void ei_ld_iNN_DE(void) {
 }
 
 static void ei_ld_iNN_HL(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   z80_memset16(addr,getHL());
@@ -2714,7 +2714,7 @@ static void ei_ld_iNN_HL(void) {
 }
 
 static void ei_ld_iNN_SP(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   z80_memset16(addr,cpus.SP);
@@ -2722,7 +2722,7 @@ static void ei_ld_iNN_SP(void) {
 }
 
 static void ei_ld_iNN_IX(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   z80_memset16(addr,cpus.IX);
@@ -2730,7 +2730,7 @@ static void ei_ld_iNN_IX(void) {
 }
 
 static void ei_ld_iNN_IY(void) {
-  u16 addr;
+  uint16_t addr;
 
   addr=z80_iget16();
   z80_memset16(addr,cpus.IY);
@@ -2738,7 +2738,7 @@ static void ei_ld_iNN_IY(void) {
 }
 
 static void ei_ld_iIXN_r(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   s_iIXN8(op,cpus.r[opcode & 0x07]);
@@ -2746,7 +2746,7 @@ static void ei_ld_iIXN_r(void) {
 }
 
 static void ei_ld_iIXN_N(void) {
-  u8 op,data;
+  uint8_t op,data;
 
   op=z80_iget8();
   data=z80_iget8();
@@ -2755,7 +2755,7 @@ static void ei_ld_iIXN_N(void) {
 }
 
 static void ei_ld_iIYN_r(void) {
-  u8 op;
+  uint8_t op;
 
   op=z80_iget8();
   s_iIYN8(op,cpus.r[opcode & 0x07]);
@@ -2763,7 +2763,7 @@ static void ei_ld_iIYN_r(void) {
 }
 
 static void ei_ld_iIYN_N(void) {
-  u8 op,data;
+  uint8_t op,data;
 
   op=z80_iget8();
   data=z80_iget8();
@@ -2777,8 +2777,8 @@ static void ei_ld_iIYN_N(void) {
 /************************************************************************/
 
 static void ei_ldd(void) {
-  u8 res,ufr;
-  u16 newBC;
+  uint8_t res,ufr;
+  uint16_t newBC;
 
   res=_iHL8();
   s_iDE8(res);
@@ -2799,8 +2799,8 @@ static void ei_ldd(void) {
 }
 
 static void ei_lddr(void) {
-  u8 res,ufr;
-  u16 newBC;
+  uint8_t res,ufr;
+  uint16_t newBC;
 
   res=_iHL8();
   s_iDE8(res);
@@ -2827,8 +2827,8 @@ static void ei_lddr(void) {
 
 
 static void ei_ldi(void) {
-  u8 res,ufr;
-  u16 newBC;
+  uint8_t res,ufr;
+  uint16_t newBC;
 
   res=_iHL8();
   s_iDE8(res);
@@ -2849,8 +2849,8 @@ static void ei_ldi(void) {
 }
 
 static void ei_ldir(void) {
-  u8 res,ufr;
-  u16 newBC;
+  uint8_t res,ufr;
+  uint16_t newBC;
 
   res=_iHL8();
   s_iDE8(res);
@@ -2878,7 +2878,7 @@ static void ei_ldir(void) {
 /************************************************************************/
 
 static void ei_neg(void) {               /* A <- neg(A) .. two's complement */
-  u16 res;
+  uint16_t res;
 //  printf("NEG(2c)\n");
   res = (cpus.r[rA] ^ 0xff)+1;
   
@@ -2904,7 +2904,7 @@ static void ei_nop(void) {
 /************************************************************************/
 
 static void ei_or_r(void) {
-  u8 res;
+  uint8_t res;
 
   res=_or8(cpus.r[rA],cpus.r[opcode & 0x07]);
   cpus.r[rA]=res;
@@ -2913,7 +2913,7 @@ static void ei_or_r(void) {
 }
 
 static void ei_or_N(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -2924,7 +2924,7 @@ static void ei_or_N(void) {
 }
 
 static void ei_or_iHL(void) {
-  u8 res;
+  uint8_t res;
 
   res=_or8(cpus.r[rA],_iHL8());
   cpus.r[rA]=res;
@@ -2933,7 +2933,7 @@ static void ei_or_iHL(void) {
 }
 
 static void ei_or_iIXN(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -2944,7 +2944,7 @@ static void ei_or_iIXN(void) {
 }
 
 static void ei_or_iIYN(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -2957,11 +2957,11 @@ static void ei_or_iIYN(void) {
 /************************************************************************/
 
 static void ei_out_iN_A(void) {
-  u16 op;
+  uint16_t op;
 
   op=z80_iget8();
 
-  _out8(((u16)cpus.r[rA]<<8)|(u16)op,cpus.r[rA]);
+  _out8(((uint16_t)cpus.r[rA]<<8)|(uint16_t)op,cpus.r[rA]);
 
   z80_clock_inc(11);
 }
@@ -3020,7 +3020,7 @@ static void ei_out_iC_L(void) {
 /************************************************************************/
 
 static void ei_outd(void) {
-  u8 res;
+  uint8_t res;
 
   _out8(getBC(),_iHL8());
   setHL(getHL()-1);
@@ -3055,7 +3055,7 @@ static void ei_otdr(void) {
 }
 
 static void ei_outi(void) {
-  u8 res;
+  uint8_t res;
 
   _out8(getBC(),_iHL8());
   setHL(getHL()+1);
@@ -3155,7 +3155,7 @@ static void ei_push_IY(void) {
 /************************************************************************/
 
 static void ei_res_b_r(void) {
-  u8 res;
+  uint8_t res;
 
   res=_res8((opcode>>3)&0x07,cpus.r[opcode & 0x07]);
   cpus.r[opcode & 0x07]=res;
@@ -3164,7 +3164,7 @@ static void ei_res_b_r(void) {
 }
 
 static void ei_res_b_iHL(void) {
-  u8 res;
+  uint8_t res;
 
   res=_res8((opcode>>3)&0x07,_iHL8());
   s_iHL8(res);
@@ -3174,7 +3174,7 @@ static void ei_res_b_iHL(void) {
 
 /* DDCB ! */
 static void ei_res_b_iIXN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_res8((opcode>>3)&0x07,_iIXN8(cbop));
   s_iIXN8(cbop,res);
@@ -3184,7 +3184,7 @@ static void ei_res_b_iIXN(void) {
 
 /* FDCB ! */
 static void ei_res_b_iIYN(void) {
-   u8 res;
+   uint8_t res;
 
   res=_res8((opcode>>3)&0x07,_iIYN8(cbop));
   s_iIYN8(cbop,res);
@@ -3274,7 +3274,7 @@ static void ei_retn(void) {
 /************************************************************************/
 
 static void ei_rla(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rla8(cpus.r[rA]);
   cpus.r[rA]=res;
@@ -3283,7 +3283,7 @@ static void ei_rla(void) {
 }
 
 static void ei_rl_r(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rl8(cpus.r[opcode & 0x07]);
   cpus.r[opcode & 0x07]=res;
@@ -3292,7 +3292,7 @@ static void ei_rl_r(void) {
 }
 
 static void ei_rl_iHL(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rl8(_iHL8());
   s_iHL8(res);
@@ -3302,7 +3302,7 @@ static void ei_rl_iHL(void) {
 
 /* DDCB */
 static void ei_rl_iIXN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rl8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
@@ -3312,7 +3312,7 @@ static void ei_rl_iIXN(void) {
 
 /* FDCB */
 static void ei_rl_iIYN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rl8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
@@ -3321,7 +3321,7 @@ static void ei_rl_iIYN(void) {
 }
 
 static void ei_rlca(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rlca8(cpus.r[rA]);
   cpus.r[rA]=res;
@@ -3330,7 +3330,7 @@ static void ei_rlca(void) {
 }
 
 static void ei_rlc_r(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rlc8(cpus.r[opcode & 0x07]);
   cpus.r[opcode & 0x07]=res;
@@ -3339,7 +3339,7 @@ static void ei_rlc_r(void) {
 }
 
 static void ei_rlc_iHL(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rlc8(_iHL8());
   s_iHL8(res);
@@ -3349,7 +3349,7 @@ static void ei_rlc_iHL(void) {
 
 /* DDCB */
 static void ei_rlc_iIXN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rlc8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
@@ -3359,7 +3359,7 @@ static void ei_rlc_iIXN(void) {
 
 /* FDCB */
 static void ei_rlc_iIYN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rlc8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
@@ -3368,7 +3368,7 @@ static void ei_rlc_iIYN(void) {
 }
 
 static void ei_rld(void) {
-  u8 tmp,tmp2,tmp3;
+  uint8_t tmp,tmp2,tmp3;
 
   tmp=cpus.r[rA] & 0x0f;
   tmp2=_iHL8();
@@ -3383,7 +3383,7 @@ static void ei_rld(void) {
 }
 
 static void ei_rra(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rra8(cpus.r[rA]);
   cpus.r[rA]=res;
@@ -3392,7 +3392,7 @@ static void ei_rra(void) {
 }
 
 static void ei_rr_r(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rr8(cpus.r[opcode & 0x07]);
   cpus.r[opcode & 0x07]=res;
@@ -3401,7 +3401,7 @@ static void ei_rr_r(void) {
 }
 
 static void ei_rr_iHL(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rr8(_iHL8());
   s_iHL8(res);
@@ -3411,7 +3411,7 @@ static void ei_rr_iHL(void) {
 
 /* DDCB */
 static void ei_rr_iIXN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rr8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
@@ -3421,7 +3421,7 @@ static void ei_rr_iIXN(void) {
 
 /* FDCB */
 static void ei_rr_iIYN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rr8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
@@ -3430,7 +3430,7 @@ static void ei_rr_iIYN(void) {
 }
 
 static void ei_rrca(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rrca8(cpus.r[rA]);
   cpus.r[rA]=res;
@@ -3439,7 +3439,7 @@ static void ei_rrca(void) {
 }
 
 static void ei_rrc_r(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rrc8(cpus.r[opcode & 0x07]);
   cpus.r[opcode & 0x07]=res;
@@ -3448,7 +3448,7 @@ static void ei_rrc_r(void) {
 }
 
 static void ei_rrc_iHL(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rrc8(_iHL8());
   s_iHL8(res);
@@ -3458,7 +3458,7 @@ static void ei_rrc_iHL(void) {
 
 /* DDCB */
 static void ei_rrc_iIXN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rrc8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
@@ -3468,7 +3468,7 @@ static void ei_rrc_iIXN(void) {
 
 /* FDCB */
 static void ei_rrc_iIYN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rrc8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
@@ -3477,7 +3477,7 @@ static void ei_rrc_iIYN(void) {
 }
 
 static void ei_rrd(void) {
-  u8 tmp,tmp2,tmp3;
+  uint8_t tmp,tmp2,tmp3;
 
   tmp=cpus.r[rA] & 0x0f;
   tmp2=_iHL8();
@@ -3536,7 +3536,7 @@ static void ei_rst_38(void) {
 /************************************************************************/
 
 static void ei_sbc_A_r(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sbc8(cpus.r[rA],cpus.r[opcode & 0x07]);
   cpus.r[rA]=res;
@@ -3545,7 +3545,7 @@ static void ei_sbc_A_r(void) {
 }
 
 static void ei_sbc_A_N(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -3556,7 +3556,7 @@ static void ei_sbc_A_N(void) {
 }
 
 static void ei_sbc_A_iHL(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sbc8(cpus.r[rA],_iHL8());
   cpus.r[rA]=res;
@@ -3565,7 +3565,7 @@ static void ei_sbc_A_iHL(void) {
 }
 
 static void ei_sbc_A_iIXN(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -3576,7 +3576,7 @@ static void ei_sbc_A_iIXN(void) {
 }
 
 static void ei_sbc_A_iIYN(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -3587,7 +3587,7 @@ static void ei_sbc_A_iIYN(void) {
 }
 
 static void ei_sbc_HL_BC(void) {
-  u16 res;
+  uint16_t res;
 
   res=_sbc16(getHL(),getBC());
   setHL(res);
@@ -3596,7 +3596,7 @@ static void ei_sbc_HL_BC(void) {
 }
 
 static void ei_sbc_HL_DE(void) {
-  u16 res;
+  uint16_t res;
 
   res=_sbc16(getHL(),getDE());
   setHL(res);
@@ -3605,7 +3605,7 @@ static void ei_sbc_HL_DE(void) {
 }
 
 static void ei_sbc_HL_HL(void) {
-  u16 res;
+  uint16_t res;
 
   res=_sbc16(getHL(),getHL());
   setHL(res);
@@ -3614,7 +3614,7 @@ static void ei_sbc_HL_HL(void) {
 }
 
 static void ei_sbc_HL_SP(void) {
-  u16 res;
+  uint16_t res;
 
   res=_sbc16(getHL(),cpus.SP);
   setHL(res);
@@ -3634,7 +3634,7 @@ static void ei_scf(void) {
 /************************************************************************/
 
 static void ei_set_b_r(void) {
-  u8 res;
+  uint8_t res;
 
   res=_set8((opcode>>3)&0x07,cpus.r[opcode & 0x07]);
   cpus.r[opcode & 0x07]=res;
@@ -3643,7 +3643,7 @@ static void ei_set_b_r(void) {
 }
 
 static void ei_set_b_iHL(void) {
-  u8 res;
+  uint8_t res;
 
   res=_set8((opcode>>3)&0x07,_iHL8());
   s_iHL8(res);
@@ -3653,7 +3653,7 @@ static void ei_set_b_iHL(void) {
 
 /* DDCB ! */
 static void ei_set_b_iIXN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_set8((opcode>>3)&0x07,_iIXN8(cbop));
   s_iIXN8(cbop,res);
@@ -3663,7 +3663,7 @@ static void ei_set_b_iIXN(void) {
 
 /* FDCB ! */
 static void ei_set_b_iIYN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_set8((opcode>>3)&0x07,_iIYN8(cbop));
   s_iIYN8(cbop,res);
@@ -3674,7 +3674,7 @@ static void ei_set_b_iIYN(void) {
 /************************************************************************/
 
 static void ei_sla_r(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sla8(cpus.r[opcode & 0x07]);
   cpus.r[opcode & 0x07]=res;
@@ -3683,7 +3683,7 @@ static void ei_sla_r(void) {
 }
 
 static void ei_sla_iHL(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sla8(_iHL8());
   s_iHL8(res);
@@ -3693,7 +3693,7 @@ static void ei_sla_iHL(void) {
 
 /* DDCB */
 static void ei_sla_iIXN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sla8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
@@ -3703,7 +3703,7 @@ static void ei_sla_iIXN(void) {
 
 /* FDCB */
 static void ei_sla_iIYN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sla8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
@@ -3712,7 +3712,7 @@ static void ei_sla_iIYN(void) {
 }
 
 static void ei_sra_r(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sra8(cpus.r[opcode & 0x07]);
   cpus.r[opcode & 0x07]=res;
@@ -3721,7 +3721,7 @@ static void ei_sra_r(void) {
 }
 
 static void ei_sra_iHL(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sra8(_iHL8());
   s_iHL8(res);
@@ -3731,7 +3731,7 @@ static void ei_sra_iHL(void) {
 
 /* DDCB */
 static void ei_sra_iIXN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sra8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
@@ -3741,7 +3741,7 @@ static void ei_sra_iIXN(void) {
 
 /* FDCB */
 static void ei_sra_iIYN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sra8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
@@ -3754,7 +3754,7 @@ static void ei_sra_iIYN(void) {
 #ifndef NO_Z80UNDOC
 
 static void Ui_sll_r(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sll8(cpus.r[opcode & 0x07]);
   cpus.r[opcode & 0x07]=res;
@@ -3764,7 +3764,7 @@ static void Ui_sll_r(void) {
 }
 
 static void Ui_sll_iHL(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sll8(_iHL8());
   s_iHL8(res);
@@ -3775,7 +3775,7 @@ static void Ui_sll_iHL(void) {
 
 /* DDCB */
 static void Ui_sll_iIXN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sll8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
@@ -3786,7 +3786,7 @@ static void Ui_sll_iIXN(void) {
 
 /* FDCB */
 static void Ui_sll_iIYN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sll8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
@@ -3805,7 +3805,7 @@ static void Ui_sll_iIYN(void) {
 #endif
 
 static void ei_srl_r(void) {
-  u8 res;
+  uint8_t res;
 
   res=_srl8(cpus.r[opcode & 0x07]);
   cpus.r[opcode & 0x07]=res;
@@ -3814,7 +3814,7 @@ static void ei_srl_r(void) {
 }
 
 static void ei_srl_iHL(void) {
-  u8 res;
+  uint8_t res;
 
   res=_srl8(_iHL8());
   s_iHL8(res);
@@ -3824,7 +3824,7 @@ static void ei_srl_iHL(void) {
 
 /* DDCB */
 static void ei_srl_iIXN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_srl8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
@@ -3834,7 +3834,7 @@ static void ei_srl_iIXN(void) {
 
 /* FDCB */
 static void ei_srl_iIYN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_srl8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
@@ -3845,7 +3845,7 @@ static void ei_srl_iIYN(void) {
 /************************************************************************/
 
 static void ei_sub_r(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sub8(cpus.r[rA],cpus.r[opcode & 0x07]);
   cpus.r[rA]=res;
@@ -3854,7 +3854,7 @@ static void ei_sub_r(void) {
 }
 
 static void ei_sub_N(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -3865,7 +3865,7 @@ static void ei_sub_N(void) {
 }
 
 static void ei_sub_iHL(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sub8(cpus.r[rA],_iHL8());
   cpus.r[rA]=res;
@@ -3874,7 +3874,7 @@ static void ei_sub_iHL(void) {
 }
 
 static void ei_sub_iIXN(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -3885,7 +3885,7 @@ static void ei_sub_iIXN(void) {
 }
 
 static void ei_sub_iIYN(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -3899,7 +3899,7 @@ static void ei_sub_iIYN(void) {
 /************************************************************************/
 
 static void ei_xor_r(void) {
-  u8 res;
+  uint8_t res;
 
   res=_xor8(cpus.r[rA],cpus.r[opcode & 0x07]);
   cpus.r[rA]=res;
@@ -3908,7 +3908,7 @@ static void ei_xor_r(void) {
 }
 
 static void ei_xor_N(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -3919,7 +3919,7 @@ static void ei_xor_N(void) {
 }
 
 static void ei_xor_iHL(void) {
-  u8 res;
+  uint8_t res;
 
   res=_xor8(cpus.r[rA],_iHL8());
   cpus.r[rA]=res;
@@ -3928,7 +3928,7 @@ static void ei_xor_iHL(void) {
 }
 
 static void ei_xor_iIXN(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -3939,7 +3939,7 @@ static void ei_xor_iIXN(void) {
 }
 
 static void ei_xor_iIYN(void) {
-  u8 res,op;
+  uint8_t res,op;
 
   op=z80_iget8();
 
@@ -3955,7 +3955,7 @@ static void ei_xor_iIYN(void) {
 #ifndef NO_Z80UNDOC
 
 static void Ui_inc_IXh(void) {
-  u8 res;
+  uint8_t res;
 
   res=_inc8(getIXh());
   setIXh(res);
@@ -3965,7 +3965,7 @@ static void Ui_inc_IXh(void) {
 }
 
 static void Ui_dec_IXh(void) {
-  u8 res;
+  uint8_t res;
 
   res=_dec8(getIXh());
   setIXh(res);
@@ -3975,7 +3975,7 @@ static void Ui_dec_IXh(void) {
 }
 
 static void Ui_ld_IXh_N(void) {
-  u8 res;
+  uint8_t res;
 
   res=z80_iget8();
   setIXh(res);
@@ -3985,7 +3985,7 @@ static void Ui_ld_IXh_N(void) {
 }
 
 static void Ui_inc_IXl(void) {
-  u8 res;
+  uint8_t res;
 
   res=_inc8(getIXl());
   setIXl(res);
@@ -3995,7 +3995,7 @@ static void Ui_inc_IXl(void) {
 }
 
 static void Ui_dec_IXl(void) {
-  u8 res;
+  uint8_t res;
 
   res=_dec8(getIXl());
   setIXl(res);
@@ -4005,7 +4005,7 @@ static void Ui_dec_IXl(void) {
 }
 
 static void Ui_ld_IXl_N(void) {
-  u8 res;
+  uint8_t res;
 
   res=z80_iget8();
   setIXl(res);
@@ -4209,7 +4209,7 @@ static void Ui_ld_A_IXl(void) {
 /***********************************************************************/
 
 static void Ui_add_A_IXh(void) {
-  u8 res;
+  uint8_t res;
 
   res=_add8(cpus.r[rA],getIXh());
   cpus.r[rA]=res;
@@ -4219,7 +4219,7 @@ static void Ui_add_A_IXh(void) {
 }
 
 static void Ui_add_A_IXl(void) {
-  u8 res;
+  uint8_t res;
 
   res=_add8(cpus.r[rA],getIXl());
   cpus.r[rA]=res;
@@ -4229,7 +4229,7 @@ static void Ui_add_A_IXl(void) {
 }
 
 static void Ui_adc_A_IXh(void) {
-  u8 res;
+  uint8_t res;
 
   res=_adc8(cpus.r[rA],getIXh());
   cpus.r[rA]=res;
@@ -4239,7 +4239,7 @@ static void Ui_adc_A_IXh(void) {
 }
 
 static void Ui_adc_A_IXl(void) {
-  u8 res;
+  uint8_t res;
 
   res=_adc8(cpus.r[rA],getIXl());
   cpus.r[rA]=res;
@@ -4249,7 +4249,7 @@ static void Ui_adc_A_IXl(void) {
 }
 
 static void Ui_sub_IXh(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sub8(cpus.r[rA],getIXh());
   cpus.r[rA]=res;
@@ -4259,7 +4259,7 @@ static void Ui_sub_IXh(void) {
 }
 
 static void Ui_sub_IXl(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sub8(cpus.r[rA],getIXl());
   cpus.r[rA]=res;
@@ -4269,7 +4269,7 @@ static void Ui_sub_IXl(void) {
 }
 
 static void Ui_sbc_IXh(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sbc8(cpus.r[rA],getIXh());
   cpus.r[rA]=res;
@@ -4279,7 +4279,7 @@ static void Ui_sbc_IXh(void) {
 }
 
 static void Ui_sbc_IXl(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sbc8(cpus.r[rA],getIXl());
   cpus.r[rA]=res;
@@ -4289,7 +4289,7 @@ static void Ui_sbc_IXl(void) {
 }
 
 static void Ui_and_IXh(void) {
-  u8 res;
+  uint8_t res;
 
   res=_and8(cpus.r[rA],getIXh());
   cpus.r[rA]=res;
@@ -4299,7 +4299,7 @@ static void Ui_and_IXh(void) {
 }
 
 static void Ui_and_IXl(void) {
-  u8 res;
+  uint8_t res;
 
   res=_and8(cpus.r[rA],getIXl());
   cpus.r[rA]=res;
@@ -4309,7 +4309,7 @@ static void Ui_and_IXl(void) {
 }
 
 static void Ui_xor_IXh(void) {
-  u8 res;
+  uint8_t res;
 
   res=_xor8(cpus.r[rA],getIXh());
   cpus.r[rA]=res;
@@ -4319,7 +4319,7 @@ static void Ui_xor_IXh(void) {
 }
 
 static void Ui_xor_IXl(void) {
-  u8 res;
+  uint8_t res;
 
   res=_xor8(cpus.r[rA],getIXl());
   cpus.r[rA]=res;
@@ -4329,7 +4329,7 @@ static void Ui_xor_IXl(void) {
 }
 
 static void Ui_or_IXh(void) {
-  u8 res;
+  uint8_t res;
 
   res=_or8(cpus.r[rA],getIXh());
   cpus.r[rA]=res;
@@ -4339,7 +4339,7 @@ static void Ui_or_IXh(void) {
 }
 
 static void Ui_or_IXl(void) {
-  u8 res;
+  uint8_t res;
 
   res=_or8(cpus.r[rA],getIXl());
   cpus.r[rA]=res;
@@ -4349,7 +4349,7 @@ static void Ui_or_IXl(void) {
 }
 
 static void Ui_cp_IXh(void) {
-  u8 res;
+  uint8_t res;
 
   res=_cp8(cpus.r[rA],getIXh());
   cpus.r[rA]=res;
@@ -4359,7 +4359,7 @@ static void Ui_cp_IXh(void) {
 }
 
 static void Ui_cp_IXl(void) {
-  u8 res;
+  uint8_t res;
 
   res=_cp8(cpus.r[rA],getIXl());
   cpus.r[rA]=res;
@@ -4371,7 +4371,7 @@ static void Ui_cp_IXl(void) {
 /**** FD .. ***************************************************************/
 
 static void Ui_inc_IYh(void) {
-  u8 res;
+  uint8_t res;
 
   res=_inc8(getIYh());
   setIYh(res);
@@ -4381,7 +4381,7 @@ static void Ui_inc_IYh(void) {
 }
 
 static void Ui_dec_IYh(void) {
-  u8 res;
+  uint8_t res;
 
   res=_dec8(getIYh());
   setIYh(res);
@@ -4391,7 +4391,7 @@ static void Ui_dec_IYh(void) {
 }
 
 static void Ui_ld_IYh_N(void) {
-  u8 res;
+  uint8_t res;
 
   res=z80_iget8();
   setIYh(res);
@@ -4401,7 +4401,7 @@ static void Ui_ld_IYh_N(void) {
 }
 
 static void Ui_inc_IYl(void) {
-  u8 res;
+  uint8_t res;
 
   res=_inc8(getIYl());
   setIYl(res);
@@ -4411,7 +4411,7 @@ static void Ui_inc_IYl(void) {
 }
 
 static void Ui_dec_IYl(void) {
-  u8 res;
+  uint8_t res;
 
   res=_dec8(getIYl());
   setIYl(res);
@@ -4421,7 +4421,7 @@ static void Ui_dec_IYl(void) {
 }
 
 static void Ui_ld_IYl_N(void) {
-  u8 res;
+  uint8_t res;
 
   res=z80_iget8();
   setIYl(res);
@@ -4625,7 +4625,7 @@ static void Ui_ld_A_IYl(void) {
 /***********************************************************************/
 
 static void Ui_add_A_IYh(void) {
-  u8 res;
+  uint8_t res;
 
   res=_add8(cpus.r[rA],getIYh());
   cpus.r[rA]=res;
@@ -4635,7 +4635,7 @@ static void Ui_add_A_IYh(void) {
 }
 
 static void Ui_add_A_IYl(void) {
-  u8 res;
+  uint8_t res;
 
   res=_add8(cpus.r[rA],getIYl());
   cpus.r[rA]=res;
@@ -4645,7 +4645,7 @@ static void Ui_add_A_IYl(void) {
 }
 
 static void Ui_adc_A_IYh(void) {
-  u8 res;
+  uint8_t res;
 
   res=_adc8(cpus.r[rA],getIYh());
   cpus.r[rA]=res;
@@ -4655,7 +4655,7 @@ static void Ui_adc_A_IYh(void) {
 }
 
 static void Ui_adc_A_IYl(void) {
-  u8 res;
+  uint8_t res;
 
   res=_adc8(cpus.r[rA],getIYl());
   cpus.r[rA]=res;
@@ -4665,7 +4665,7 @@ static void Ui_adc_A_IYl(void) {
 }
 
 static void Ui_sub_IYh(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sub8(cpus.r[rA],getIYh());
   cpus.r[rA]=res;
@@ -4675,7 +4675,7 @@ static void Ui_sub_IYh(void) {
 }
 
 static void Ui_sub_IYl(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sub8(cpus.r[rA],getIYl());
   cpus.r[rA]=res;
@@ -4685,7 +4685,7 @@ static void Ui_sub_IYl(void) {
 }
 
 static void Ui_sbc_IYh(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sbc8(cpus.r[rA],getIYh());
   cpus.r[rA]=res;
@@ -4695,7 +4695,7 @@ static void Ui_sbc_IYh(void) {
 }
 
 static void Ui_sbc_IYl(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sbc8(cpus.r[rA],getIYl());
   cpus.r[rA]=res;
@@ -4705,7 +4705,7 @@ static void Ui_sbc_IYl(void) {
 }
 
 static void Ui_and_IYh(void) {
-  u8 res;
+  uint8_t res;
 
   res=_and8(cpus.r[rA],getIYh());
   cpus.r[rA]=res;
@@ -4715,7 +4715,7 @@ static void Ui_and_IYh(void) {
 }
 
 static void Ui_and_IYl(void) {
-  u8 res;
+  uint8_t res;
 
   res=_and8(cpus.r[rA],getIYl());
   cpus.r[rA]=res;
@@ -4725,7 +4725,7 @@ static void Ui_and_IYl(void) {
 }
 
 static void Ui_xor_IYh(void) {
-  u8 res;
+  uint8_t res;
 
   res=_xor8(cpus.r[rA],getIYh());
   cpus.r[rA]=res;
@@ -4735,7 +4735,7 @@ static void Ui_xor_IYh(void) {
 }
 
 static void Ui_xor_IYl(void) {
-  u8 res;
+  uint8_t res;
 
   res=_xor8(cpus.r[rA],getIYl());
   cpus.r[rA]=res;
@@ -4745,7 +4745,7 @@ static void Ui_xor_IYl(void) {
 }
 
 static void Ui_or_IYh(void) {
-  u8 res;
+  uint8_t res;
 
   res=_or8(cpus.r[rA],getIYh());
   cpus.r[rA]=res;
@@ -4755,7 +4755,7 @@ static void Ui_or_IYh(void) {
 }
 
 static void Ui_or_IYl(void) {
-  u8 res;
+  uint8_t res;
 
   res=_or8(cpus.r[rA],getIYl());
   cpus.r[rA]=res;
@@ -4765,7 +4765,7 @@ static void Ui_or_IYl(void) {
 }
 
 static void Ui_cp_IYh(void) {
-  u8 res;
+  uint8_t res;
 
   res=_cp8(cpus.r[rA],getIYh());
   cpus.r[rA]=res;
@@ -4775,7 +4775,7 @@ static void Ui_cp_IYh(void) {
 }
 
 static void Ui_cp_IYl(void) {
-  u8 res;
+  uint8_t res;
 
   res=_cp8(cpus.r[rA],getIYl());
   cpus.r[rA]=res;
@@ -4792,7 +4792,7 @@ static void Ui_ednop(void) { /* different from ei_nop! */
 }
 
 static void Ui_neg(void) {               /* A <- neg(A) .. two's complement */
-  u16 res;
+  uint16_t res;
 //  printf("NEG(2c)\n");
   res = (cpus.r[rA] ^ 0xff)+1;
   cpus.r[rA] = res & 0xff;
@@ -4846,7 +4846,7 @@ static void Ui_retn(void) {
 /**** DD CB dd .. ***************************************************************/
 
 static void Ui_ld_r_rlc_iIXN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rlc8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
@@ -4857,7 +4857,7 @@ static void Ui_ld_r_rlc_iIXN(void) {
 }
 
 static void Ui_ld_r_rrc_iIXN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rrc8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
@@ -4868,7 +4868,7 @@ static void Ui_ld_r_rrc_iIXN(void) {
 }
 
 static void Ui_ld_r_rl_iIXN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rl8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
@@ -4879,7 +4879,7 @@ static void Ui_ld_r_rl_iIXN(void) {
 }
 
 static void Ui_ld_r_rr_iIXN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rr8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
@@ -4890,7 +4890,7 @@ static void Ui_ld_r_rr_iIXN(void) {
 }
 
 static void Ui_ld_r_sla_iIXN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sla8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
@@ -4901,7 +4901,7 @@ static void Ui_ld_r_sla_iIXN(void) {
 }
 
 static void Ui_ld_r_sra_iIXN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sra8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
@@ -4912,7 +4912,7 @@ static void Ui_ld_r_sra_iIXN(void) {
 }
 
 static void Ui_ld_r_sll_iIXN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sll8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
@@ -4923,7 +4923,7 @@ static void Ui_ld_r_sll_iIXN(void) {
 }
 
 static void Ui_ld_r_srl_iIXN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_srl8(_iIXN8(cbop));
   s_iIXN8(cbop,res);
@@ -4946,7 +4946,7 @@ static void Ui_bit_b_iIXN(void) {
 }
 
 static void Ui_ld_r_res_b_iIXN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_res8((opcode>>3)&0x07,_iIXN8(cbop));
   s_iIXN8(cbop,res);
@@ -4957,7 +4957,7 @@ static void Ui_ld_r_res_b_iIXN(void) {
 }
 
 static void Ui_ld_r_set_b_iIXN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_set8((opcode>>3)&0x07,_iIXN8(cbop));
   s_iIXN8(cbop,res);
@@ -4970,7 +4970,7 @@ static void Ui_ld_r_set_b_iIXN(void) {
 /**** FD CB dd .. ***************************************************************/
 
 static void Ui_ld_r_rlc_iIYN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rlc8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
@@ -4981,7 +4981,7 @@ static void Ui_ld_r_rlc_iIYN(void) {
 }
 
 static void Ui_ld_r_rrc_iIYN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rrc8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
@@ -4992,7 +4992,7 @@ static void Ui_ld_r_rrc_iIYN(void) {
 }
 
 static void Ui_ld_r_rl_iIYN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rl8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
@@ -5003,7 +5003,7 @@ static void Ui_ld_r_rl_iIYN(void) {
 }
 
 static void Ui_ld_r_rr_iIYN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_rr8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
@@ -5014,7 +5014,7 @@ static void Ui_ld_r_rr_iIYN(void) {
 }
 
 static void Ui_ld_r_sla_iIYN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sla8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
@@ -5025,7 +5025,7 @@ static void Ui_ld_r_sla_iIYN(void) {
 }
 
 static void Ui_ld_r_sra_iIYN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sra8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
@@ -5036,7 +5036,7 @@ static void Ui_ld_r_sra_iIYN(void) {
 }
 
 static void Ui_ld_r_sll_iIYN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_sll8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
@@ -5047,7 +5047,7 @@ static void Ui_ld_r_sll_iIYN(void) {
 }
 
 static void Ui_ld_r_srl_iIYN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_srl8(_iIYN8(cbop));
   s_iIYN8(cbop,res);
@@ -5069,7 +5069,7 @@ static void Ui_bit_b_iIYN(void) {
 }
 
 static void Ui_ld_r_res_b_iIYN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_res8((opcode>>3)&0x07,_iIYN8(cbop));
   s_iIYN8(cbop,res);
@@ -5080,7 +5080,7 @@ static void Ui_ld_r_res_b_iIYN(void) {
 }
 
 static void Ui_ld_r_set_b_iIYN(void) {
-  u8 res;
+  uint8_t res;
 
   res=_set8((opcode>>3)&0x07,_iIYN8(cbop));
   s_iIYN8(cbop,res);
@@ -5257,7 +5257,7 @@ void z80_resetstat(void) {
 #endif
 }
 
-unsigned z80_getstat(int tab, u8 opcode)
+unsigned z80_getstat(int tab, uint8_t opcode)
 {
 #ifndef NO_Z80STAT
 	return stat_tab[tab][opcode];
@@ -5350,8 +5350,8 @@ void z80_execinstr(void) {
 }
 
 static void z80_check_int(void) {
-  u16 addr;
-  u8 data;
+  uint16_t addr;
+  uint8_t data;
 //  printf("interrupt->DI\n");
 
   if(!cpus.int_pending) return;
@@ -5382,7 +5382,7 @@ static void z80_check_int(void) {
       incr_R(2);
       _push16(cpus.PC);
       data = z80_snoop8();
-      addr=((u16)cpus.I<<8) | (u16)data;
+      addr=((uint16_t)cpus.I<<8) | (uint16_t)data;
       cpus.PC=z80_memget16(addr);
 //      printf("IM 2 INT: I=%02x D8=%02x tabi=%04x dst=%04x\n",cpus.I,data,addr,cpus.PC);
       z80_clock_inc(19);

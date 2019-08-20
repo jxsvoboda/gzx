@@ -30,6 +30,7 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include "debug.h"
 #include "gzx.h"
@@ -40,16 +41,16 @@
 #include "disasm.h"
 #include "sys_all.h"
 
-#define MK_PAIR(hi,lo) ( (((u16)(hi)) << 8) | (lo) )
+#define MK_PAIR(hi,lo) ( (((uint16_t)(hi)) << 8) | (lo) )
 
 #define HEX_CY 18
 #define INSTR_CY 9
 
 #define INSTR_LINES 6
 
-static u16 hex_base;
+static uint16_t hex_base;
 
-static u16 instr_base;
+static uint16_t instr_base;
 
 static int ic_ln; /* instruction cursor line number */
 
@@ -57,7 +58,7 @@ static void d_istep(void) {
   zx_debug_mstep();
 }
 
-static void dreg(char *name, u16 value) {
+static void dreg(char *name, uint16_t value) {
   char buf[16];
   
   fgc=7; gputs(name); gputc(':'); fgc=5;
@@ -117,7 +118,7 @@ static void d_regs(void) {
 static void d_hex(void) {
   int i,j;
   char buf[16];
-  u8 b;
+  uint8_t b;
   
   for(i=0;i<6;i++) {
     fgc=7;
@@ -182,7 +183,7 @@ static void instr_next(void) {
 #define BKTRACE 8
 
 static void instr_prev(void) {
-  u16 c,last;
+  uint16_t c,last;
   
   disasm_org = instr_base-BKTRACE;
   c=0;
@@ -204,7 +205,7 @@ static void d_trace(void) {
   instr_base=cpus.PC;
 }
 
-static void d_run_upto(u16 addr) {
+static void d_run_upto(uint16_t addr) {
   wkey_t k;
   int esc;
   
@@ -223,7 +224,7 @@ static void d_run_upto(u16 addr) {
 }
 
 static void d_stepover(void) {
-  u8 b;
+  uint8_t b;
   
   b = zx_memget8(cpus.PC);
   if(b==0xCD || (b&0xC7)==0xC4) {

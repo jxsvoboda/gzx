@@ -33,7 +33,7 @@
 #define Z80G_H
 
 #include <stdbool.h>
-#include "intdef.h"
+#include <stdint.h>
 #include "z80.h"
 
 /* Number of graphical planes */
@@ -44,9 +44,9 @@ extern z80s gpus[NGP];
 /** Always points to real CPU, never GPU */
 extern z80s *rcpus;
 
-extern u8 *gfxrom[NGP];
-extern u8 *gfxram[NGP];
-extern u8 *gfxscr[NGP];
+extern uint8_t *gfxrom[NGP];
+extern uint8_t *gfxram[NGP];
+extern uint8_t *gfxscr[NGP];
 
 void gpu_set_allow(bool);
 void gpu_init(void);

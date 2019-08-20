@@ -32,7 +32,7 @@
 #ifndef Z80_H
 #define Z80_H
 
-#include "intdef.h"
+#include <stdint.h>
 
 /* flags */
 #define fS  0x80
@@ -60,17 +60,17 @@
 #define rL  0x5
 
 typedef struct _z80s {     /*** registers of the Z80 CPU ***/
-  u8 r[8];                 /* all-purpose registers,HL reg */
-  u8 F;                    /* flags register */
+  uint8_t r[8];            /* all-purpose registers,HL reg */
+  uint8_t F;               /* flags register */
 
-  u8 r_[8];      	   /* alternative registers */
-  u8 F_;
+  uint8_t r_[8];      	   /* alternative registers */
+  uint8_t F_;
 
-  u8 I;                    /* interrupt page address register */
-  u16 IX, IY;              /* index registers */
-  u16 PC;                  /* program counter */
-  u8 R;                    /* memory refresh register */
-  u16 SP;                  /* stack pointer */
+  uint8_t I;               /* interrupt page address register */
+  uint16_t IX, IY;              /* index registers */
+  uint16_t PC;                  /* program counter */
+  uint8_t R;                    /* memory refresh register */
+  uint16_t SP;                  /* stack pointer */
 
   int IFF1,IFF2;	   /* interrupt flip-flops */
   int int_mode;		   /* interrupt mode */
@@ -93,15 +93,15 @@ void z80_nmi(void);
 void z80_int(void);
 
 void z80_resetstat(void);
-unsigned z80_getstat(int, u8);
+unsigned z80_getstat(int, uint8_t);
 
-u16 z80_getAF(void);
-u16 z80_getBC(void);
-u16 z80_getDE(void);
-u16 z80_getHL(void);
-u16 z80_getAF_(void);
-u16 z80_getBC_(void);
-u16 z80_getDE_(void);
-u16 z80_getHL_(void);
+uint16_t z80_getAF(void);
+uint16_t z80_getBC(void);
+uint16_t z80_getDE(void);
+uint16_t z80_getHL(void);
+uint16_t z80_getAF_(void);
+uint16_t z80_getBC_(void);
+uint16_t z80_getDE_(void);
+uint16_t z80_getHL_(void);
 
 #endif

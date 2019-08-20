@@ -30,11 +30,11 @@
  */
 
 #include <assert.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "fileutil.h"
-#include "intdef.h"
 #include "memio.h"
 #include "strutil.h"
 #include "ay.h"
@@ -75,10 +75,10 @@ static void prepare_cpu(void) {
 
 /* G.A.Lunter's highly emulator-specific snapshot format .Z80 */
 
-static void snap_z80_read_mem_page(FILE *f, u8 *b0, unsigned page_bytes) {
+static void snap_z80_read_mem_page(FILE *f, uint8_t *b0, unsigned page_bytes) {
   unsigned cnt;
-  u8 nrep,cbyte;
-  u8 curb,nxtb;
+  uint8_t nrep,cbyte;
+  uint8_t curb,nxtb;
   int j;
   
   printf("reading page len %d\n",page_bytes);
@@ -116,8 +116,8 @@ static void snap_z80_read_128k_page(FILE *f, int page_n) {
 /* returns 0 when ok, -1 on error -> reset ZX */
 int zx_load_snap_z80(char *name) {
   FILE *f;
-  u8 flags1,flags2,flags3,hw,i1rp;
-  u8 page,ay_r;
+  uint8_t flags1,flags2,flags3,hw,i1rp;
+  uint8_t page,ay_r;
   int compressed;
   int hdr_len,hdr_end;
   int pages;
@@ -269,9 +269,9 @@ int zx_load_snap_z80(char *name) {
   return 0;
 }
 
-static void z80_write_page_data(FILE *f, u8 *b0) {
+static void z80_write_page_data(FILE *f, uint8_t *b0) {
   unsigned cnt,now;
-  u8 curb,nxtb;
+  uint8_t curb,nxtb;
   int no_run;
   unsigned bytes_left;
   
@@ -328,7 +328,7 @@ static void z80_write_page(FILE *f, int page_i, int page_n) {
 /* returns 0 when ok, -1 on error */
 static int zx_save_snap_z80(char *name) {
   FILE *f;
-  u8 flags1,flags2,flags3,hw,i1rp;
+  uint8_t flags1,flags2,flags3,hw,i1rp;
   int hdr_len,hdr_end;
   int i;
   
@@ -444,7 +444,7 @@ static void snap_sna_write_128k_page(FILE *f, int page_n) {
 /* returns 0 when ok, -1 on error -> reset ZX */
 int zx_load_snap_sna(char *name) {
   FILE *f;
-  u8 inter;
+  uint8_t inter;
   unsigned size;
   int type;
   int curpaged;
@@ -560,7 +560,7 @@ int zx_load_snap_sna(char *name) {
 /* returns 0 when ok, -1 on error */
 static int zx_save_snap_sna(char *name) {
   FILE *f;
-  u8 inter;
+  uint8_t inter;
   int curpaged;
   int i;
   

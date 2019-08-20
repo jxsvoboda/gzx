@@ -30,6 +30,7 @@
  */
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #include "memio.h"
@@ -43,10 +44,10 @@ z80s gpus[NGP];		/* GPUs */
 z80s tmps;		/* temporary place to store the CPU */
 z80s *rcpus = &cpus;
 
-u8 *gfxrom[NGP];
-u8 *gfxram[NGP];
-u8 *gfxscr[NGP];
-static u8 *gfxbnk[NGP][4];
+uint8_t *gfxrom[NGP];
+uint8_t *gfxram[NGP];
+uint8_t *gfxscr[NGP];
+static uint8_t *gfxbnk[NGP][4];
 static bool gpu_on;
 
 /************************************************************************/
@@ -105,8 +106,8 @@ bool gpu_is_on(void)
 
 void gfx_select_memmodel(int model) {
   int i;
-  u8 *tmpram,*tmprom,*tmpscr;
-  u8 *tmpbnk[4];
+  uint8_t *tmpram,*tmprom,*tmpscr;
+  uint8_t *tmpbnk[4];
   
   tmprom=zxrom;
   tmpram=zxram;
@@ -150,7 +151,7 @@ void gfx_select_memmodel(int model) {
 void z80_g_execinstr(void) {
   int i,j;
   unsigned long tmp_clock;
-  u8 *tmpbnk[4];
+  uint8_t *tmpbnk[4];
 
   tmp_clock=z80_clock;
 
@@ -215,7 +216,7 @@ void z80_g_execinstr(void) {
 void z80_g_int(void) {
   int i;
   unsigned long tmp_clock;
-  u8 *tmpbnk[4];
+  uint8_t *tmpbnk[4];
  
   tmp_clock=z80_clock;
     

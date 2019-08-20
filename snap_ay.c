@@ -60,7 +60,7 @@ static long fgetayrp(FILE *f)
 /** Get null-terminated string */
 static char *fgetntstr(FILE *f, long pos)
 {
-	u8 c;
+	uint8_t c;
 	char *buf, *old_buf;;
 	size_t buf_size;
 	size_t idx;
@@ -94,7 +94,8 @@ static char *fgetntstr(FILE *f, long pos)
 	return buf;
 }
 
-static int zx_load_snap_ay_block(FILE *f, u16 baddr, u16 blen, long pblock)
+static int zx_load_snap_ay_block(FILE *f, uint16_t baddr, uint16_t blen,
+    long pblock)
 {
   size_t i;
 
@@ -103,7 +104,7 @@ static int zx_load_snap_ay_block(FILE *f, u16 baddr, u16 blen, long pblock)
     return -1;
   }
 
-  if ((u32)baddr + blen > 65536)
+  if ((uint32_t)baddr + blen > 65536)
     blen = 65536 - baddr;
 
   for (i = 0; i < blen; i++)
@@ -117,19 +118,19 @@ static int zx_load_snap_ay_song(FILE *f)
   long psong_name;
   long psong_data;
   char *song_name;
-  u8 achan, bchan, cchan, noise;
-  u16 song_len;
-  u16 fade_len;
-  u8 hireg, loreg;
+  uint8_t achan, bchan, cchan, noise;
+  uint16_t song_len;
+  uint16_t fade_len;
+  uint8_t hireg, loreg;
   long ppoints;
   long paddrs;
   long cur_pos;
-  u16 stack, init, inter;
-  u16 baddr;
-  u16 blen;
+  uint16_t stack, init, inter;
+  uint16_t baddr;
+  uint16_t blen;
   long pblock;
-  u32 p;
-  u16 ploop, pjr;
+  uint32_t p;
+  uint16_t ploop, pjr;
 
   psong_name = fgetayrp(f);
   psong_data = fgetayrp(f);
@@ -260,8 +261,8 @@ static int zx_load_snap_ay_song(FILE *f)
   cpus.r[rB] = cpus.r_[rB] = hireg;
   cpus.r[rC] = cpus.r_[rC] = loreg;
 
-  cpus.IX = ((u16)hireg << 8) | loreg;
-  cpus.IY = ((u16)hireg << 8) | loreg;
+  cpus.IX = ((uint16_t)hireg << 8) | loreg;
+  cpus.IY = ((uint16_t)hireg << 8) | loreg;
 
   cpus.I = 3;
   cpus.SP = stack;
@@ -281,13 +282,13 @@ int zx_load_snap_ay(char *name) {
   FILE *f;
   char fileid[5];
   char typeid[5];
-  u8 file_ver;
-  u8 player_ver;
+  uint8_t file_ver;
+  uint8_t player_ver;
   long pspec_player;
   long pauthor;
   long pmisc;
-  u8 num_songs;
-  u8 first_song;
+  uint8_t num_songs;
+  uint8_t first_song;
   long psong_struct;
   char *author;
   char *misc;

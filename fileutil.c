@@ -29,19 +29,19 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include "fileutil.h"
-#include "intdef.h"
 
 unsigned fgetu8(FILE *f) {
-  u8 tmp;
+  uint8_t tmp;
   
   fread(&tmp,sizeof(tmp),1,f);
     
   return tmp;
 }
 
-void fungetu8(FILE *f, u8 c) {
+void fungetu8(FILE *f, uint8_t c) {
   ungetc(c,f);
 }
 
@@ -99,16 +99,16 @@ signed fgets16le(FILE *f) {
   return tmp;
 }
 
-void fputu8(FILE *f, u8 val) {
+void fputu8(FILE *f, uint8_t val) {
   fwrite(&val,sizeof(val),1,f);
 }
 
-void fputu16le(FILE *f, u16 val) {
+void fputu16le(FILE *f, uint16_t val) {
   fputu8(f,val&0xff);
   fputu8(f,val>>8);
 }
 
-void fputu16be(FILE *f, u16 val) {
+void fputu16be(FILE *f, uint16_t val) {
   fputu8(f,val>>8);
   fputu8(f,val&0xff);
 }
