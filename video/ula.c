@@ -255,8 +255,8 @@ void video_ula_disp(video_ula_t *ula)
 {
 	unsigned line, x, y;
 
-	line = ula->clock / 224;
-	x = (ula->clock % 224) * 2;
+	line = (ula->clock + zx_paper_x0) / 224;
+	x = ((ula->clock + zx_paper_x0) % 224) * 2;
 	if (line >= SCR_SCAN_TOP && line < SCR_SCAN_BOTTOM && x < SCR_SCAN_RIGHT) {
 		y = line - SCR_SCAN_TOP;
 		if (x >= zx_paper_x0 && x <= zx_paper_x1 && y >= zx_paper_y0 &&
