@@ -43,9 +43,9 @@ int clip_x0,clip_x1,clip_y0,clip_y1;
 
 static int drw_clr;
 
-/* 
-  povoleni zapisu do sudych/lichych radek 
-  pri neprokladanem rezimu se zapisuje jen do sudych
+/*
+  Enable write for even/odd lines
+  When double-line mode is disabled only even lines are written
 */
 int write_l0=1;
 int write_l1=0;
