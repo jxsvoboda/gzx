@@ -5356,10 +5356,14 @@ static void z80_check_int(void) {
 
   if(!cpus.int_pending) return;
   if(cpus.int_lock) return; /* after EI or DI or inside an instruction */
+
+  /* Clear interrupt pending flag */
+  cpus.int_pending=0;
+
+  /* If interrupts are disabled, just drop the interrupt */
   if(!cpus.IFF1) return; /* IFF2 just tells the NMI service routine
                                whether the interrupted program disabled
 			       maskable interrupts */
-  cpus.int_pending=0;
   cpus.halted=0;
   cpus.IFF1=cpus.IFF2=0;
 
