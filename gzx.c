@@ -446,17 +446,18 @@ void zx_debug_mstep(void) {
 #ifdef LOG
     if(cpus.iff1) fprintf(logfi,"interrupt\n");
 #endif
-    z80_int();
-    if (gpu_is_on())
-      z80_g_int();
   }
     
   if (!gpu_is_on()) {
     while(CLOCK_LT(zx_scr_get_clock(),z80_clock)) {
       zx_scr_disp();
     }
+  } else {
+    while(CLOCK_LT(zx_scr_get_clock(),z80_clock)) {
+      zx_scr_disp_fast();
+    }
   }
-    
+  
   if(CLOCK_GE(z80_clock-snd_t,ZX_SOUND_TICKS_SMP)) { 
     zx_sound_smp(ay_get_sample(&ay0)+(tape_smp?+16:-16));
     /* build a new sound sample */
@@ -643,8 +644,8 @@ int main(int argc, char **argv) {
 	/* this is not correct because
            frame displaying takes some time */	   
 //        zx_scr_disp_fast();	    
-      if (gpu_is_on())
-        zx_scr_disp_fast();
+//      if (gpu_is_on())
+//        zx_scr_disp_fast();
 #ifdef WITH_MIDI
       sysmidi_poll(z80_clock);
 #endif
@@ -655,15 +656,15 @@ int main(int argc, char **argv) {
 #ifdef LOG
       if(cpus.iff1) fprintf(logfi,"interrupt\n");
 #endif
-//      if(cpus.IFF1) printf("interrupt\n");
-      z80_int();
-    if (gpu_is_on())
-      z80_g_int();
     }
     
     if (!gpu_is_on()) {
       while(CLOCK_LT(zx_scr_get_clock(),z80_clock)) {
         zx_scr_disp();
+      }
+    } else {
+      while(CLOCK_LT(zx_scr_get_clock(),z80_clock)) {
+        zx_scr_disp_fast();
       }
     }
     

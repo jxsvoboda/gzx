@@ -60,6 +60,8 @@ static const int zxpal[3 * 16] = {
 	0, 239, 0,    0, 255, 255,    255, 255,  0,     255, 255, 255
 };
 
+static void video_ula_next_field(video_ula_t *);
+
 /** Flip video address bits as ULA does.
  *
  * @param ofs Address or offset within video page
@@ -117,7 +119,7 @@ static void video_ula_attr_to_colors(video_ula_t *ula, uint8_t attr,
  *
  * The video signal has 50 fields per second.
  */
-void video_ula_next_field(video_ula_t *ula)
+static void video_ula_next_field(video_ula_t *ula)
 {
 	video_out_end_field(ula->vout);
 

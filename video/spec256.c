@@ -149,6 +149,11 @@ void video_spec256_disp_fast(video_spec256_t *spec)
 			video_spec256_disp_fast_elem(spec, x, y);
 
 	spec->clock += ULA_FIELD_TICKS;
+
+	z80_int();
+
+	if (gpu_is_on())
+		z80_g_int();
 }
 
 /** Initialize Spec256 video generator.

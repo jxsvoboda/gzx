@@ -157,5 +157,8 @@ void zx_scr_clear_bg(void)
 
 unsigned long zx_scr_get_clock(void)
 {
-	return video_ula_get_clock(&video_ula);
+	if (video_mode)
+		return video_spec256_get_clock(&video_spec256);
+	else
+		return video_ula_get_clock(&video_ula);
 }
