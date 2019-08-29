@@ -29,6 +29,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include "disasm.h"
@@ -227,14 +228,14 @@ static unsigned char *d_tab[3][3]={
 static unsigned char op,idxop;
 static unsigned char *desc;
 
-static unsigned o_ibegin;
+static uint16_t o_ibegin;
 static int ddfd; /* 0=none 1=DD 2=FD */
 static int edcb; /* 0=none 1=ED 2=CB */
 
 static int cur_arg;
-static unsigned in_pos;
+static uint16_t in_pos;
 
-unsigned disasm_org;
+uint16_t disasm_org;
 char disasm_buf[BUF_SIZE];
 
 static int out_pos;
@@ -248,12 +249,12 @@ static int da_getc(void) {
   return b;
 }
 
-static void da_seek_org(long addr) {
+static void da_seek_org(uint16_t addr) {
   in_pos=addr;
   disasm_org=addr;
 }
 
-static void da_putc(unsigned char c) {
+static void da_putc(char c) {
   if(out_pos<BUF_SIZE-1)
     disasm_buf[out_pos++]=c;
 }
@@ -273,7 +274,7 @@ static void da_puts(char *s) {
   while(*s) da_putc(*s++);
 }
 
-static void da_prnw(unsigned short w) {
+static void da_prnw(uint16_t w) {
   int i;
 
   da_putc('$');
@@ -282,7 +283,7 @@ static void da_prnw(unsigned short w) {
   }
 }
 
-static void da_prnb(unsigned char b) {
+static void da_prnb(uint8_t b) {
   da_putc('$');
   da_putc(hexc[b>>4]);
   da_putc(hexc[b&15]);
@@ -294,7 +295,7 @@ static void da_prnbsuf(unsigned char b) {
   da_putc('H');
 }
 
-static void da_prnb_s8(unsigned char b) {
+static void da_prnb_s8(uint8_t b) {
 
   if(b&0x80) {
     da_putc('-');

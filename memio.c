@@ -52,13 +52,13 @@ uint8_t *zxscr;	  /* selected screen bank */
 uint8_t border;
 uint8_t spk,mic,ear;
 
-unsigned ram_size,rom_size;
+uint32_t ram_size,rom_size;
 int has_banksw,bnk_lock48;
 int mem_model;
 
 uint8_t page_reg; /* last data written to the page select port */
 
-static int rom_load(char *fname, int bank, int banksize);
+static int rom_load(char *fname, int bank, uint16_t banksize);
 static int spec_rom_load(char *fname, int bank);
 
 /*
@@ -304,7 +304,7 @@ int zx_select_memmodel(int model) {
   return 0;
 }
 
-static int rom_load(char *fname, int bank, int banksize) {
+static int rom_load(char *fname, int bank, uint16_t banksize) {
   FILE *f;
 
   f=fopen(fname,"rb");

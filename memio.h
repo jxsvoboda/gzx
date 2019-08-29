@@ -64,6 +64,6 @@ extern uint8_t *zxram,*zxrom,*zxscr,*zxbnk[4];
 extern int mem_model;
 
 extern int bnk_lock48;
-extern unsigned ram_size,rom_size;
+extern uint32_t ram_size,rom_size;
 
 #endif

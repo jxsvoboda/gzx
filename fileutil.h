@@ -35,15 +35,15 @@
 #include <stdio.h>
 
 /* useful file i/o routines */
-unsigned fgetu8(FILE *f);
+uint8_t fgetu8(FILE *f);
 void fungetu8(FILE *f, uint8_t c);
-unsigned fgetu16le(FILE *f);
-unsigned fgetu32le(FILE *f);
-unsigned fgetu16be(FILE *f);
-unsigned fgetu32be(FILE *f);
+uint16_t fgetu16le(FILE *f);
+uint32_t fgetu32le(FILE *f);
+uint16_t fgetu16be(FILE *f);
+uint32_t fgetu32be(FILE *f);
 
-signed   fgets16le(FILE *f);
-unsigned fgetu24le(FILE *f);
+int16_t  fgets16le(FILE *f);
+uint32_t fgetu24le(FILE *f);
 
 unsigned long fsize(FILE *f);
 

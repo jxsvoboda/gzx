@@ -119,9 +119,12 @@ int zx_load_snap_z80(char *name) {
   uint8_t flags1,flags2,flags3,hw,i1rp;
   uint8_t page,ay_r;
   int compressed;
-  int hdr_len,hdr_end;
+  uint16_t hdr_len;
+  long hdr_end;
   int pages;
-  int page_len,page_end,page_n;
+  uint8_t page_n;
+  uint16_t page_len;
+  long page_end;
   int i;
   
   f=fopen(name,"rb");
@@ -308,7 +311,8 @@ static void z80_write_page_data(FILE *f, uint8_t *b0) {
 }
 
 static void z80_write_page(FILE *f, int page_i, int page_n) {    
-  int page_len,page_end,page_start;
+  uint16_t page_len;
+  long page_end,page_start;
   
   fputu16le(f,0); /* don't know the length yet */
   fputu8(f,page_n);
@@ -329,7 +333,8 @@ static void z80_write_page(FILE *f, int page_i, int page_n) {
 static int zx_save_snap_z80(char *name) {
   FILE *f;
   uint8_t flags1,flags2,flags3,hw,i1rp;
-  int hdr_len,hdr_end;
+  uint16_t hdr_len;
+  long hdr_end;
   int i;
   
   prepare_cpu();
@@ -445,10 +450,10 @@ static void snap_sna_write_128k_page(FILE *f, int page_n) {
 int zx_load_snap_sna(char *name) {
   FILE *f;
   uint8_t inter;
-  unsigned size;
+  long size;
   int type;
-  int curpaged;
-  unsigned pageout;
+  uint8_t curpaged;
+  uint8_t pageout;
   int i;
   
   f=fopen(name,"rb");
@@ -561,7 +566,7 @@ int zx_load_snap_sna(char *name) {
 static int zx_save_snap_sna(char *name) {
   FILE *f;
   uint8_t inter;
-  int curpaged;
+  uint8_t curpaged;
   int i;
   
   f=fopen(name,"wb");
@@ -629,7 +634,7 @@ static int zx_save_snap_sna(char *name) {
       
       break;
     case ZXM_128K:
-      curpaged = page_reg & 7;;
+      curpaged = page_reg & 7;
       
       /* write "48k" banks */
       snap_sna_write_128k_page(f,5);

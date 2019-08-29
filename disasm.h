@@ -32,7 +32,9 @@
 #ifndef DISASM_H
 #define DISASM_H
 
-extern unsigned disasm_org;
+#include <stdint.h>
+
+extern uint16_t disasm_org;
 extern char disasm_buf[];
 
 int disasm_instr(void);

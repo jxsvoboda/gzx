@@ -33,7 +33,7 @@
 #include <stdio.h>
 #include "fileutil.h"
 
-unsigned fgetu8(FILE *f) {
+uint8_t fgetu8(FILE *f) {
   uint8_t tmp;
   
   fread(&tmp,sizeof(tmp),1,f);
@@ -45,43 +45,43 @@ void fungetu8(FILE *f, uint8_t c) {
   ungetc(c,f);
 }
 
-unsigned fgetu16le(FILE *f) {
-  unsigned tmp;
+uint16_t fgetu16le(FILE *f) {
+  uint16_t tmp;
     
   tmp=fgetu8(f);
-  tmp=tmp | (fgetu8(f)<<8);
+  tmp=tmp | ((uint16_t)fgetu8(f) << 8);
   return tmp;
 }
 
-unsigned fgetu16be(FILE *f) {
-  unsigned tmp;
+uint16_t fgetu16be(FILE *f) {
+  uint16_t tmp;
     
   tmp=fgetu8(f);
   tmp=fgetu8(f) | (tmp<<8);
   return tmp;
 }
 
-unsigned fgetu24le(FILE *f) {
-  unsigned tmp;
-    
-  tmp=fgetu8(f);
-  tmp=tmp | (fgetu8(f)<<8);
-  tmp=tmp | (fgetu8(f)<<16);
-  return tmp;
-}
-
-unsigned fgetu32le(FILE *f) {
-  unsigned tmp;
+uint32_t fgetu24le(FILE *f) {
+  uint32_t tmp;
     
   tmp=fgetu8(f);
   tmp=tmp | (fgetu8(f)<<8);
   tmp=tmp | (fgetu8(f)<<16);
-  tmp=tmp | (fgetu8(f)<<24);
   return tmp;
 }
 
-unsigned fgetu32be(FILE *f) {
-  unsigned tmp;
+uint32_t fgetu32le(FILE *f) {
+  uint32_t tmp;
+    
+  tmp=fgetu8(f);
+  tmp=tmp | ((uint32_t)fgetu8(f)<<8);
+  tmp=tmp | ((uint32_t)fgetu8(f)<<16);
+  tmp=tmp | ((uint32_t)fgetu8(f)<<24);
+  return tmp;
+}
+
+uint32_t fgetu32be(FILE *f) {
+  uint32_t tmp;
     
   tmp=fgetu8(f);
   tmp=fgetu8(f) | (tmp<<8);
@@ -90,11 +90,11 @@ unsigned fgetu32be(FILE *f) {
   return tmp;
 }
 
-signed fgets16le(FILE *f) {
-  signed tmp;
+int16_t fgets16le(FILE *f) {
+  int32_t tmp;
     
   tmp=fgetu8(f);
-  tmp=tmp | (fgetu8(f)<<8);
+  tmp=tmp | ((uint16_t)fgetu8(f)<<8);
   if(tmp&0x8000) tmp=(tmp&0x7fff)-0x8000;
   return tmp;
 }

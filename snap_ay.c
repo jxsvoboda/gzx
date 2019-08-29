@@ -61,7 +61,7 @@ static long fgetayrp(FILE *f)
 static char *fgetntstr(FILE *f, long pos)
 {
 	uint8_t c;
-	char *buf, *old_buf;;
+	char *buf, *old_buf;
 	size_t buf_size;
 	size_t idx;
 
