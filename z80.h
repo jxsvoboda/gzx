@@ -82,6 +82,7 @@ typedef struct _z80s {     /*** registers of the Z80 CPU ***/
 } z80s;
 
 extern z80s cpus;
+extern z80s *rcpus;
 extern unsigned long z80_clock;
 extern unsigned long uoc;
 extern unsigned long smc;

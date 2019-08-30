@@ -41,8 +41,6 @@
 
 extern bool gpu_allow;
 extern z80s gpus[NGP];
-/** Always points to real CPU, never GPU */
-extern z80s *rcpus;
 
 extern uint8_t *gfxrom[NGP];
 extern uint8_t *gfxram[NGP];

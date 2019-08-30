@@ -42,7 +42,6 @@ bool gpu_allow = true;
 
 z80s gpus[NGP];		/* GPUs */
 z80s tmps;		/* temporary place to store the CPU */
-z80s *rcpus = &cpus;
 
 uint8_t *gfxrom[NGP];
 uint8_t *gfxram[NGP];

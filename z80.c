@@ -59,6 +59,8 @@ static void z80_check_int(void);
 
 static uint8_t opcode;
 z80s cpus;
+/** CPU state used to read memory addresses from. Used by Spec256. */
+z80s *rcpus = &cpus;
 static uint8_t cbop;
 unsigned long z80_clock;
 
@@ -197,8 +199,6 @@ static void incr_R(uint8_t amount) {
  * In GPU case we need to take addresses from the CPU registers as a special
  * case. If GPU is not enabled, rcpus just points to the CPU state.
  */
-
-#include "z80g.h"
 
 static uint16_t get_addrBC(void)
 {
