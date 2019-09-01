@@ -318,7 +318,7 @@ error:
  */
 int wav_tape_save(tape_t *tape, const char *fname)
 {
-	rwavew_t *ww;
+	rwavew_t *ww = NULL;
 	rwave_params_t params;
 	tape_block_t *block;
 	tblock_direct_rec_t *drec;
@@ -348,10 +348,8 @@ int wav_tape_save(tape_t *tape, const char *fname)
 		block = tape_next(block);
 	}
 
-	if (smp_dur == 0) {
-		rc = ENOTSUP;
-		goto error;
-	}
+	if (smp_dur == 0)
+		smp_dur = 79; /* ~44100 Hz */
 
 	/* Initialize params */
 	params.channels = 1;
@@ -390,6 +388,7 @@ int wav_tape_save(tape_t *tape, const char *fname)
 
 	return 0;
 error:
-	rwave_wclose(ww);
+	if (ww != NULL)
+		rwave_wclose(ww);
 	return rc;
 }

@@ -74,7 +74,6 @@ static int rwave_decode_fmt(rwave_fmt_t *fmt, rwave_params_t *params)
 	uint16_t fmt_tag;
 
 	fmt_tag = uint16_t_le2host(fmt->format_tag);
-	printf("fmt_tag=0x%x\n", fmt_tag);
 	if (fmt_tag != WFMT_PCM)
 		return EINVAL;
 

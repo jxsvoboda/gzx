@@ -488,89 +488,12 @@ void zx_debug_mstep(void) {
     z80_execinstr();
 }
 
-
-extern int dln_odd;
-
-#include "tape/tape.h"
-#include "tape/tzx.h"
-static void tzx_tape_test(void)
-{
-	tape_t *tape = NULL;
-	int rc;
-
-	rc = tzx_tape_load("test.tzx", &tape);
-	if (rc != 0) {
-		printf("tzx_tape_load -> %d\n", rc);
-		exit(1);
-	}
-
-	rc = tzx_tape_save(tape, "test-out.tzx");
-	if (rc != 0) {
-		printf("tzx_tape_save -> %d\n", rc);
-		exit(1);
-	}
-
-	printf("destroy tape..\n");
-	tape_destroy(tape);
-	exit(0);
-}
-
-#include "tape/tap.h"
-static void tap_tape_test(void)
-{
-	tape_t *tape = NULL;
-	int rc;
-
-	rc = tap_tape_load("test.tap", &tape);
-	if (rc != 0) {
-		printf("tap_tape_load -> %d\n", rc);
-		exit(1);
-	}
-
-	rc = tap_tape_save(tape, "test-out.tap");
-	if (rc != 0) {
-		printf("tap_tape_save -> %d\n", rc);
-		exit(1);
-	}
-
-	printf("destroy tape..\n");
-	tape_destroy(tape);
-	exit(0);
-}
-
-#include "tape/wav.h"
-static void wav_tape_test(void)
-{
-	tape_t *tape = NULL;
-	int rc;
-
-	rc = wav_tape_load("test.wav", &tape);
-	if (rc != 0) {
-		printf("tap_tape_load -> %d\n", rc);
-		exit(1);
-	}
-
-	rc = wav_tape_save(tape, "test-out.wav");
-	if (rc != 0) {
-		printf("tap_tape_save -> %d\n", rc);
-		exit(1);
-	}
-
-	printf("destroy tape..\n");
-	tape_destroy(tape);
-	exit(0);
-}
-
 int main(int argc, char **argv) {
   int ic;
   int argi;
   timer frmt;
   uint8_t tape_smp;
   wkey_t k;
-
-  if (0) tzx_tape_test();
-  if (0) tap_tape_test();
-  if (0) wav_tape_test();
   
   argi = 1;
   

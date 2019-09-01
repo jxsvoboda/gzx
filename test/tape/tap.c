@@ -1,6 +1,6 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Unit tests main
+ * TAP file format unit tests
  *
  * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
@@ -30,44 +30,68 @@
  */
 
 /**
- * @file Unit tests main
+ * @file TAP file format unit tests
  */
 
 #include <stdio.h>
-#include "tape/player.h"
-#include "tape/tonegen.h"
-#include "tape/tap.h"
-#include "tape/tzx.h"
-#include "tape/wav.h"
+#include <stdlib.h>
+#include "../../tape/tape.h"
+#include "../../tape/tap.h"
+#include "tap.h"
 
-int main(void)
+/** Test saving and loading back simple TAP file.
+ *
+ * @return Zero on success, non-zero on failure
+ */
+static int test_tap_save_load(void)
+{
+	tape_t *tape = NULL;
+	char fname[L_tmpnam];
+	int rc;
+
+	printf("Test saving and loading simple tape to/from TAP...\n");
+
+	rc = tape_create(&tape);
+	if (rc != 0) {
+		printf("tape_create -> %d\n", rc);
+		return 1;
+	}
+
+	if (tmpnam(fname) == NULL) {
+		printf("tmpnam -> %d\n", rc);
+		return 1;
+	}
+
+	rc = tap_tape_save(tape, fname);
+	if (rc != 0) {
+		printf("tap_tape_save -> %d\n", rc);
+		return 1;
+	}
+
+	rc = tap_tape_load(fname, &tape);
+	if (rc != 0) {
+		printf("tap_tape_load -> %d\n", rc);
+		return 1;
+	}
+
+	tape_destroy(tape);
+
+	printf(" ... passed\n");
+
+	return 0;
+}
+
+/** Run TAP file format unit tests.
+ *
+ * @return Zero on success, non-zero on failure
+ */
+int test_tap(void)
 {
 	int rc;
 
-	rc = test_tape_player();
+	rc = test_tap_save_load();
 	if (rc != 0)
-		goto error;
-
-	rc = test_tonegen();
-	if (rc != 0)
-		goto error;
-
-	rc = test_tap();
-	if (rc != 0)
-		goto error;
-
-	rc = test_tzx();
-	if (rc != 0)
-		goto error;
-
-	rc = test_wav();
-	if (rc != 0)
-		goto error;
-
-	printf("All tests passed.\n");
+		return 1;
 
 	return 0;
-error:
-	printf("Some tests FAILED.\n");
-	return 1;
 }

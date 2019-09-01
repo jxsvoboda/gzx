@@ -11,7 +11,7 @@ CC_helenos	= helenos-cc
 LD_helenos	= helenos-ld
 
 # Possible feature defines: -DXMAP
-CFLAGS		= -O2 -Wall -Werror -Wmissing-prototypes -I/usr/include/SDL -DWITH_MIDI
+CFLAGS		= -O2 -Wall -Werror -Wmissing-prototypes -I/usr/include/SDL -DWITH_MIDI -Og -ggdb
 CFLAGS_w32	= -O2 -Wall -Werror -Wmissing-prototypes
 CFLAGS_helenos	= -O2 -Wall -Wno-error -DHELENOS_BUILD -D_HELENOS_SOURCE \
     -D_REALLY_WANT_STRING_H \
@@ -127,12 +127,21 @@ sources_helenos_gtap = \
 
 sources_test = \
     adt/list.c \
+    platform/sdl/byteorder.c \
     tape/player.c \
     tape/tape.c \
     tape/tonegen.c \
+    tape/tap.c \
+    tape/tzx.c \
+    tape/wav.c \
     test/main.c \
     test/tape/player.c \
-    test/tape/tonegen.c
+    test/tape/tonegen.c \
+    test/tape/tap.c \
+    test/tape/tzx.c \
+    test/tape/wav.c \
+    wav/chunk.c \
+    wav/rwave.c
 
 binary = gzx
 binary_gtap = gtap

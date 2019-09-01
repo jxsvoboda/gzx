@@ -1,6 +1,6 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Unit tests main
+ * WAV file format unit tests
  *
  * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
@@ -30,44 +30,12 @@
  */
 
 /**
- * @file Unit tests main
+ * @file WAV file format unit tests
  */
 
-#include <stdio.h>
-#include "tape/player.h"
-#include "tape/tonegen.h"
-#include "tape/tap.h"
-#include "tape/tzx.h"
-#include "tape/wav.h"
+#ifndef TEST_TAPE_WAV_H
+#define TEST_TAPE_WAV_H
 
-int main(void)
-{
-	int rc;
+extern int test_wav(void);
 
-	rc = test_tape_player();
-	if (rc != 0)
-		goto error;
-
-	rc = test_tonegen();
-	if (rc != 0)
-		goto error;
-
-	rc = test_tap();
-	if (rc != 0)
-		goto error;
-
-	rc = test_tzx();
-	if (rc != 0)
-		goto error;
-
-	rc = test_wav();
-	if (rc != 0)
-		goto error;
-
-	printf("All tests passed.\n");
-
-	return 0;
-error:
-	printf("Some tests FAILED.\n");
-	return 1;
-}
+#endif
