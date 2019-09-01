@@ -32,6 +32,7 @@
 #ifndef UI_FDLG_H
 #define UI_FDLG_H
 
+int save_file_dialog(const char *, char **);
 void select_tapefile_dialog(void);
 void load_snap_dialog(void);
 void save_snap_dialog(void);

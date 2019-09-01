@@ -36,6 +36,7 @@
 #include "../gzx.h"
 #include "../mgfx.h"
 #include "../snap.h"
+#include "../strutil.h"
 #include "../sys_all.h"
 #include "../tape/deck.h"
 #include "../zx.h"
@@ -43,6 +44,60 @@
 #include "fsel.h"
 #include "menu.h"
 #include "teline.h"
+
+/** Save file dialog.
+ *
+ * @param Caption Dialog caption
+ * @param fname Place to store pointer to newly allocated file name
+ * @return Zero if file is to be saved and @a fname is valid, non-zero otherwise
+ */
+int save_file_dialog(const char *caption, char **fname)
+{
+	wkey_t k;
+	int fscols;
+	int flist_cx0;
+	teline_t fn_line;
+
+	*fname = NULL;
+	fscols = 20;
+	flist_cx0 = scr_xs / 16 - fscols / 2;
+	teline_init(&fn_line, flist_cx0, 12, 20);
+	fn_line.focus = 1;
+
+	while (1) {
+		mgfx_fillrect(flist_cx0 * 8 - 8, 0, flist_cx0 * 8 +
+		    8 * (fscols + 1), scr_ys - 1, 1);
+		teline_draw(&fn_line);
+		gmovec(scr_xs / 16 - (strlen(caption) / 2), 0);
+		fgc = 7;
+		bgc = 1;
+		gputs(caption);
+
+		mgfx_updscr();
+		do {
+			mgfx_input_update();
+			sys_usleep(1000);
+		} while (!w_getkey(&k));
+
+		if (k.press)
+			switch (k.key) {
+			case WKEY_ESC:
+				return -1;
+
+			case WKEY_ENTER:
+				fn_line.buf[fn_line.len] = 0;
+				*fname = strdupl(fn_line.buf);
+				if (fname == NULL)
+					return -1;
+				return 0;
+
+			default:
+				teline_key(&fn_line, &k);
+				break;
+			}
+	}
+}
+
 
 /** Select tapefile dialog */
 void select_tapefile_dialog(void)
@@ -73,89 +128,27 @@ void load_snap_dialog(void)
 /** Save snapshot dialog */
 void save_snap_dialog(void)
 {
-	wkey_t k;
-	int fscols;
-	int flist_cx0;
-	teline_t fn_line;
+	int rc;
+	char *fname;
 
-	fscols = 20;
-	flist_cx0 = scr_xs / 16 - fscols / 2;
-	teline_init(&fn_line, flist_cx0, 12, 20);
-	fn_line.focus = 1;
+	rc = save_file_dialog("Save Snapshot", &fname);
+	if (rc != 0)
+		return;
 
-	while (1) {
-		mgfx_fillrect(flist_cx0 * 8 - 8, 0, flist_cx0 * 8 +
-		    8 * (fscols + 1), scr_ys - 1, 1);
-		teline_draw(&fn_line);
-		gmovec(scr_xs / 16 - (strlen("Save Snapshot") / 2), 0);
-		fgc = 7;
-		bgc = 1;
-		gputs("Save Snapshot");
-
-		mgfx_updscr();
-		do {
-			mgfx_input_update();
-			sys_usleep(1000);
-		} while (!w_getkey(&k));
-
-		if (k.press)
-			switch (k.key) {
-			case WKEY_ESC:
-				return;
-
-			case WKEY_ENTER:
-				fn_line.buf[fn_line.len] = 0;
-				zx_save_snap(fn_line.buf);
-				return;
-
-			default:
-				teline_key(&fn_line, &k);
-				break;
-			}
-	}
+	zx_save_snap(fname);
+	free(fname);
 }
 
 /** Save Tape As dialog. */
 void save_tape_as_dialog(void)
 {
-	wkey_t k;
-	int fscols;
-	int flist_cx0;
-	teline_t fn_line;
+	int rc;
+	char *fname;
 
-	fscols = 20;
-	flist_cx0 = scr_xs / 16 - fscols / 2;
-	teline_init(&fn_line, flist_cx0, 12, 20);
-	fn_line.focus = 1;
+	rc = save_file_dialog("Save Tape As", &fname);
+	if (rc != 0)
+		return;
 
-	while (1) {
-		mgfx_fillrect(flist_cx0 * 8 - 8, 0, flist_cx0 * 8 +
-		    8 * (fscols + 1), scr_ys - 1, 1);
-		teline_draw(&fn_line);
-		gmovec(scr_xs / 16 - (strlen("Save Tape As") / 2), 0);
-		fgc = 7;
-		bgc = 1;
-		gputs("Save Tape As");
-
-		mgfx_updscr();
-		do {
-			mgfx_input_update();
-			sys_usleep(1000);
-		} while (!w_getkey(&k));
-
-		if (k.press)
-			switch (k.key) {
-			case WKEY_ESC:
-				return;
-
-			case WKEY_ENTER:
-				fn_line.buf[fn_line.len] = 0;
-				tape_deck_save_as(tape_deck, fn_line.buf);
-				return;
-
-			default:
-				teline_key(&fn_line, &k);
-				break;
-			}
-	}
+	tape_deck_save_as(tape_deck, fname);
+	free(fname);
 }
