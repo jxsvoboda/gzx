@@ -16,11 +16,9 @@
 ./mgfx.h
 ./snap.c
 ./snap_ay.c
-./sys_all.h
 ./ui/fsel.c
 ./z80.c
 ./z80.h
 ./z80g.c
 ./z80g.h
 ./z80itab.c
-./zx_sound.c

@@ -99,7 +99,6 @@ int save_file_dialog(const char *caption, char **fname)
 	}
 }
 
-
 /** Select tapefile dialog */
 void select_tapefile_dialog(void)
 {

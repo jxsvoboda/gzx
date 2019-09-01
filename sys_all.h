@@ -35,7 +35,7 @@
 #define SYS_PATH_MAX 128
 
 typedef struct {
-  long sec,usec;
+	long sec, usec;
 } timer;
 
 void timer_reset(timer *t);

@@ -39,45 +39,49 @@
 #include "zx.h"
 
 static uint8_t *snd_buf;
-static int snd_bufs,snd_bff;
+static int snd_bufs, snd_bff;
 static rwavew_t *rwave;
 
-int zx_sound_init(void) {
-  snd_bufs=560*2;
+int zx_sound_init(void)
+{
+	snd_bufs = 560 * 2;
 
-  if(sndw_init(snd_bufs)<0) return -1;
-    
-  snd_bff=0;
-  snd_buf=malloc(snd_bufs);
+	if (sndw_init(snd_bufs) < 0)
+		return -1;
 
-  if(!snd_buf) {
-    fprintf(stderr,"malloc failed\n");
-    return -1;
-  }
-  return 0;
+	snd_bff = 0;
+	snd_buf = malloc(snd_bufs);
+
+	if (!snd_buf) {
+		fprintf(stderr, "malloc failed\n");
+		return -1;
+	}
+	return 0;
 }
 
-void zx_sound_done(void) {
-  sndw_done();
-  if (rwave != NULL)
-    rwave_wclose(rwave);
-  free(snd_buf);
+void zx_sound_done(void)
+{
+	sndw_done();
+	if (rwave != NULL)
+		rwave_wclose(rwave);
+	free(snd_buf);
 }
 
-void zx_sound_smp(int ay_out) {
-  
-  /* mixing */
-  snd_buf[snd_bff++]=128 + (ay0_enable ? ay_out : 0) +
-    (spk?-16:+16)+(mic?-16:+16);
-  
-  if(snd_bff>=snd_bufs) {
-    snd_bff=0;
-    
-    sndw_write(snd_buf);
+void zx_sound_smp(int ay_out)
+{
+	/* Mixing */
 
-    if (rwave != NULL)
-      (void) rwave_write_samples(rwave, snd_buf, snd_bufs);
-  }
+	snd_buf[snd_bff++] = 128 + (ay0_enable ? ay_out : 0) +
+	    (spk ? -16 : +16) + (mic ? -16 : +16);
+
+	if (snd_bff >= snd_bufs) {
+		snd_bff = 0;
+
+		sndw_write(snd_buf);
+
+		if (rwave != NULL)
+			(void) rwave_write_samples(rwave, snd_buf, snd_bufs);
+	}
 }
 
 int zx_sound_start_capture(const char *fname)
