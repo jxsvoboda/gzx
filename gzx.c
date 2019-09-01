@@ -95,9 +95,6 @@ char *start_dir;
 /** MIDI device specification */
 const char *midi_dev;
 
-/** Audio capture file */
-const char *acap_file;
-
 /** I/O recording */
 iorec_t *iorec;
 
@@ -184,6 +181,14 @@ static void key_lalt(wkey_t *k)
 	  iorec = NULL;
 	}
 	break;
+      case WKEY_W:
+        key_lalt_held = 0;
+        rec_audio_dialog();
+        break;
+      case WKEY_E:
+        printf("Stopping audio capture.\n");
+        zx_sound_stop_capture();
+        break;
       case WKEY_N:
         zx_scr_prev_bg();
         break;
@@ -343,10 +348,6 @@ static int zx_init(void) {
   if(zx_keys_init(&keys)<0) return -1;
   printf("sound\n");
   if(zx_sound_init()<0) return -1;
-  if (acap_file != NULL && zx_sound_start_capture(acap_file) < 0) {
-	printf("Failed starting audio capture.\n");
-	return -1;
-  }
 #ifdef WITH_MIDI
   if (sysmidi_init(midi_dev)<0) {
 	printf("Note: MIDI not available.\n");
@@ -506,13 +507,6 @@ int main(int argc, char **argv) {
 		    exit(1);
 	    }
 	    midi_dev = argv[argi + 1];
-	    argi+=2;
-    } else if (!strcmp(argv[argi],"-acap")) {
-	    if (argc <= argi + 1) {
-		    printf("Option -acap missing argument.\n");
-		    exit(1);
-	    }
-	    acap_file = argv[argi + 1];
 	    argi+=2;
     } else {
 	    printf("Invalid option '%s'.\n", argv[argi]);

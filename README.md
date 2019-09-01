@@ -109,7 +109,6 @@ Supported command-line options:
 
   Option           | Description
   ---------------  | -----------
-  -acap <file.wav> | Capture audio output to WAVE file
   -midi <device>   | Output to specified MIDI device
   <snapshot-file>  | Load snapshot file at startup
 
@@ -138,6 +137,8 @@ These might change or be removed in the future:
 
   Key         | Function
   ----------- | --------
+  Alt-W       | Open Record Audio dialog to start recording audio to WAV
+  Alt-E       | Stop recording audio
   Alt-R       | Start recording I/O port output to `out.ior`
   Alt-T       | Stop recording I/O port output
   Alt-N       | Select previous/none Spec256 background

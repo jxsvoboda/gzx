@@ -11,7 +11,7 @@ CC_helenos	= helenos-cc
 LD_helenos	= helenos-ld
 
 # Possible feature defines: -DXMAP
-CFLAGS		= -O2 -Wall -Werror -Wmissing-prototypes -I/usr/include/SDL -DWITH_MIDI -Og -ggdb
+CFLAGS		= -O2 -Wall -Werror -Wmissing-prototypes -I/usr/include/SDL -DWITH_MIDI
 CFLAGS_w32	= -O2 -Wall -Werror -Wmissing-prototypes
 CFLAGS_helenos	= -O2 -Wall -Wno-error -DHELENOS_BUILD -D_HELENOS_SOURCE \
     -D_REALLY_WANT_STRING_H \

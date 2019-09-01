@@ -85,6 +85,11 @@ int zx_sound_start_capture(const char *fname)
 	rwave_params_t params;
 	int rc;
 
+	if (rwave != NULL) {
+		rwave_wclose(rwave);
+		rwave = NULL;
+	}
+
 	params.channels = 1;
 	params.bits_smp = 8;
 	params.smp_freq = 28000;
@@ -94,4 +99,12 @@ int zx_sound_start_capture(const char *fname)
 		return -1;
 
 	return 0;
+}
+
+void zx_sound_stop_capture(void)
+{
+	if (rwave != NULL) {
+		rwave_wclose(rwave);
+		rwave = NULL;
+	}
 }

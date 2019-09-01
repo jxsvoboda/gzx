@@ -37,5 +37,6 @@ void select_tapefile_dialog(void);
 void load_snap_dialog(void);
 void save_snap_dialog(void);
 void save_tape_as_dialog(void);
+void rec_audio_dialog(void);
 
 #endif

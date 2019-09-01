@@ -40,6 +40,7 @@
 #include "../sys_all.h"
 #include "../tape/deck.h"
 #include "../zx.h"
+#include "../zx_sound.h"
 #include "fdlg.h"
 #include "fsel.h"
 #include "menu.h"
@@ -150,5 +151,19 @@ void save_tape_as_dialog(void)
 		return;
 
 	tape_deck_save_as(tape_deck, fname);
+	free(fname);
+}
+
+/** Record Audio dialog. */
+void rec_audio_dialog(void)
+{
+	int rc;
+	char *fname;
+
+	rc = save_file_dialog("Record Audio", &fname);
+	if (rc != 0)
+		return;
+
+	zx_sound_start_capture(fname);
 	free(fname);
 }

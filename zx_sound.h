@@ -34,6 +34,7 @@
 
 int zx_sound_init(void);
 int zx_sound_start_capture(const char *);
+void zx_sound_stop_capture(void);
 void zx_sound_done(void);
 void zx_sound_smp(int ay_out);
 
