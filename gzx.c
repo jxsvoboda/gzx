@@ -60,6 +60,7 @@
 #include "midi.h"
 #include "debug.h"
 #include "xmap.h"
+#include "xtrace.h"
 #include "z80g.h"
 #include "zx.h"
 #include "sys_all.h"
@@ -100,15 +101,6 @@ iorec_t *iorec;
 
 int key_lalt_held;
 int key_lshift_held;
-
-static void z80_fprintstatus(FILE *logfi) {
-  fprintf(logfi,"AF %04x BC %04x DE %04x HL %04x IX %04x PC %04x R%02d iHL%02x\n",
-          z80_getAF()&0xffd7,z80_getBC(),z80_getDE(),z80_getHL(),cpus.IX,
-	  cpus.PC,cpus.R,zx_memget8(z80_getHL()));
-  fprintf(logfi,"AF'%04x BC'%04x DE'%04x HL'%04x IY %04x SP'%04x I%02d\n",
-          z80_getAF_()&0xffd7,z80_getBC_(),z80_getDE_(),z80_getHL_(),cpus.IY,
-	  cpus.SP,cpus.I);
-}
 
 /** Lock down user interface */
 void gzx_ui_lock(void)
@@ -315,6 +307,9 @@ static void gzx_midi_msg(void *arg, midi_msg_t *msg)
 static unsigned long snd_t,tapp_t;
 
 void zx_reset(void) {
+#ifdef XTRACE
+  xtrace_reset();
+#endif
   if (gpu_is_on()) {
     gpu_reset();
     gpu_disable();
@@ -482,6 +477,9 @@ void zx_debug_mstep(void) {
 #ifdef XMAP
   xmap_mark();
 #endif
+#ifdef XTRACE
+    xtrace_instr();
+#endif
 
   if (gpu_is_on())
     z80_g_execinstr();
@@ -537,7 +535,6 @@ int main(int argc, char **argv) {
   ic=0;
   //printf("inited.\n");
   //fprintf(logfi,"%d: pc=0x%04x, clock=%ld\n",ic,cpus.PC,z80_clock);
-  if (0) z80_fprintstatus(logfi);
   
   timer_reset(&frmt);
   
@@ -611,6 +608,9 @@ int main(int argc, char **argv) {
     }
 #ifdef XMAP
     xmap_mark();
+#endif
+#ifdef XTRACE
+    xtrace_instr();
 #endif
 
     if (gpu_is_on())

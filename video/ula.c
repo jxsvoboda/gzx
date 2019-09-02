@@ -35,6 +35,7 @@
 #include "defs.h"
 #include "../clock.h"
 #include "../memio.h"
+#include "../xtrace.h"
 #include "../z80.h"
 #include "out.h"
 #include "ula.h"
@@ -138,6 +139,9 @@ static void video_ula_next_field(video_ula_t *ula)
 		ula->fl_rev = !ula->fl_rev;
 	}
 
+#ifdef XTRACE
+	xtrace_int();
+#endif
 	z80_int();
 
 	if (gpu_is_on())

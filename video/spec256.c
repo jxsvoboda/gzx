@@ -38,6 +38,7 @@
 #include "../gzx.h"
 #include "../memio.h"
 #include "../sys_all.h"
+#include "../xtrace.h"
 #include "../z80g.h"
 #include "out.h"
 #include "spec256.h"
@@ -150,6 +151,9 @@ void video_spec256_disp_fast(video_spec256_t *spec)
 
 	spec->clock += ULA_FIELD_TICKS;
 
+#ifdef XTRACE
+	xtrace_int();
+#endif
 	z80_int();
 
 	if (gpu_is_on())

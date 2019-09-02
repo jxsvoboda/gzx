@@ -10,7 +10,7 @@ CC_w32		= i686-w64-mingw32-gcc
 CC_helenos	= helenos-cc
 LD_helenos	= helenos-ld
 
-# Possible feature defines: -DXMAP
+# Possible feature defines: -DXMAP -DXTRACE
 CFLAGS		= -O2 -Wall -Werror -Wmissing-prototypes -I/usr/include/SDL -DWITH_MIDI
 CFLAGS_w32	= -O2 -Wall -Werror -Wmissing-prototypes
 CFLAGS_helenos	= -O2 -Wall -Wno-error -DHELENOS_BUILD -D_HELENOS_SOURCE \
@@ -67,6 +67,7 @@ sources_generic = \
     video/ula.c \
     video/ulaplus.c \
     xmap.c \
+    xtrace.c \
     zx.c \
     zx_kbd.c \
     zx_sound.c \

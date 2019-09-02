@@ -1,6 +1,6 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Execution map
+ * Execution trace
  *
  * Copyright (c) 1999-2017 Jiri Svoboda
  * All rights reserved.
@@ -29,11 +29,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef XMAP_H
-#define XMAP_H
+#ifndef XTRACE_H
+#define XTRACE_H
 
-extern void xmap_clear(void);
-extern void xmap_mark(void);
-extern void xmap_save(void);
+extern void xtrace_instr(void);
+extern void xtrace_reset(void);
+extern void xtrace_int(void);
 
 #endif

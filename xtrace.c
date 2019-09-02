@@ -1,8 +1,8 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Execution map
+ * Execution trace
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2019 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,11 +29,45 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef XMAP_H
-#define XMAP_H
+#include <stdio.h>
+#include "disasm.h"
+#include "gzx.h"
+#include "memio.h"
+#include "xtrace.h"
+#include "z80.h"
 
-extern void xmap_clear(void);
-extern void xmap_mark(void);
-extern void xmap_save(void);
+static void xtrace_fprintregs(FILE *f)
+{
+	fprintf(f, "AF %04x BC %04x DE %04x HL %04x IX %04x PC %04x R%02d iHL%02x\n",
+	    z80_getAF() & 0xffd7, z80_getBC(), z80_getDE(), z80_getHL(),
+	    cpus.IX, cpus.PC, cpus.R, zx_memget8(z80_getHL()));
+	fprintf(f, "AF'%04x BC'%04x DE'%04x HL'%04x IY %04x SP'%04x I%02d\n",
+          z80_getAF_() & 0xffd7, z80_getBC_(), z80_getDE_(), z80_getHL_(), cpus.IY,
+	  cpus.SP, cpus.I);
+}
 
-#endif
+static void xtrace_fprintinstr(FILE *f)
+{
+	disasm_org = cpus.PC;
+	if (disasm_instr() == 0)
+		fprintf(f, "%04x: %s\n", cpus.PC, disasm_buf);
+}
+
+/** Log an instruction that is about to be executed. */
+void xtrace_instr(void)
+{
+	xtrace_fprintregs(logfi);
+	xtrace_fprintinstr(logfi);
+}
+
+/** Log that the emulator is resetting the machine. */
+void xtrace_reset(void)
+{
+	fprintf(logfi, "** Resetting the machine **\n");
+}
+
+/** Log that an interrupt has been raised. */
+void xtrace_int(void)
+{
+	fprintf(logfi, "** Raising interrupt **\n");
+}
