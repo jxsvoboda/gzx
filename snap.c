@@ -274,7 +274,7 @@ int zx_load_snap_z80(char *name) {
 
 static void z80_write_page_data(FILE *f, uint8_t *b0) {
   unsigned cnt,now;
-  uint8_t curb,nxtb;
+  uint8_t curb;
   int no_run;
   unsigned bytes_left;
   
@@ -285,9 +285,9 @@ static void z80_write_page_data(FILE *f, uint8_t *b0) {
     
     /* get a run */
     curb=*b0++; cnt=1;
-    nxtb=*b0; bytes_left--;
-    while(nxtb==curb && bytes_left>0 && !no_run) {
-      ++cnt; b0++; nxtb=*b0; bytes_left--;
+    bytes_left--;
+    while(bytes_left>0 && *b0==curb && !no_run) {
+      ++cnt; b0++; bytes_left--;
     }
     
     /* put run codes */
