@@ -38,12 +38,12 @@
 
 static void xtrace_fprintregs(FILE *f)
 {
-	fprintf(f, "AF %04x BC %04x DE %04x HL %04x IX %04x PC %04x R%02d iHL%02x\n",
+	fprintf(f, "AF %04x BC %04x DE %04x HL %04x IX %04x PC %04x R %02d (HL)%02x Pg%02x\n",
 	    z80_getAF() & 0xffd7, z80_getBC(), z80_getDE(), z80_getHL(),
-	    cpus.IX, cpus.PC, cpus.R, zx_memget8(z80_getHL()));
-	fprintf(f, "AF'%04x BC'%04x DE'%04x HL'%04x IY %04x SP'%04x I%02d\n",
+	    cpus.IX, cpus.PC, cpus.R, zx_memget8(z80_getHL()), page_reg);
+	fprintf(f, "AF'%04x BC'%04x DE'%04x HL'%04x IY %04x SP'%04x I%02d IFF%d%d IM%d\n",
           z80_getAF_() & 0xffd7, z80_getBC_(), z80_getDE_(), z80_getHL_(), cpus.IY,
-	  cpus.SP, cpus.I);
+	  cpus.SP, cpus.I, cpus.IFF1, cpus.IFF2, cpus.int_mode);
 }
 
 static void xtrace_fprintinstr(FILE *f)
