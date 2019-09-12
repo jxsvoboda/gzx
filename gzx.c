@@ -400,18 +400,6 @@ static void writestat(void) {
   fprintf(logfi,"\nEDop:\n");   writestat_i(6);
 }
 
-/* Update Spectrum keyboard state in debug mode */
-void zx_debug_key(int press, int key) {
-  
-  if(key>=KST_SIZE) {
-    printf("warning. got a key with a too high scancode (>=KST_SIZE)\n");
-    printf("ignoring key\n");
-    return;
-  }
-  zx_key_state_set(&keys, key, press?1:0);
-  key_joy_state_set(key, press?1:0);
-}
-
 /* Machine step for the debugger */
 void zx_debug_mstep(void) {
 
@@ -462,6 +450,9 @@ static void zx_proc_instr(void)
         printf("save trapped!\n");
 	tape_quick_sabytes(tape_deck);
       }
+    }
+    if (dbg_stop_enabled && cpus.PC == dbg_stop_addr) {
+      debugger();
     }
 #ifdef XMAP
     xmap_mark();

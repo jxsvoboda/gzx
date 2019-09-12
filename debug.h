@@ -31,6 +31,12 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
+extern bool dbg_stop_enabled;
+extern uint16_t dbg_stop_addr;
+
 void debugger(void);
 
 #endif

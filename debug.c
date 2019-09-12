@@ -54,6 +54,13 @@ static uint16_t instr_base;
 
 static int ic_ln; /* instruction cursor line number */
 
+/** Drop to debugger when dbg_stop-addr is reached */
+bool dbg_stop_enabled;
+/** When run upto cursor is selected, the address is stored here */
+uint16_t dbg_stop_addr;
+
+static bool dbg_exit;
+
 static void d_istep(void) {
   zx_debug_mstep();
 }
@@ -206,21 +213,9 @@ static void d_trace(void) {
 }
 
 static void d_run_upto(uint16_t addr) {
-  wkey_t k;
-  int esc;
-  
-  esc=0;
-  do {
-    d_istep();
-    mgfx_input_update();
-    while(w_getkey(&k)) {
-      if(k.press && (k.key==WKEY_ESC))
-        esc=1;
-      else
-        zx_debug_key(k.press,k.key);
-    }
-  } while(!esc && cpus.PC!=addr);
-  instr_base=cpus.PC;
+  dbg_stop_enabled = true;
+  dbg_stop_addr = addr;
+  dbg_exit = true;
 }
 
 static void d_stepover(void) {
@@ -286,10 +281,13 @@ static void curs_pgdown(void) {
 void debugger(void) {
   wkey_t k;
   
+  dbg_stop_enabled = false;
+  
   instr_base = cpus.PC;
   ic_ln = 0;
+  dbg_exit = false;
       
-  while(1) {
+  while(!dbg_exit) {
     mgfx_selln(3);
     d_regs();
     d_hex();
