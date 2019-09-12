@@ -76,6 +76,7 @@
 #define CLOCK_GE(a,b) ( (((a)-(b)) >> 31) == 0 )
 
 static void zx_scr_save(void);
+static void zx_proc_instr(void);
 
 int scr_no=0;
 
@@ -101,6 +102,8 @@ iorec_t *iorec;
 
 int key_lalt_held;
 int key_lshift_held;
+
+static uint8_t tape_smp;
 
 /** Lock down user interface */
 void gzx_ui_lock(void)
@@ -411,29 +414,9 @@ void zx_debug_key(int press, int key) {
 
 /* Machine step for the debugger */
 void zx_debug_mstep(void) {
-  uint8_t tape_smp;
 
   if(CLOCK_GE(z80_clock-disp_t,ULA_FIELD_TICKS)) { /* every 50th of a second */
     disp_t+=ULA_FIELD_TICKS;
-      
-//      unsigned long twstart;
-	
-        /* sync with time */
-/*	twstart = timer_val(&frmt);
-        while(CLOCK_LT(timer_val(&frmt), z80_clock)
-	   && CLOCK_LT(timer_val(&frmt),twstart+ULA_FIELD_TICKS)) {
-	  printf("sync with time\n");*/
-	  /* dulezite pro zpracovani udalosti woutproc */
-/*          mgfx_input_update();
-
-          usleep(1000);
-        }*/
-	
-	/* this is not correct because
-           frame displaying takes some time */	   
-//        zx_scr_disp_fast();	    
-    if (gpu_is_on())
-      zx_scr_disp_fast();
 #ifdef WITH_MIDI
     sysmidi_poll(z80_clock);
 #endif
@@ -443,55 +426,59 @@ void zx_debug_mstep(void) {
     if(cpus.iff1) fprintf(logfi,"interrupt\n");
 #endif
   }
+
+  zx_proc_instr();
+}
+
+/** Process an instruction and anything that we check for every instruction. */
+static void zx_proc_instr(void)
+{
+    if (!gpu_is_on()) {
+      while(CLOCK_LT(zx_scr_get_clock(),z80_clock)) {
+        zx_scr_disp();
+      }
+    } else {
+      while(CLOCK_LT(zx_scr_get_clock(),z80_clock)) {
+        zx_scr_disp_fast();
+      }
+    }
     
-  if (!gpu_is_on()) {
-    while(CLOCK_LT(zx_scr_get_clock(),z80_clock)) {
-      zx_scr_disp();
+    if(CLOCK_GE(z80_clock-snd_t,ZX_SOUND_TICKS_SMP)) { 
+      zx_sound_smp(ay_get_sample(&ay0)+(tape_smp?+16:-16));
+      /* build a new sound sample */
+      snd_t+=ZX_SOUND_TICKS_SMP;
     }
-  } else {
-    while(CLOCK_LT(zx_scr_get_clock(),z80_clock)) {
-      zx_scr_disp_fast();
+    if(CLOCK_GE(z80_clock-tapp_t,ZX_TAPE_TICKS_SMP)) {
+      tape_deck_getsmp(tape_deck, &tape_smp);
+      ear=tape_smp;
+      tapp_t+=ZX_TAPE_TICKS_SMP;
     }
-  }
-  
-  if(CLOCK_GE(z80_clock-snd_t,ZX_SOUND_TICKS_SMP)) { 
-    zx_sound_smp(ay_get_sample(&ay0)+(tape_smp?+16:-16));
-    /* build a new sound sample */
-    snd_t+=ZX_SOUND_TICKS_SMP;
-  }
-  if(CLOCK_GE(z80_clock-tapp_t,ZX_TAPE_TICKS_SMP)) {
-    tape_deck_getsmp(tape_deck, &tape_smp);
-    ear=tape_smp;
-    tapp_t+=ZX_TAPE_TICKS_SMP;
-  }
-  if(!slow_load) {
-    if(cpus.PC==TAPE_LDBYTES_TRAP) {
-      printf("load trapped!\n");
-      tape_quick_ldbytes(tape_deck);
+    if(!slow_load) {
+      if(cpus.PC==TAPE_LDBYTES_TRAP) {
+        printf("load trapped!\n");
+	tape_quick_ldbytes(tape_deck);
+      }
+      if(cpus.PC==TAPE_SABYTES_TRAP) {
+        printf("save trapped!\n");
+	tape_quick_sabytes(tape_deck);
+      }
     }
-    if(cpus.PC==TAPE_SABYTES_TRAP) {
-      printf("save trapped!\n");
-      tape_quick_sabytes(tape_deck);
-    }
-  }
 #ifdef XMAP
-  xmap_mark();
+    xmap_mark();
 #endif
 #ifdef XTRACE
     xtrace_instr();
 #endif
 
-  if (gpu_is_on())
-    z80_g_execinstr();
-  else
-    z80_execinstr();
+    if (gpu_is_on())
+      z80_g_execinstr();
+    else
+      z80_execinstr();
 }
 
 int main(int argc, char **argv) {
-  int ic;
   int argi;
   timer frmt;
-  uint8_t tape_smp;
   wkey_t k;
   
   argi = 1;
@@ -532,34 +519,13 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  ic=0;
   //printf("inited.\n");
-  //fprintf(logfi,"%d: pc=0x%04x, clock=%ld\n",ic,cpus.PC,z80_clock);
   
   timer_reset(&frmt);
   
   while(!quit) {
     if(CLOCK_GE(z80_clock-disp_t,ULA_FIELD_TICKS)) { /* every 50th of a second */
       disp_t+=ULA_FIELD_TICKS;
-      
-//        unsigned long twstart;
-	
-        /* sync with time */
-/*	twstart = timer_val(&frmt);
-        while(CLOCK_LT(timer_val(&frmt), z80_clock)
-	   && CLOCK_LT(timer_val(&frmt),twstart+ULA_FIELD_TICKS)) {
-	  printf("sync with time\n");*/
-	  /* dulezite pro zpracovani udalosti woutproc */
-/*          mgfx_input_update();
-
-          usleep(1000);
-        }*/
-	
-	/* this is not correct because
-           frame displaying takes some time */	   
-//        zx_scr_disp_fast();	    
-//      if (gpu_is_on())
-//        zx_scr_disp_fast();
 #ifdef WITH_MIDI
       sysmidi_poll(z80_clock);
 #endif
@@ -572,51 +538,7 @@ int main(int argc, char **argv) {
 #endif
     }
     
-    if (!gpu_is_on()) {
-      while(CLOCK_LT(zx_scr_get_clock(),z80_clock)) {
-        zx_scr_disp();
-      }
-    } else {
-      while(CLOCK_LT(zx_scr_get_clock(),z80_clock)) {
-        zx_scr_disp_fast();
-      }
-    }
-    
-    if(CLOCK_GE(z80_clock-snd_t,ZX_SOUND_TICKS_SMP)) { 
-//     putchar('S');
-      zx_sound_smp(ay_get_sample(&ay0)+(tape_smp?+16:-16));
-      /* build a new sound sample */
-      snd_t+=ZX_SOUND_TICKS_SMP;
-//     fputs("~S",stdout);
-    }
-    if(CLOCK_GE(z80_clock-tapp_t,ZX_TAPE_TICKS_SMP)) {
-//      putchar('T');
-      tape_deck_getsmp(tape_deck, &tape_smp);
-      ear=tape_smp;
-      tapp_t+=ZX_TAPE_TICKS_SMP;
-    }
-    ic++;
-    if(!slow_load) {
-      if(cpus.PC==TAPE_LDBYTES_TRAP) {
-        printf("load trapped!\n");
-	tape_quick_ldbytes(tape_deck);
-      }
-      if(cpus.PC==TAPE_SABYTES_TRAP) {
-        printf("save trapped!\n");
-	tape_quick_sabytes(tape_deck);
-      }
-    }
-#ifdef XMAP
-    xmap_mark();
-#endif
-#ifdef XTRACE
-    xtrace_instr();
-#endif
-
-    if (gpu_is_on())
-      z80_g_execinstr();
-    else
-      z80_execinstr();
+    zx_proc_instr();
   }
   
   /* Graphics is closed automatically atexit() */
