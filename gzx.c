@@ -400,24 +400,6 @@ static void writestat(void) {
   fprintf(logfi,"\nEDop:\n");   writestat_i(6);
 }
 
-/* Machine step for the debugger */
-void zx_debug_mstep(void) {
-
-  if(CLOCK_GE(z80_clock-disp_t,ULA_FIELD_TICKS)) { /* every 50th of a second */
-    disp_t+=ULA_FIELD_TICKS;
-#ifdef WITH_MIDI
-    sysmidi_poll(z80_clock);
-#endif
-    mgfx_updscr();
-
-#ifdef LOG
-    if(cpus.iff1) fprintf(logfi,"interrupt\n");
-#endif
-  }
-
-  zx_proc_instr();
-}
-
 /** Process an instruction and anything that we check for every instruction. */
 static void zx_proc_instr(void)
 {
@@ -465,6 +447,10 @@ static void zx_proc_instr(void)
       z80_g_execinstr();
     else
       z80_execinstr();
+
+    if (dbg_itrap_enabled) {
+      debugger();
+    }
 }
 
 int main(int argc, char **argv) {

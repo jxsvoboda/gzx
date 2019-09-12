@@ -34,6 +34,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+extern bool dbg_itrap_enabled;
 extern bool dbg_stop_enabled;
 extern uint16_t dbg_stop_addr;
 

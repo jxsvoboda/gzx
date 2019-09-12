@@ -54,16 +54,14 @@ static uint16_t instr_base;
 
 static int ic_ln; /* instruction cursor line number */
 
+/** Drop to debugger after executing an instruction */
+bool dbg_itrap_enabled;
 /** Drop to debugger when dbg_stop-addr is reached */
 bool dbg_stop_enabled;
 /** When run upto cursor is selected, the address is stored here */
 uint16_t dbg_stop_addr;
 
 static bool dbg_exit;
-
-static void d_istep(void) {
-  zx_debug_mstep();
-}
 
 static void dreg(char *name, uint16_t value) {
   char buf[16];
@@ -208,8 +206,8 @@ static void instr_prev(void) {
 }
 
 static void d_trace(void) {
-  d_istep();
-  instr_base=cpus.PC;
+  dbg_itrap_enabled = true;
+  dbg_exit = true;
 }
 
 static void d_run_upto(uint16_t addr) {
@@ -282,6 +280,7 @@ void debugger(void) {
   wkey_t k;
   
   dbg_stop_enabled = false;
+  dbg_itrap_enabled = false;
   
   instr_base = cpus.PC;
   ic_ln = 0;
