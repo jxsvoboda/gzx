@@ -145,7 +145,7 @@ static void d_hex(void) {
 
 static void d_instr(void) {
   int i;
-  unsigned xpos,c;
+  uint16_t xpos,c;
   char buf[16];
   
   disasm_org=xpos=instr_base;
