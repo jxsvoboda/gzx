@@ -231,6 +231,13 @@ static void scr_dispscrelem(video_ula_t *ula, int x, int y)
 
 	attr = zxscr[ZX_ATTR_START + (line >> 3) * 32 + col];
 	pix = zxscr[ZX_PIXEL_START + vxswapb(line * 32 + col)];
+
+	/*
+	 * In reality attr/pix are read at different times and we can get
+	 * either as the bus byte.
+	 */
+	ula->idle_bus_byte = attr;
+
 	video_ula_attr_to_colors(ula, attr, &fgc, &bgc);
 
 	for (i = 0; i < 8; i++) {
@@ -251,6 +258,7 @@ static void scr_dispscrelem(video_ula_t *ula, int x, int y)
 static void scr_dispbrdelem(video_ula_t *ula, int x, int y)
 {
 	video_out_rect(ula->vout, x, y, x + 7, y, border);
+	ula->idle_bus_byte = 0xff;
 }
 
 /** Slow and fine display routine, called after each instruction.

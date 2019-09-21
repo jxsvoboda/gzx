@@ -148,7 +148,7 @@ uint8_t zx_in8(uint16_t a) {
   }
 
   printf("in 0x%04x\n (no device there)",a);
-  return 0xff;
+  return video_ula.idle_bus_byte;
 }
 
 void zx_out8(uint16_t addr, uint8_t val) {
