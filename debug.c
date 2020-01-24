@@ -44,6 +44,7 @@
 #define MK_PAIR(hi,lo) ( (((uint16_t)(hi)) << 8) | (lo) )
 
 #define HEX_CY 18
+#define STACK_CY 16
 #define INSTR_CY 9
 
 #define INSTR_LINES 6
@@ -128,6 +129,20 @@ static void d_regs(void) {
   dflag("C:",(cpus.F&fC)!=0);
   
   gmovec(30,7); dreg("PC", cpus.PC);
+}
+
+static void d_stack(void) {
+  char buf[5];
+  int i;
+
+  gmovec(1,STACK_CY);
+  fgc=7;
+  gputs("Stack:");
+  fgc=5;
+  for(i=0;i<6;i++) {
+    snprintf(buf, 6, " %04X", zx_memget16(cpus.SP+2*i));
+    gputs(buf);
+  }
 }
 
 static void d_hex(void) {
@@ -304,6 +319,7 @@ void debugger(void) {
     mgfx_selln(3);
     d_regs();
     d_hex();
+    d_stack();
     d_instr();
     mgfx_updscr();
     do {
