@@ -161,7 +161,11 @@ static void d_instr(void) {
   disasm_org=xpos=instr_base;
   
   for(i=0;i<INSTR_LINES;i++) {
-    bgc = (ic_ln==i) ? 1 : 0;
+    bgc = 0;
+    if (disasm_org == cpus.PC)
+      bgc |= 2;
+    if (ic_ln == i)
+      bgc |= 1;
     fgc=7;
     snprintf(buf,16,"%04X:",disasm_org&0xffff);
     gmovec(1,INSTR_CY+i); gputs(buf);
