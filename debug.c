@@ -70,6 +70,13 @@ static void dreg(char *name, uint16_t value) {
   snprintf(buf,16,"%04X",value); gputs(buf);
 }
 
+static void dreg8(char *name, uint16_t value) {
+  char buf[16];
+  
+  fgc=7; gputs(name); gputc(':'); fgc=5;
+  snprintf(buf,16,"%02X",value); gputs(buf);
+}
+
 static void dflag(char *name, int value) {
   char buf[8];
   
@@ -94,20 +101,23 @@ static void d_regs(void) {
   gmovec(1,4); dreg("DE", MK_PAIR(cpus.r[rD],cpus.r[rE]));
   gmovec(1,5); dreg("HL", MK_PAIR(cpus.r[rH],cpus.r[rL]));
   
-  gmovec(10,2); dreg("A'F'", MK_PAIR(cpus.r_[rA],cpus.F_));
-  gmovec(10,3); dreg("B'C'", MK_PAIR(cpus.r_[rB],cpus.r_[rC]));
-  gmovec(10,4); dreg("D'E'", MK_PAIR(cpus.r_[rD],cpus.r_[rE]));
-  gmovec(10,5); dreg("H'L'", MK_PAIR(cpus.r_[rH],cpus.r_[rL]));
+  gmovec(9,2); dreg("AF'", MK_PAIR(cpus.r_[rA],cpus.F_));
+  gmovec(9,3); dreg("BC'", MK_PAIR(cpus.r_[rB],cpus.r_[rC]));
+  gmovec(9,4); dreg("DE'", MK_PAIR(cpus.r_[rD],cpus.r_[rE]));
+  gmovec(9,5); dreg("HL'", MK_PAIR(cpus.r_[rH],cpus.r_[rL]));
   
-  gmovec(21,2); dreg("IX", cpus.IX);
-  gmovec(21,3); dreg("IY", cpus.IY);
-  gmovec(21,4); dreg("IR", MK_PAIR(cpus.I, cpus.R));
-  gmovec(21,5); dreg("SP", cpus.SP);
+  gmovec(18,2); dreg("IX", cpus.IX);
+  gmovec(18,3); dreg("IY", cpus.IY);
+  gmovec(18,4); dreg("IR", MK_PAIR(cpus.I, cpus.R));
+  gmovec(18,5); dreg("SP", cpus.SP);
 
-  gmovec(30,2); dflag("IFF1:",cpus.IFF1);
-  gmovec(30,3); dflag("IFF2:",cpus.IFF2);
-  gmovec(30,4); dflag("IM:  ",cpus.int_mode);
-  gmovec(30,5); dflag("HLT: ",cpus.halted);
+  gmovec(26,2); dflag("IFF1:",cpus.IFF1);
+  gmovec(26,3); dflag("IFF2:",cpus.IFF2);
+  gmovec(26,4); dflag("IM:  ",cpus.int_mode);
+  gmovec(26,5); dflag("HLT: ",cpus.halted);
+
+  gmovec(33,2); dflag("ILCK:",cpus.int_lock);
+  gmovec(33,3); dreg8("Pg", page_reg);
 
   gmovec(1,7);
   dflag("S:",(cpus.F&fS)!=0);
