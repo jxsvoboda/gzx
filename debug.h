@@ -34,10 +34,22 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-extern bool dbg_itrap_enabled;
-extern bool dbg_stop_enabled;
-extern uint16_t dbg_stop_addr;
+typedef struct {
+	uint16_t hex_base;
+	uint16_t instr_base;
 
-void debugger(void);
+	int ic_ln; /* instruction cursor line number */
+
+	/** Drop to debugger after executing an instruction */
+	bool itrap_enabled;
+	/** Drop to debugger when dbg_stop-addr is reached */
+	bool stop_enabled;
+	/** When run upto cursor is selected, the address is stored here */
+	uint16_t stop_addr;
+
+	bool exit;
+} debugger_t;
+
+void debugger_run(debugger_t *);
 
 #endif

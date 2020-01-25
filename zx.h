@@ -35,6 +35,7 @@
 #include <stdbool.h>
 
 #include "ay.h"
+#include "debug.h"
 #include "joystick/kempston.h"
 #include "midi.h"
 #include "rs232.h"
@@ -43,6 +44,7 @@
 
 extern ay_t ay0;
 extern bool ay0_enable;
+extern debugger_t dbg;
 extern kempston_joy_t kjoy0;
 extern bool kjoy0_enable;
 extern midi_port_t midi;

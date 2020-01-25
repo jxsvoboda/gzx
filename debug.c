@@ -49,20 +49,6 @@
 
 #define INSTR_LINES 6
 
-static uint16_t hex_base;
-static uint16_t instr_base;
-
-static int ic_ln; /* instruction cursor line number */
-
-/** Drop to debugger after executing an instruction */
-bool dbg_itrap_enabled;
-/** Drop to debugger when dbg_stop-addr is reached */
-bool dbg_stop_enabled;
-/** When run upto cursor is selected, the address is stored here */
-uint16_t dbg_stop_addr;
-
-static bool dbg_exit;
-
 static void dreg(char *name, uint16_t value)
 {
 	char buf[16];
@@ -183,7 +169,7 @@ static void d_stack(void)
 	}
 }
 
-static void d_hex(void)
+static void d_hex(debugger_t *dbg)
 {
 	int i, j;
 	char buf[16];
@@ -191,17 +177,17 @@ static void d_hex(void)
 
 	for (i = 0; i < 6; i++) {
 		fgc = 7;
-		snprintf(buf, 16, "%04X:", hex_base + 8 * i);
+		snprintf(buf, 16, "%04X:", dbg->hex_base + 8 * i);
 		gmovec(1, HEX_CY + i);
 		gputs(buf);
 
 		fgc = 5;
 		for (j = 0; j < 8; j++) {
-			b = zx_memget8(hex_base + 8 * i + j);
+			b = zx_memget8(dbg->hex_base + 8 * i + j);
 			gputc(b);
 		}
 		for (j = 0; j < 8; j++) {
-			b = zx_memget8(hex_base + 8 * i + j);
+			b = zx_memget8(dbg->hex_base + 8 * i + j);
 			snprintf(buf, 16, "%02X", b);
 			gmovec(16 + 3 * j, HEX_CY + i);
 			gputs(buf);
@@ -209,19 +195,19 @@ static void d_hex(void)
 	}
 }
 
-static void d_instr(void)
+static void d_instr(debugger_t *dbg)
 {
 	int i;
 	uint16_t xpos, c;
 	char buf[16];
 
-	disasm_org = xpos = instr_base;
+	disasm_org = xpos = dbg->instr_base;
 
 	for (i = 0; i < INSTR_LINES; i++) {
 		bgc = 0;
 		if (disasm_org == cpus.PC)
 			bgc |= 2;
-		if (ic_ln == i)
+		if (dbg->ic_ln == i)
 			bgc |= 1;
 		fgc = 7;
 		snprintf(buf, 16, "%04X:", disasm_org & 0xffff);
@@ -245,11 +231,11 @@ static void d_instr(void)
 	bgc = 0;
 }
 
-static void instr_next(void)
+static void instr_next(debugger_t *dbg)
 {
-	disasm_org = instr_base;
+	disasm_org = dbg->instr_base;
 	disasm_instr();
-	instr_base = disasm_org;
+	dbg->instr_base = disasm_org;
 }
 
 /*
@@ -261,39 +247,39 @@ static void instr_next(void)
 
 #define BKTRACE 8
 
-static void instr_prev(void)
+static void instr_prev(debugger_t *dbg)
 {
 	uint16_t c, last;
 
-	disasm_org = instr_base - BKTRACE;
+	disasm_org = dbg->instr_base - BKTRACE;
 	c = 0;
 	do {
 		last = disasm_org;
 		disasm_instr();
 		c++;
-	} while (c < BKTRACE && disasm_org != instr_base);
+	} while (c < BKTRACE && disasm_org != dbg->instr_base);
 
 	if (c == BKTRACE) {
-		instr_base--;
+		dbg->instr_base--;
 		return;
 	}
-	instr_base = last;
+	dbg->instr_base = last;
 }
 
-static void d_trace(void)
+static void d_trace(debugger_t *dbg)
 {
-	dbg_itrap_enabled = true;
-	dbg_exit = true;
+	dbg->itrap_enabled = true;
+	dbg->exit = true;
 }
 
-static void d_run_upto(uint16_t addr)
+static void d_run_upto(debugger_t *dbg, uint16_t addr)
 {
-	dbg_stop_enabled = true;
-	dbg_stop_addr = addr;
-	dbg_exit = true;
+	dbg->stop_enabled = true;
+	dbg->stop_addr = addr;
+	dbg->exit = true;
 }
 
-static void d_stepover(void)
+static void d_stepover(debugger_t *dbg)
 {
 	uint8_t b;
 
@@ -302,21 +288,21 @@ static void d_stepover(void)
 		/* CALL or CALL cond */
 		disasm_org = cpus.PC;
 		disasm_instr();
-		d_run_upto(disasm_org);
+		d_run_upto(dbg, disasm_org);
 	} else {
-		d_trace();
+		d_trace(dbg);
 	}
 }
 
-static void d_to_cursor(void)
+static void d_to_cursor(debugger_t *dbg)
 {
 	int i;
 
-	disasm_org = instr_base;
-	for (i = 0; i < ic_ln; i++)
+	disasm_org = dbg->instr_base;
+	for (i = 0; i < dbg->ic_ln; i++)
 		disasm_instr();
 
-	d_run_upto(disasm_org);
+	d_run_upto(dbg, disasm_org);
 }
 
 static void d_view_scr(void)
@@ -334,53 +320,53 @@ static void d_view_scr(void)
 	}
 }
 
-static void curs_up(void)
+static void curs_up(debugger_t *dbg)
 {
-	if (ic_ln > 0)
-		ic_ln--;
+	if (dbg->ic_ln > 0)
+		dbg->ic_ln--;
 	else
-		instr_prev();
+		instr_prev(dbg);
 }
 
-static void curs_down(void)
+static void curs_down(debugger_t *dbg)
 {
-	if (ic_ln < INSTR_LINES - 1)
-		ic_ln++;
+	if (dbg->ic_ln < INSTR_LINES - 1)
+		dbg->ic_ln++;
 	else
-		instr_next();
+		instr_next(dbg);
 }
 
-static void curs_pgup(void)
+static void curs_pgup(debugger_t *dbg)
 {
 	int i;
 	for (i = 0; i < INSTR_LINES - 1; i++)
-		curs_up();
+		curs_up(dbg);
 }
 
-static void curs_pgdown(void)
+static void curs_pgdown(debugger_t *dbg)
 {
 	int i;
 	for (i = 0; i < INSTR_LINES - 1; i++)
-		curs_down();
+		curs_down(dbg);
 }
 
-void debugger(void)
+void debugger_run(debugger_t *dbg)
 {
 	wkey_t k;
 
-	dbg_stop_enabled = false;
-	dbg_itrap_enabled = false;
+	dbg->stop_enabled = false;
+	dbg->itrap_enabled = false;
 
-	instr_base = cpus.PC;
-	ic_ln = 0;
-	dbg_exit = false;
+	dbg->instr_base = cpus.PC;
+	dbg->ic_ln = 0;
+	dbg->exit = false;
 
-	while (!dbg_exit) {
+	while (!dbg->exit) {
 		mgfx_selln(3);
 		d_regs();
-		d_hex();
+		d_hex(dbg);
 		d_stack();
-		d_instr();
+		d_instr(dbg);
 		mgfx_updscr();
 		do {
 			mgfx_input_update();
@@ -398,38 +384,38 @@ void debugger(void)
 				return;
 
 			case WKEY_UP:
-				curs_up();
+				curs_up(dbg);
 				break;
 			case WKEY_DOWN:
-				curs_down();
+				curs_down(dbg);
 				break;
 			case WKEY_PGUP:
-				curs_pgup();
+				curs_pgup(dbg);
 				break;
 			case WKEY_PGDN:
-				curs_pgdown();
+				curs_pgdown(dbg);
 				break;
 			case WKEY_LEFT:
-				instr_base--;
+				dbg->instr_base--;
 				break;
 			case WKEY_RIGHT:
-				instr_base++;
+				dbg->instr_base++;
 				break;
 			case WKEY_HOME:
-				instr_base -= 256;
+				dbg->instr_base -= 256;
 				break;
 			case WKEY_END:
-				instr_base += 256;
+				dbg->instr_base += 256;
 				break;
 
 			case WKEY_F7:
-				d_trace();
+				d_trace(dbg);
 				break;
 			case WKEY_F8:
-				d_stepover();
+				d_stepover(dbg);
 				break;
 			case WKEY_F9:
-				d_to_cursor();
+				d_to_cursor(dbg);
 				break;
 			case WKEY_F11:
 				d_view_scr();

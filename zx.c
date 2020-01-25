@@ -32,6 +32,7 @@
 #include <stdbool.h>
 
 #include "ay.h"
+#include "debug.h"
 #include "joystick/kempston.h"
 #include "rs232.h"
 #include "tape/deck.h"
@@ -47,6 +48,9 @@ bool ay0_enable = true;
 kempston_joy_t kjoy0;
 /** First Kempston joystick enabled */
 bool kjoy0_enable = true;
+
+/** Debugger */
+debugger_t dbg;
 
 /** MIDI port */
 midi_port_t midi;

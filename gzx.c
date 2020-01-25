@@ -158,7 +158,7 @@ static void key_unmod(wkey_t *k)
 #ifdef XMAP
       case WKEY_N5: xmap_clear(); break;
 #endif
-      case WKEY_F12: debugger(); break;
+      case WKEY_F12: debugger_run(&dbg); break;
       default: break;
     }
 }
@@ -433,8 +433,8 @@ static void zx_proc_instr(void)
 	tape_quick_sabytes(tape_deck);
       }
     }
-    if (dbg_stop_enabled && cpus.PC == dbg_stop_addr) {
-      debugger();
+    if (dbg.stop_enabled && cpus.PC == dbg.stop_addr) {
+      debugger_run(&dbg);
     }
 #ifdef XMAP
     xmap_mark();
@@ -448,8 +448,8 @@ static void zx_proc_instr(void)
     else
       z80_execinstr();
 
-    if (dbg_itrap_enabled) {
-      debugger();
+    if (dbg.itrap_enabled) {
+      debugger_run(&dbg);
     }
 }
 
