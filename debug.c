@@ -49,6 +49,11 @@
 
 #define INSTR_LINES 6
 
+/** Display 16-bit register.
+ *
+ * @param name Register name
+ * @param value Value
+ */
 static void dreg(char *name, uint16_t value)
 {
 	char buf[16];
@@ -62,6 +67,11 @@ static void dreg(char *name, uint16_t value)
 	gputs(buf);
 }
 
+/** Display 8-bit register.
+ *
+ * @param name Register name
+ * @param value Value
+ */
 static void dreg8(char *name, uint16_t value)
 {
 	char buf[16];
@@ -75,6 +85,11 @@ static void dreg8(char *name, uint16_t value)
 	gputs(buf);
 }
 
+/** Display single-bit register or flag.
+ *
+ * @param name Register/flag name
+ * @param value Value
+ */
 static void dflag(char *name, int value)
 {
 	char buf[8];
@@ -87,9 +102,9 @@ static void dflag(char *name, int value)
 	gputs(buf);
 }
 
-static void d_regs(void)
+/** Display register summary. */
+static void debbuger_disp_regs(void)
 {
-
 	mgfx_fillrect(0, 0, scr_xs - 1, scr_ys - 1, 0);
 
 	bgc = 0;
@@ -153,7 +168,8 @@ static void d_regs(void)
 	dreg("PC", cpus.PC);
 }
 
-static void d_stack(void)
+/** Display a couple of entries from the top of the stack. */
+static void debugger_disp_stack(void)
 {
 	char buf[5];
 	int i;
@@ -169,7 +185,8 @@ static void d_stack(void)
 	}
 }
 
-static void d_hex(debugger_t *dbg)
+/** Display memory dump. */
+static void debugger_disp_memdump(debugger_t *dbg)
 {
 	int i, j;
 	char buf[16];
@@ -195,7 +212,8 @@ static void d_hex(debugger_t *dbg)
 	}
 }
 
-static void d_instr(debugger_t *dbg)
+/** Display instruction code disassembly. */
+static void debugger_disp_instr(debugger_t *dbg)
 {
 	int i;
 	uint16_t xpos, c;
@@ -231,6 +249,10 @@ static void d_instr(debugger_t *dbg)
 	bgc = 0;
 }
 
+/** Move disassembly window start address one instruction further.
+ *
+ * @param dbg Debugger
+ */
 static void instr_next(debugger_t *dbg)
 {
 	disasm_org = dbg->instr_base;
@@ -238,18 +260,23 @@ static void instr_next(debugger_t *dbg)
 	dbg->instr_base = disasm_org;
 }
 
-/*
- * How to find the preceding instruction:
- * Go BKTRACE bytes backward and hope that going forward from there
- * we will sync. before reaching the current position
- * We then save the position of the preceding instruction
- */
 
 #define BKTRACE 8
 
+/** Move disassembly window start address one instruction back.
+ *
+ * @param dbg Debugger
+ */
 static void instr_prev(debugger_t *dbg)
 {
 	uint16_t c, last;
+
+	/*
+	 * How we find the preceding instruction:
+	 * Go BKTRACE bytes backward and hope that going forward from there
+	 * we will sync before reaching the current position
+	 * We then save the position of the preceding instruction
+	 */
 
 	disasm_org = dbg->instr_base - BKTRACE;
 	c = 0;
@@ -266,20 +293,33 @@ static void instr_prev(debugger_t *dbg)
 	dbg->instr_base = last;
 }
 
-static void d_trace(debugger_t *dbg)
+/** Trace into (i.e. single step instructions)
+ *
+ * @param dbg Debugger
+ */
+static void debugger_trace(debugger_t *dbg)
 {
 	dbg->itrap_enabled = true;
 	dbg->exit = true;
 }
 
-static void d_run_upto(debugger_t *dbg, uint16_t addr)
+/** Continue running until the specified address is reached
+ *
+ * @param dbg Debugger
+ * @param addr Address where to stop
+ */
+static void debugger_run_upto(debugger_t *dbg, uint16_t addr)
 {
 	dbg->stop_enabled = true;
 	dbg->stop_addr = addr;
 	dbg->exit = true;
 }
 
-static void d_stepover(debugger_t *dbg)
+/** Step over function calls.
+ *
+ * @param dbg Debugger
+ */
+static void debugger_stepover(debugger_t *dbg)
 {
 	uint8_t b;
 
@@ -288,13 +328,19 @@ static void d_stepover(debugger_t *dbg)
 		/* CALL or CALL cond */
 		disasm_org = cpus.PC;
 		disasm_instr();
-		d_run_upto(dbg, disasm_org);
+		debugger_run_upto(dbg, disasm_org);
 	} else {
-		d_trace(dbg);
+		debugger_trace(dbg);
 	}
 }
 
-static void d_to_cursor(debugger_t *dbg)
+/** Go to cursor.
+ *
+ * Run until the address under the cursor is reached.
+ *
+ * @param dbg Debugger
+ */
+static void debugger_to_cursor(debugger_t *dbg)
 {
 	int i;
 
@@ -302,10 +348,11 @@ static void d_to_cursor(debugger_t *dbg)
 	for (i = 0; i < dbg->ic_ln; i++)
 		disasm_instr();
 
-	d_run_upto(dbg, disasm_org);
+	debugger_run_upto(dbg, disasm_org);
 }
 
-static void d_view_scr(void)
+/** View spectrum screen without quitting the debugger. */
+static void debugger_view_scr(void)
 {
 	wkey_t k;
 
@@ -320,7 +367,11 @@ static void d_view_scr(void)
 	}
 }
 
-static void curs_up(debugger_t *dbg)
+/** Move cursor one line up.
+ *
+ * @param dbg Debugger
+ */
+static void debugger_curs_up(debugger_t *dbg)
 {
 	if (dbg->ic_ln > 0)
 		dbg->ic_ln--;
@@ -328,7 +379,11 @@ static void curs_up(debugger_t *dbg)
 		instr_prev(dbg);
 }
 
-static void curs_down(debugger_t *dbg)
+/** Move cursor one line down.
+ *
+ * @param dbg Debugger
+ */
+static void debugger_curs_down(debugger_t *dbg)
 {
 	if (dbg->ic_ln < INSTR_LINES - 1)
 		dbg->ic_ln++;
@@ -336,20 +391,106 @@ static void curs_down(debugger_t *dbg)
 		instr_next(dbg);
 }
 
-static void curs_pgup(debugger_t *dbg)
+/** Move cursor one page up.
+ *
+ * @param dbg Debugger
+ */
+static void debugger_curs_pgup(debugger_t *dbg)
 {
 	int i;
 	for (i = 0; i < INSTR_LINES - 1; i++)
-		curs_up(dbg);
+		debugger_curs_up(dbg);
 }
 
-static void curs_pgdown(debugger_t *dbg)
+/** Move cursor one page down.
+ *
+ * @param dbg Debugger
+ */
+static void debugger_curs_pgdown(debugger_t *dbg)
 {
 	int i;
 	for (i = 0; i < INSTR_LINES - 1; i++)
-		curs_down(dbg);
+		debugger_curs_down(dbg);
 }
 
+/** Process debugger key without modifiers.
+ *
+ * @param dbg Debugger
+ * @param k Key
+ */
+static void debugger_key_unmod(debugger_t *dbg, wkey_t k)
+{
+	switch (k.key) {
+	case WKEY_ESC:
+		dbg->exit = true;
+		break;
+
+	case WKEY_ENTER:
+		dbg->exit = true;
+		break;
+
+	case WKEY_UP:
+		debugger_curs_up(dbg);
+		break;
+	case WKEY_DOWN:
+		debugger_curs_down(dbg);
+		break;
+	case WKEY_PGUP:
+		debugger_curs_pgup(dbg);
+		break;
+	case WKEY_PGDN:
+		debugger_curs_pgdown(dbg);
+		break;
+	case WKEY_LEFT:
+		dbg->instr_base--;
+		break;
+	case WKEY_RIGHT:
+		dbg->instr_base++;
+		break;
+	case WKEY_HOME:
+		dbg->instr_base -= 256;
+		break;
+	case WKEY_END:
+		dbg->instr_base += 256;
+		break;
+
+	case WKEY_F7:
+		debugger_trace(dbg);
+		break;
+	case WKEY_F8:
+		debugger_stepover(dbg);
+		break;
+	case WKEY_F9:
+		debugger_to_cursor(dbg);
+		break;
+	case WKEY_F11:
+		debugger_view_scr();
+		break;
+
+	default:
+		break;
+	}
+}
+
+/** Display debuger.
+ *
+ * @param dbg Debugger
+ */
+static void debugger_display(debugger_t *dbg)
+{
+	mgfx_selln(3);
+
+	debbuger_disp_regs();
+	debugger_disp_memdump(dbg);
+	debugger_disp_stack();
+	debugger_disp_instr(dbg);
+	mgfx_updscr();
+}
+
+/** Enter debugger.
+ *
+ * @param dbg Debugger
+ */
 void debugger_run(debugger_t *dbg)
 {
 	wkey_t k;
@@ -362,68 +503,14 @@ void debugger_run(debugger_t *dbg)
 	dbg->exit = false;
 
 	while (!dbg->exit) {
-		mgfx_selln(3);
-		d_regs();
-		d_hex(dbg);
-		d_stack();
-		d_instr(dbg);
-		mgfx_updscr();
+		debugger_display(dbg);
+
 		do {
 			mgfx_input_update();
 			sys_usleep(1000);
 		} while (!w_getkey(&k));
 
 		if (k.press)
-			switch (k.key) {
-			case WKEY_ESC:
-				return;
-
-			case WKEY_ENTER:
-				//fn_line.buf[fn_line.len]=0;
-				//zx_save_snap(fn_line.buf);
-				return;
-
-			case WKEY_UP:
-				curs_up(dbg);
-				break;
-			case WKEY_DOWN:
-				curs_down(dbg);
-				break;
-			case WKEY_PGUP:
-				curs_pgup(dbg);
-				break;
-			case WKEY_PGDN:
-				curs_pgdown(dbg);
-				break;
-			case WKEY_LEFT:
-				dbg->instr_base--;
-				break;
-			case WKEY_RIGHT:
-				dbg->instr_base++;
-				break;
-			case WKEY_HOME:
-				dbg->instr_base -= 256;
-				break;
-			case WKEY_END:
-				dbg->instr_base += 256;
-				break;
-
-			case WKEY_F7:
-				d_trace(dbg);
-				break;
-			case WKEY_F8:
-				d_stepover(dbg);
-				break;
-			case WKEY_F9:
-				d_to_cursor(dbg);
-				break;
-			case WKEY_F11:
-				d_view_scr();
-				break;
-
-			default:
-				//teline_key(&fn_line,&k);
-				break;
-			}
+			debugger_key_unmod(dbg, k);
 	}
 }
