@@ -1,6 +1,6 @@
 GZX - George's ZX Spectrum Emulator
 ===================================
-Copyright (c) 1999-2019 Jiri Svoboda
+Copyright (c) 1999-2020 Jiri Svoboda
 
 Introduction
 ------------

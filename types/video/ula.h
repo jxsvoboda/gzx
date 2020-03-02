@@ -36,7 +36,6 @@
 #include <stdint.h>
 #include "ulaplus.h"
 
-
 /** ULA video generator */
 typedef struct {
 	struct video_out *vout;
