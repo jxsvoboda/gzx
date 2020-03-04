@@ -775,12 +775,12 @@ static uint8_t _sra8(uint8_t a) {
 
 #ifndef NO_Z80UNDOC
 
+/* Shift left with 1 insertion (sl1), also called sll */
 static uint8_t _sll8(uint8_t a) {
-  uint8_t nC,oC;
+  uint8_t nC;
 
   nC=a>>7;
-  oC=(cpus.F & fC)?1:0;
-  a=(a<<1)|oC;
+  a=(a<<1)|0x1;
   cpus.F=ox_tab[a]|nC;
   return a;
 }
