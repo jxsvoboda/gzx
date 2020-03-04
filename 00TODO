@@ -1,7 +1,19 @@
-Important!!
-----------
-- improve A/V synchronization (sync based on audio?)
+Bugs
+====
+ - After loading Spec256 snapshot the emulator freezes for some time
+   (possibly dependent on time elapsed before doing that)
+ - Full screen does not work in Windows - need to select the right depth &
+   resolution (probing, enumeration, manual setting?)
 
+Old
+---
 - determine if it's possible to prevent blocking the application
   while the window while some action (window being moved, system window open,
-  tooltip on system button opening) is in progress
+  tooltip on system button opening) is in progress (Windows)?
+
+Enhancements
+============
+ - Cycle-accurate tape and SPK sampling with filteringb
+ - Tape Record function
+ - Tape browser
+ - Pause
