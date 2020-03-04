@@ -204,6 +204,7 @@ dist: $(binary) $(binary_gtap) $(binary_w32) $(binary_w32_gtap)
 	cp -t $(distdir) $^
 	cp -r -t $(distdir) roms
 	cp -r -t $(distdir) font.bin
+	cp -r -t $(distdir) sp256.pal
 	cp -r -t $(distdir) README.md
 	echo $(version) > $(distdir)/VERSION
 	rm -rf $(distbase)/$(distname)/gzx.zip
