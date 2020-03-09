@@ -13,7 +13,9 @@ Old
 
 Enhancements
 ============
- - Cycle-accurate tape and SPK sampling with filteringb
+ - Cycle-accurate tape, SPK and AY sampling with filtering, 16 bits/sample
  - Tape Record function
  - Tape browser
  - Pause
+ - BASIC keyboard layout help screen
+ - Persistent configuration
