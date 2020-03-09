@@ -42,28 +42,28 @@
 #define ZXM_ZX81  4
 
 /* spectrum memory access */
-uint8_t zx_memget8(uint16_t addr);
-uint8_t zx_imemget8(uint16_t addr);
-void zx_memset8(uint16_t addr, uint8_t val);
-void zx_memset8f(uint16_t addr, uint8_t val);
-uint16_t zx_memget16(uint16_t addr);
-void zx_memset16(uint16_t addr, uint16_t val);
+extern uint8_t zx_memget8(uint16_t addr);
+extern uint8_t zx_imemget8(uint16_t addr);
+extern void zx_memset8(uint16_t addr, uint8_t val);
+extern void zx_memset8f(uint16_t addr, uint8_t val);
+extern uint16_t zx_memget16(uint16_t addr);
+extern void zx_memset16(uint16_t addr, uint16_t val);
 
 /* spectrum i/o port access */
-void zx_out8(uint16_t addr, uint8_t val);
-uint8_t zx_in8(uint16_t addr);
+extern void zx_out8(uint16_t addr, uint8_t val);
+extern uint8_t zx_in8(uint16_t addr);
 
-int zx_select_memmodel(int model);
-void zx_mem_page_select(uint8_t val);
-int gfxrom_load(char *fname, unsigned bank);
+extern int zx_select_memmodel(int model);
+extern void zx_mem_page_select(uint8_t val);
+extern int gfxrom_load(char *fname, unsigned bank);
 
 extern uint8_t page_reg;
 extern uint8_t border;
-extern uint8_t spk,mic,ear;
-extern uint8_t *zxram,*zxrom,*zxscr,*zxbnk[4];
+extern uint8_t spk, mic, ear;
+extern uint8_t *zxram, *zxrom, *zxscr, *zxbnk[4];
 extern int mem_model;
 
 extern int bnk_lock48;
-extern uint32_t ram_size,rom_size;
+extern uint32_t ram_size, rom_size;
 
 #endif

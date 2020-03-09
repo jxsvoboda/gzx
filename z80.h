@@ -50,7 +50,6 @@
 #define fU  0x28
 #define fD  0xd7
 
-
 #define rA  0x7
 #define rB  0x0
 #define rC  0x1
@@ -59,26 +58,43 @@
 #define rH  0x4
 #define rL  0x5
 
-typedef struct _z80s {     /*** registers of the Z80 CPU ***/
-  uint8_t r[8];            /* all-purpose registers,HL reg */
-  uint8_t F;               /* flags register */
+/** Z80 CPU state */
+typedef struct _z80s {
+	/** General-purpose register set (except Flags) */
+	uint8_t r[8];
+	/** Flags register */
+	uint8_t F;
 
-  uint8_t r_[8];      	   /* alternative registers */
-  uint8_t F_;
+	/** Alternate register set (except F') */
+	uint8_t r_[8];
+	/** Alternate Flags register */
+	uint8_t F_;
 
-  uint8_t I;               /* interrupt page address register */
-  uint16_t IX, IY;              /* index registers */
-  uint16_t PC;                  /* program counter */
-  uint8_t R;                    /* memory refresh register */
-  uint16_t SP;                  /* stack pointer */
+	/** Interrupt page address register */
+	uint8_t I;
+	/** Index registers */
+	uint16_t IX, IY;
+	/** Program counter */
+	uint16_t PC;
+	/** Memory refresh register */
+	uint8_t R;
+	/** Stack pointer */
+	uint16_t SP;
 
-  int IFF1,IFF2;	   /* interrupt flip-flops */
-  int int_mode;		   /* interrupt mode */
-  int int_lock;		   /* forbids INT&NMI (after EI/DI/DD/FD) */
-  int int_pending;         /* an interrupt is pending */
-  int nmi_pending;         /* an NMI is pending */
-  int modifier;            /* 0/0xdd/0xfd */
-  int halted;		   /* halted by the HALT instruction? */
+	/** Interrupt flip-flops */
+	int IFF1, IFF2;
+	/** Interrupt mode */
+	int int_mode;
+	/** Blocks INT & NMI (after EI/DI/DD/FD) */
+	int int_lock;
+	/** An interrupt is pending */
+	int int_pending;
+	/** A NMI is pending */
+	int nmi_pending;
+	/** 0 / 0xDD / 0xFD */
+	int modifier;
+	/** Halted by the HALT instruction? */
+	int halted;
 } z80s;
 
 extern z80s cpus;

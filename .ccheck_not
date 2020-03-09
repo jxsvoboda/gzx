@@ -11,14 +11,10 @@
 ./fileutil.c
 ./gzx.c
 ./memio.c
-./memio.h
 ./mgfx.c
-./mgfx.h
 ./snap.c
 ./snap_ay.c
 ./ui/fsel.c
 ./z80.c
-./z80.h
 ./z80g.c
-./z80g.h
 ./z80itab.c

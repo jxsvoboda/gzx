@@ -38,11 +38,11 @@
 #define KST_SIZE 128
 
 typedef struct {
-  int press;            /* 1=press, 0=release */
-  int key;              /* our own scancode */
-  int c;                /* ASCII character */
+	int press;            /* 1=press, 0=release */
+	int key;              /* our own scancode */
+	int c;                /* ASCII character */
 } wkey_t;
-      
+
 void mgfx_selln(int mask);
 void mgfx_setcolor(int color);
 void mgfx_drawpixel(int x, int y);
@@ -61,12 +61,12 @@ int w_initkey(void);
 
 extern uint8_t *vscr0;
 extern uint8_t *vscr1;
-extern int clip_x0,clip_y0,clip_x1,clip_y1;
-extern int scr_xs,scr_ys;
+extern int clip_x0, clip_y0, clip_x1, clip_y1;
+extern int scr_xs, scr_ys;
 extern int dbl_ln;
 extern int write_l0, write_l1; /* read only, write using mgfx_selln */
 
-extern int thpos,tvpos;
+extern int thpos, tvpos;
 
 /* gfx-api-dependent .. contained in gfx_win.c/gfx_vga.c */
 
