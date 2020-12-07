@@ -15,13 +15,13 @@ CFLAGS		= -O2 -Wall -Werror -Wmissing-prototypes -I/usr/include/SDL -DWITH_MIDI
 CFLAGS_w32	= -O2 -Wall -Werror -Wmissing-prototypes
 CFLAGS_helenos	= -O2 -Wall -Wno-error -DHELENOS_BUILD -D_HELENOS_SOURCE \
     -D_REALLY_WANT_STRING_H \
-    `helenos-pkg-config --cflags libgui libdraw libmath libhound libpcm`
+    `helenos-pkg-config --cflags libui libgfx libmath libhound libpcm`
 PREFIX_hos	= `helenos-bld-config --install-dir`
 INSTALL		= install
 
 LIBS		= -lSDL -lasound
 LIBS_w32	= -lgdi32 -lwinmm
-LIBS_helenos	=  `helenos-pkg-config --libs libgui libdraw libmath libpcm libhound`
+LIBS_helenos	=  `helenos-pkg-config --libs libui libgfx libmath libpcm libhound`
 
 bkqual = $$(date '+%Y-%m-%d')
 version = git
@@ -48,8 +48,6 @@ sources_generic = \
     ui/menu.c \
     ui/tapemenu.c \
     ui/teline.c \
-    wav/chunk.c \
-    wav/rwave.c \
     fileutil.c \
     gzx.c \
     memio.c \
@@ -78,6 +76,10 @@ sources_generic = \
     disasm.c \
     iorec.c
 
+sources_riff = \
+    wav/chunk.c \
+    wav/rwave.c \
+
 sources_gtap_generic = \
     adt/list.c \
     strutil.c \
@@ -95,6 +97,7 @@ sources_gtap_generic = \
 
 sources = \
     $(sources_generic) \
+    $(sources_riff) \
     platform/sdl/byteorder.c \
     platform/sdl/gfx_sdl.c \
     platform/sdl/snd_sdl.c \
@@ -103,10 +106,12 @@ sources = \
 
 sources_gtap = \
     $(sources_gtap_generic) \
+    $(sources_riff) \
     platform/sdl/byteorder.c
 
 sources_w32 = \
     $(sources_generic) \
+    $(sources_riff) \
     platform/win/byteorder.c \
     platform/win/gfx_win.c \
     platform/win/snd_win.c \
@@ -115,6 +120,7 @@ sources_w32 = \
 
 sources_w32_gtap = \
     $(sources_gtap_generic) \
+    $(sources_riff) \
     platform/win/byteorder.c
 
 sources_helenos = \

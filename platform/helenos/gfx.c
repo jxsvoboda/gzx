@@ -29,15 +29,19 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <canvas.h>
+#include <gfx/bitmap.h>
+#include <gfx/context.h>
 #include <fibril.h>
 #include <io/keycode.h>
+#include <io/pixelmap.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <draw/surface.h>
-#include <window.h>
+#include <ui/ui.h>
+#include <ui/wdecor.h>
+#include <ui/window.h>
 #include "../../mgfx.h"
+#include "../../gzx.h"
 
 typedef struct {
 	uint8_t r;
@@ -45,9 +49,20 @@ typedef struct {
 	uint8_t b;
 } color_t;
 
-static window_t *window;
-static canvas_t *canvas;
-static surface_t *surface;
+static void window_close_event(ui_window_t *, void *);
+static void window_kbd_event(ui_window_t *, void *, kbd_event_t *);
+
+static ui_window_cb_t window_cb = {
+	.close = window_close_event,
+	.kbd = window_kbd_event
+};
+
+static ui_t *ui;
+static ui_window_t *window;
+static ui_wdecor_style_t style;
+static gfx_context_t *gc;
+static gfx_bitmap_t *bitmap;
+static pixelmap_t pixelmap;
 
 static color_t color[256];
 
@@ -165,17 +180,32 @@ static int ktabsrc[] = {
 	-1,			-1
 };
 
-
-static void wnd_keyboard_event(widget_t *widget, void *data)
+static void window_close_event(ui_window_t *window, void *arg)
 {
-	kbd_event_t *event = (kbd_event_t *)data;
+	(void) window;
+	(void) arg;
+
+	quit = 1;
+}
+
+static void window_kbd_event(ui_window_t *window, void *arg,
+    kbd_event_t *event)
+{
+	(void) window;
+	(void) arg;
 
 	w_putkey(event->type == KEY_PRESS, txkey[event->key], -1);
 }
 
 static int init_video(void)
 {
-	pixel_t *pixbuf;
+	gfx_rect_t rect;
+	gfx_rect_t wrect;
+	gfx_coord2_t off;
+	ui_wnd_params_t params;
+	gfx_bitmap_params_t bparams;
+	gfx_bitmap_alloc_t alloc;
+	errno_t rc;
 	int vw, vh;
 
 	scr_xs = video_w;
@@ -196,36 +226,72 @@ static int init_video(void)
 		vh *= 2;
 	}
 
-	window = window_open("comp:0/winreg", NULL,
-	    WINDOW_MAIN | WINDOW_DECORATED, "GZX");
-	if (window == NULL) {
+	rc = ui_create(UI_DISPLAY_DEFAULT, &ui);
+	if (rc != EOK) {
+		printf("Error initializing UI\n");
+		return -1;
+	}
+
+	rect.p0.x = 0;
+	rect.p0.y = 0;
+	rect.p1.x = vw;
+	rect.p1.y = vh;
+
+	ui_wnd_params_init(&params);
+	params.caption = "GZX";
+
+	/*
+	 * Compute window rectangle such that application area corresponds
+	 * to rect
+	 */
+	ui_wdecor_rect_from_app(params.style, &rect, &wrect);
+	off = wrect.p0;
+	gfx_rect_rtranslate(&off, &wrect, &params.rect);
+
+	rc = ui_window_create(ui, &params, &window);
+	if (rc != EOK) {
 		printf("Error creating window.\n");
 		return -1;
 	}
 
-	pixbuf = calloc(vw * vh, sizeof(pixel_t));
-	if (pixbuf == NULL) {
-		printf("Error allocating memory for pixel buffer.\n");
+	style = params.style;
+	ui_window_set_cb(window, &window_cb, NULL);
+
+	rc = ui_window_get_app_gc(window, &gc);
+	if (rc != EOK) {
+		printf("Error creating graphic context.\n");
 		return -1;
 	}
 
-	surface = surface_create(vw, vh, pixbuf, 0);
-	if (surface == NULL) {
-		printf("Error creating surface.\n");
+	gfx_bitmap_params_init(&bparams);
+	bparams.rect.p0.x = 0;
+	bparams.rect.p0.y = 0;
+	bparams.rect.p1.x = vw;
+	bparams.rect.p1.y = vh;
+
+	rc = gfx_bitmap_create(gc, &bparams, NULL, &bitmap);
+	if (rc != EOK) {
+		printf("Error allocating screen bitmap.\n");
 		return -1;
 	}
 
-	canvas = create_canvas(window_root(window), NULL, vw, vh,
-	    surface);
-	if (canvas == NULL) {
-		printf("Error creating canvas.\n");
+	rc = gfx_bitmap_get_alloc(bitmap, &alloc);
+	if (rc != EOK) {
+		printf("Error getting allocation info.'\n");
 		return -1;
 	}
 
-	sig_connect(&canvas->keyboard_event, NULL, wnd_keyboard_event);
+	pixelmap.width = vw;
+	pixelmap.height = vh;
+	pixelmap.data = alloc.pixels;
 
-	window_resize(window, 0, 0, vw + 10, vh + 30, WINDOW_PLACEMENT_ANY);
-	window_exec(window);
+//	sig_connect(&canvas->keyboard_event, NULL, wnd_keyboard_event);
+
+	rc = ui_window_paint(window);
+	if (rc != EOK) {
+		printf("Error painting window.\n");
+		return -1;
+	}
 
 	return 0;
 }
@@ -301,11 +367,18 @@ int mgfx_init(int w, int h)
 int mgfx_set_disp_size(int w, int h)
 {
 	int vw, vh;
-	pixel_t *pixbuf;
+	gfx_bitmap_params_t bparams;
+	gfx_bitmap_alloc_t alloc;
+	gfx_rect_t rect;
+	gfx_rect_t nrect;
+	gfx_rect_t wrect;
+	gfx_coord2_t off;
+	errno_t rc;
 
 	fini_vscr();
-	surface_destroy(surface);
-	surface = NULL;
+	gfx_bitmap_destroy(bitmap);
+	bitmap = NULL;
+	gc = NULL;
 
 	video_w = w;
 	video_h = h;
@@ -328,17 +401,52 @@ int mgfx_set_disp_size(int w, int h)
 		vh *= 2;
 	}
 
-	pixbuf = calloc(vw * vh, sizeof(pixel_t));
-	if (pixbuf == NULL) {
-		printf("Error allocating memory for pixel buffer.\n");
+	rect.p0.x = 0;
+	rect.p0.y = 0;
+	rect.p1.x = vw;
+	rect.p1.y = vh;
+
+	/*
+	 * Compute window rectangle such that application area corresponds
+	 * to rect
+	 */
+	ui_wdecor_rect_from_app(style, &rect, &wrect);
+	off = wrect.p0;
+	gfx_rect_rtranslate(&off, &wrect, &nrect);
+
+	rc = ui_window_resize(window, &nrect);
+	if (rc != EOK) {
+		printf("Error resizing window.\n");
 		return -1;
 	}
 
-	surface = surface_create(vw, vh, pixbuf, 0);
-	if (surface == NULL) {
-		printf("Error creating surface.\n");
+	rc = ui_window_get_app_gc(window, &gc);
+	if (rc != EOK) {
+		printf("Error creating graphic context.\n");
 		return -1;
 	}
+
+	gfx_bitmap_params_init(&bparams);
+	bparams.rect.p0.x = 0;
+	bparams.rect.p0.y = 0;
+	bparams.rect.p1.x = vw;
+	bparams.rect.p1.y = vh;
+
+	rc = gfx_bitmap_create(gc, &bparams, NULL, &bitmap);
+	if (rc != EOK) {
+		printf("Error allocating screen bitmap.\n");
+		return -1;
+	}
+
+	rc = gfx_bitmap_get_alloc(bitmap, &alloc);
+	if (rc != EOK) {
+		printf("Error getting allocation info.'\n");
+		return -1;
+	}
+
+	pixelmap.width = vw;
+	pixelmap.height = vh;
+	pixelmap.data = alloc.pixels;
 
 	if (init_vscr() < 0)
 		return -1;
@@ -346,12 +454,6 @@ int mgfx_set_disp_size(int w, int h)
 	clip_x0=clip_y0=0;
 	clip_x1=scr_xs-1;
 	clip_y1=scr_ys-1;
-
-	canvas->width = vw;
-	canvas->height = vh;
-	update_canvas(canvas, surface);
-
-	window_resize(window, 0, 0, vw + 10, vh + 30, WINDOW_PLACEMENT_ANY);
 
 	return 0;
 }
@@ -368,7 +470,7 @@ static void render_display_line(int dy, uint8_t *spix)
         for (k = 0; k < xscale; k++) {
           col = &color[spix[i]];
           pval = PIXEL(255, col->r, col->g, col->b);
-          surface_put_pixel(surface, xscale * i + k, yscale * dy + j, pval);
+          pixelmap_put_pixel(&pixelmap, xscale * i + k, yscale * dy + j, pval);
         }
       }
     }
@@ -387,7 +489,7 @@ void mgfx_updscr(void) {
       render_display_line(y, vscr0 + scr_xs * y);
     }
   }
-  update_canvas(canvas, surface);
+  (void) gfx_bitmap_render(bitmap, NULL, NULL);
 }
 
 static unsigned b6to8(unsigned cval)
