@@ -90,7 +90,7 @@ int sysmidi_init(const char *dev)
 	MIDIPROPTIMEDIV prop;
 	int i;
 
-	devid = /*MIDI_MAPPER */0;
+	devid = /* MIDI_MAPPER */0;
 
 	mmrc = midiStreamOpen(&mstrm, &devid, 1, 0, 0, CALLBACK_NULL);
 	if (mmrc != MMSYSERR_NOERROR) {

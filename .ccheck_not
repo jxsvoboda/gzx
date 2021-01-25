@@ -6,7 +6,6 @@
 ./platform/win/snd_win.c
 ./platform/win/sys_win.c
 ./da_itab.c
-./debug.c
 ./disasm.c
 ./fileutil.c
 ./gzx.c

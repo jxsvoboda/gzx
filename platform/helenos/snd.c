@@ -51,7 +51,7 @@ int sndw_init(int bufs)
 	int rc;
 
 	fmt.channels = 1;
-	fmt.sampling_rate = /*28000*/44100;
+	fmt.sampling_rate = /* 28000 */44100;
 	fmt.sample_format = PCM_SAMPLE_UINT8;
 
 	audio_buf_size = bufs;
