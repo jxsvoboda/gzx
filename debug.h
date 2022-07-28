@@ -34,11 +34,28 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+/** Debugger views */
+typedef enum {
+	/** Disassembly */
+	dbgv_disasm,
+	/** Memory */
+	dbgv_memory
+} dbg_view_t;
+
+enum {
+	dbgv_first = dbgv_disasm,
+	dbgv_limit = dbgv_memory + 1
+};
+
 typedef struct {
+	/** Which debugger view is focused */
+	dbg_view_t focus;
+
 	uint16_t hex_base;
 	uint16_t instr_base;
 
 	int ic_ln; /* instruction cursor line number */
+	int mem_off; /* memory dump cursor offset */
 
 	/** Drop to debugger after executing an instruction */
 	bool itrap_enabled;

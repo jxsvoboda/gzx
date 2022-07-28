@@ -44,9 +44,11 @@
 #define MK_PAIR(hi,lo) ( (((uint16_t)(hi)) << 8) | (lo) )
 
 #define HEX_CY 18
-#define STACK_CY 16
-#define INSTR_CY 9
+#define HEX_LINES 6
 
+#define STACK_CY 16
+
+#define INSTR_CY 9
 #define INSTR_LINES 6
 
 /** Display 16-bit register.
@@ -192,9 +194,9 @@ static void debugger_disp_memdump(debugger_t *dbg)
 	char buf[16];
 	uint8_t b;
 
-	for (i = 0; i < 6; i++) {
+	for (i = 0; i < HEX_LINES; i++) {
 		fgc = 7;
-		snprintf(buf, 16, "%04X:", dbg->hex_base + 8 * i);
+		snprintf(buf, 16, "%04X:", (dbg->hex_base + 8 * i) & 0xffff);
 		gmovec(1, HEX_CY + i);
 		gputs(buf);
 
@@ -206,9 +208,13 @@ static void debugger_disp_memdump(debugger_t *dbg)
 		for (j = 0; j < 8; j++) {
 			b = zx_memget8(dbg->hex_base + 8 * i + j);
 			snprintf(buf, 16, "%02X", b);
+			if (dbg->focus == dbgv_memory)
+				bgc = 8 * i + j == dbg->mem_off ? 1 : 0;
 			gmovec(16 + 3 * j, HEX_CY + i);
 			gputs(buf);
 		}
+
+		bgc = 0;
 	}
 }
 
@@ -225,7 +231,7 @@ static void debugger_disp_instr(debugger_t *dbg)
 		bgc = 0;
 		if (disasm_org == cpus.PC)
 			bgc |= 2;
-		if (dbg->ic_ln == i)
+		if (dbg->ic_ln == i && dbg->focus == dbgv_disasm)
 			bgc |= 1;
 		fgc = 7;
 		snprintf(buf, 16, "%04X:", disasm_org & 0xffff);
@@ -259,7 +265,6 @@ static void instr_next(debugger_t *dbg)
 	disasm_instr();
 	dbg->instr_base = disasm_org;
 }
-
 
 #define BKTRACE 8
 
@@ -373,10 +378,20 @@ static void debugger_view_scr(void)
  */
 static void debugger_curs_up(debugger_t *dbg)
 {
-	if (dbg->ic_ln > 0)
-		dbg->ic_ln--;
-	else
-		instr_prev(dbg);
+	switch (dbg->focus) {
+	case dbgv_disasm:
+		if (dbg->ic_ln > 0)
+			dbg->ic_ln--;
+		else
+			instr_prev(dbg);
+		break;
+	case dbgv_memory:
+		if (dbg->mem_off >= 8)
+			dbg->mem_off -= 8;
+		else
+			dbg->hex_base -= 8;
+		break;
+	}
 }
 
 /** Move cursor one line down.
@@ -385,10 +400,20 @@ static void debugger_curs_up(debugger_t *dbg)
  */
 static void debugger_curs_down(debugger_t *dbg)
 {
-	if (dbg->ic_ln < INSTR_LINES - 1)
-		dbg->ic_ln++;
-	else
-		instr_next(dbg);
+	switch (dbg->focus) {
+	case dbgv_disasm:
+		if (dbg->ic_ln < INSTR_LINES - 1)
+			dbg->ic_ln++;
+		else
+			instr_next(dbg);
+		break;
+	case dbgv_memory:
+		if (dbg->mem_off < (HEX_LINES - 1) * 8)
+			dbg->mem_off += 8;
+		else
+			dbg->hex_base += 8;
+		break;
+	}
 }
 
 /** Move cursor one page up.
@@ -398,19 +423,107 @@ static void debugger_curs_down(debugger_t *dbg)
 static void debugger_curs_pgup(debugger_t *dbg)
 {
 	int i;
-	for (i = 0; i < INSTR_LINES - 1; i++)
-		debugger_curs_up(dbg);
+
+	switch (dbg->focus) {
+	case dbgv_disasm:
+		for (i = 0; i < INSTR_LINES - 1; i++)
+			debugger_curs_up(dbg);
+		break;
+	case dbgv_memory:
+		for (i = 0; i < HEX_LINES - 1; i++)
+			debugger_curs_up(dbg);
+		break;
+	}
 }
 
-/** Move cursor one page down.
- *
- * @param dbg Debugger
- */
 static void debugger_curs_pgdown(debugger_t *dbg)
 {
 	int i;
-	for (i = 0; i < INSTR_LINES - 1; i++)
-		debugger_curs_down(dbg);
+
+	switch (dbg->focus) {
+	case dbgv_disasm:
+		for (i = 0; i < INSTR_LINES - 1; i++)
+			debugger_curs_down(dbg);
+		break;
+	case dbgv_memory:
+		for (i = 0; i < HEX_LINES - 1; i++)
+			debugger_curs_down(dbg);
+		break;
+	}
+}
+
+/** Move cursor left.
+ *
+ * @param dbg Debugger
+ */
+static void debugger_curs_left(debugger_t *dbg)
+{
+	switch (dbg->focus) {
+	case dbgv_disasm:
+		dbg->instr_base--;
+		break;
+	case dbgv_memory:
+		if (dbg->mem_off > 0) {
+			dbg->mem_off--;
+		} else {
+			dbg->mem_off += 7;
+			dbg->hex_base -= 8;
+		}
+		break;
+	}
+}
+
+/** Move cursor right.
+ *
+ * @param dbg Debugger
+ */
+static void debugger_curs_right(debugger_t *dbg)
+{
+	switch (dbg->focus) {
+	case dbgv_disasm:
+		dbg->instr_base++;
+		break;
+	case dbgv_memory:
+		if (dbg->mem_off < HEX_LINES * 8 - 1) {
+			dbg->mem_off++;
+		} else {
+			dbg->hex_base += 8;
+			dbg->mem_off -= 7;
+		}
+		break;
+	}
+}
+
+/** Move cursor home.
+ *
+ * @param dbg Debugger
+ */
+static void debugger_curs_home(debugger_t *dbg)
+{
+	switch (dbg->focus) {
+	case dbgv_disasm:
+		dbg->instr_base -= 256;
+		break;
+	case dbgv_memory:
+		dbg->hex_base -= 256;
+		break;
+	}
+}
+
+/** Move cursor to the end.
+ *
+ * @param dbg Debugger
+ */
+static void debugger_curs_end(debugger_t *dbg)
+{
+	switch (dbg->focus) {
+	case dbgv_disasm:
+		dbg->instr_base += 256;
+		break;
+	case dbgv_memory:
+		dbg->hex_base += 256;
+		break;
+	}
 }
 
 /** Process debugger key without modifiers.
@@ -429,6 +542,11 @@ static void debugger_key_unmod(debugger_t *dbg, wkey_t k)
 		dbg->exit = true;
 		break;
 
+	case WKEY_TAB:
+		if (++dbg->focus >= (dbg_view_t)dbgv_limit)
+			dbg->focus = dbgv_first;
+		break;
+
 	case WKEY_UP:
 		debugger_curs_up(dbg);
 		break;
@@ -442,18 +560,17 @@ static void debugger_key_unmod(debugger_t *dbg, wkey_t k)
 		debugger_curs_pgdown(dbg);
 		break;
 	case WKEY_LEFT:
-		dbg->instr_base--;
+		debugger_curs_left(dbg);
 		break;
 	case WKEY_RIGHT:
-		dbg->instr_base++;
+		debugger_curs_right(dbg);
 		break;
 	case WKEY_HOME:
-		dbg->instr_base -= 256;
+		debugger_curs_home(dbg);
 		break;
 	case WKEY_END:
-		dbg->instr_base += 256;
+		debugger_curs_end(dbg);
 		break;
-
 	case WKEY_F7:
 		debugger_trace(dbg);
 		break;
@@ -466,7 +583,6 @@ static void debugger_key_unmod(debugger_t *dbg, wkey_t k)
 	case WKEY_F11:
 		debugger_view_scr();
 		break;
-
 	default:
 		break;
 	}
@@ -498,6 +614,7 @@ void debugger_run(debugger_t *dbg)
 	dbg->stop_enabled = false;
 	dbg->itrap_enabled = false;
 
+	dbg->focus = dbgv_disasm;
 	dbg->instr_base = cpus.PC;
 	dbg->ic_ln = 0;
 	dbg->exit = false;

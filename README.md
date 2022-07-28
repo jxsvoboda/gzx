@@ -99,8 +99,9 @@ Key functions while in the debugger
   Key          | Function
   ------------ | --------
   Esc or Enter | Exit debugger, return to normal emulation
-  Up Arrow     | Move cursor to previous instruction
-  Down Arrow   | Move cursor to next instruction
+  Tab          | Switch focus between dissassembly and hex view
+  Up Arrow     | Move cursor to previous instruction / row of memory
+  Down Arrow   | Move cursor to next instruction / row of memory
   Page Up      | Move cursor up one page
   Page Down    | Move cursor down one page
   Home         | Move cursor up by 256 bytes
