@@ -88,7 +88,7 @@ int quit=0;
 int slow_load=0;
 
 /** User interface lock */
-bool ui_lock = false;
+static bool ui_lock = false;
 
 /* Start up working directory */
 /* ... used as base for finding the ROM files */
