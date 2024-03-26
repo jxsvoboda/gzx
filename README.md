@@ -173,7 +173,11 @@ If you don't have one, you need to do something like
     $ git clone https://github.com/HelenOS/helenos.git helenos
     $ cd helenos
     $ sudo tools/toolchain.sh amd64
-    $ make PROFILE=amd64
+    $ mkdir build
+    $ cd build
+    $ ../configure.sh amd64
+    $ ninja image_path
+    $ tools/export.sh export
 
 You may need to have some development packages installed. For details,
 see http://www.helenos.org/wiki/UsersGuide/CompilingFromSource

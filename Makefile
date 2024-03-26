@@ -15,13 +15,13 @@ CFLAGS		= -O2 -Wall -Werror -Wmissing-prototypes -I/usr/include/SDL -DWITH_MIDI
 CFLAGS_w32	= -O2 -Wall -Werror -Wmissing-prototypes
 CFLAGS_helenos	= -O2 -Wall -Wno-error -DHELENOS_BUILD -D_HELENOS_SOURCE \
     -D_REALLY_WANT_STRING_H \
-    `helenos-pkg-config --cflags libui libgfx libmath libhound libpcm`
+    `helenos-pkg-config --cflags libui libgfx libinput libmath libhound libpcm`
 PREFIX_hos	= `helenos-bld-config --install-dir`
 INSTALL		= install
 
 LIBS		= -lSDL -lasound
 LIBS_w32	= -lgdi32 -lwinmm
-LIBS_helenos	=  `helenos-pkg-config --libs libui libgfx libmath libpcm libhound`
+LIBS_helenos	=  `helenos-pkg-config --libs libui libgfx libinput libmath libpcm libhound`
 
 bkqual = $$(date '+%Y-%m-%d')
 version = git
