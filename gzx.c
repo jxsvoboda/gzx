@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Main module
  *
- * Copyright (c) 1999-2019 Jiri Svoboda
+ * Copyright (c) 1999-2024 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -448,8 +448,16 @@ static void zx_proc_instr(void)
     else
       z80_execinstr();
 
+    /* Instruction trap? */
     if (dbg.itrap_enabled) {
-      debugger_run(&dbg);
+      /*
+       * Normally we don't want to break into debugger during int_lock
+       * (i.e. after DD/CB prefix. However, if there are more DD/CB
+       * prefixes in sequence, we will break into debugger.
+       */
+      if (!cpus.int_lock || dbg.prev_int_lock)
+        debugger_run(&dbg);
+      dbg.prev_int_lock = cpus.int_lock;
     }
 }
 

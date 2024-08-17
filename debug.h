@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Integrated debugger
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2024 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,6 +59,8 @@ typedef struct {
 
 	/** Drop to debugger after executing an instruction */
 	bool itrap_enabled;
+	/** Interrupts were already locked during previous instruction */
+	bool prev_int_lock;
 	/** Drop to debugger when dbg_stop-addr is reached */
 	bool stop_enabled;
 	/** When run upto cursor is selected, the address is stored here */
