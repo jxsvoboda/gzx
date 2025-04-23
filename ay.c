@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * AY-3-8912 music chip emulation
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -130,11 +130,10 @@ void ay_reset(ay_t *ay)
  * @param ay AY
  * @param d_t_states Number of T states per sample period.
  */
-int ay_init(ay_t *ay, uint32_t d_t_states)
+void ay_init(ay_t *ay, uint32_t d_t_states)
 {
 	ay->d_clocks = d_t_states;
 	ay_reset(ay);
-	return 0;
 }
 
 /** Get next AY sample.

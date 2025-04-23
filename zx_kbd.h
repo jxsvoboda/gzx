@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * ZX keyboard
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,6 +56,6 @@ typedef struct {
 
 uint8_t zx_key_in(zx_keys_t *, uint8_t pwr);
 void zx_key_state_set(zx_keys_t *, int key, int press);
-int zx_keys_init(zx_keys_t *);
+void zx_keys_init(zx_keys_t *);
 
 #endif

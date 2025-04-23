@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * AY-3-8912 music chip emulation
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -96,7 +96,7 @@ extern uint8_t ay_reg_read(ay_t *);
 extern uint8_t ay_get_sel_regn(ay_t *);
 extern uint8_t ay_get_reg_contents(ay_t *, uint8_t);
 
-extern int ay_init(ay_t *, uint32_t);
+extern void ay_init(ay_t *, uint32_t);
 extern void ay_reset(ay_t *);
 extern int ay_get_sample(ay_t *);
 

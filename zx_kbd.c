@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * ZX keyboard
  *
- * Copyright (c) 1999-2018 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -140,7 +140,7 @@ static void zx_key_register(zx_keys_t *keys, int key, uint16_t m0, uint16_t m1,
  *
  * @param keys Emulated keyboard
  */
-int zx_keys_init(zx_keys_t *keys)
+void zx_keys_init(zx_keys_t *keys)
 {
 	int i;
 
@@ -208,8 +208,6 @@ int zx_keys_init(zx_keys_t *keys)
 	zx_key_register(keys, WKEY_RIGHT, 0, 0, 0, 0, ZX_KEY_8, 0, 0, 0);
 	zx_key_register(keys, WKEY_N0,    0, 0, 0, 0, ZX_KEY_0, 0, 0, 0);
 	zx_key_register(keys, WKEY_LCTRL, 0, 0, 0, 0, 0, 0, 0, ZX_KEY_SS);
-
-	return 0;
 }
 
 /** Set key state.

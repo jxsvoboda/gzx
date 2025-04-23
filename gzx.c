@@ -366,6 +366,9 @@ void zx_reset(void)
 
 static int zx_init(void)
 {
+	int rc;
+
+	fprintf(logfi, "Start initialization.\n");
 	//  printf("coreleft:%lu\n",coreleft());
 
 	z80_init_tables();
@@ -375,28 +378,42 @@ static int zx_init(void)
 	zxram = NULL;
 	zx_select_memmodel(ZXM_48K);
 
+	fprintf(logfi, "Initialize GPU.\n");
 	gpu_init();
 	//  if (gpu_enable() < 0)
 	//    return -1;
-	printf("load font\n");
-	gloadfont("font.bin");
-	printf("init screen\n");
-	if (zx_scr_init(0) < 0)
+
+	fprintf(logfi, "Load font.\n");
+
+	rc = gloadfont("font.bin");
+	if (rc < 0) {
+		printf("Error loading font.\n");
 		return -1;
-	if (zx_keys_init(&keys) < 0)
+	}
+
+	fprintf(logfi, "Initialize screen.\n");
+	rc = zx_scr_init(0);
+	if (rc < 0) {
+		printf("Error initializing screen.\n");
 		return -1;
-	printf("sound\n");
-	if (zx_sound_init() < 0)
+	}
+
+	fprintf(logfi, "Initialize keyboard.\n");
+	zx_keys_init(&keys);
+	if (zx_sound_init() < 0) {
+		printf("Error initializing sound.\n");
 		return -1;
+	}
+
 #ifdef WITH_MIDI
 	if (sysmidi_init(midi_dev) < 0) {
 		printf("Note: MIDI not available.\n");
 	}
 #endif
 
-	printf("ay\n");
-	if (ay_init(&ay0, ZX_SOUND_TICKS_SMP) < 0)
-		return -1;
+	fprintf(logfi, "Initialize AY.\n");
+	ay_init(&ay0, ZX_SOUND_TICKS_SMP);
+
 	ay0.ioport_write = gzx_ay_ioport_write;
 	ay0.ioport_write_arg = &ay0;
 
@@ -410,8 +427,11 @@ static int zx_init(void)
 
 	kempston_joy_init(&kjoy0);
 
-	if (tape_deck_create(&tape_deck, ZX_TAPE_TICKS_SMP, true) != 0)
+	fprintf(logfi, "Create tape deck.\n");
+	if (tape_deck_create(&tape_deck, ZX_TAPE_TICKS_SMP, true) != 0) {
+		printf("Error creating tape deck.\n");
 		return -1;
+	}
 
 	zx_reset();
 
@@ -421,6 +441,7 @@ static int zx_init(void)
 
 	border = 7;
 
+	fprintf(logfi, "Initialization done.\n");
 	return 0;
 }
 
@@ -478,11 +499,11 @@ static void zx_proc_instr(void)
 	}
 	if (!slow_load) {
 		if (cpus.PC == TAPE_LDBYTES_TRAP) {
-			printf("load trapped!\n");
+			fprintf(logfi, "Load trapped.\n");
 			tape_quick_ldbytes(tape_deck);
 		}
 		if (cpus.PC == TAPE_SABYTES_TRAP) {
-			printf("save trapped!\n");
+			fprintf(logfi, "Save trapped!\n");
 			tape_quick_sabytes(tape_deck);
 		}
 	}
@@ -545,7 +566,6 @@ int main(int argc, char **argv)
 
 	start_dir = sys_getcwd(NULL, 0);
 
-	printf("\n\n\n");
 	if (zx_init() < 0)
 		return -1;
 	/*  slow_load=1; */
@@ -557,7 +577,7 @@ int main(int argc, char **argv)
 	 */
 
 	if (argc > argi && zx_load_snap(argv[argi]) < 0) {
-		printf("error loading snapshot\n");
+		printf("Error loading snapshot.\n");
 		return -1;
 	}
 
@@ -596,7 +616,9 @@ int main(int argc, char **argv)
 	tape_deck = NULL;
 
 	writestat();
+
+	fprintf(logfi, "\nuoc:%lu\nsmc:%lu\n", uoc, smc);
+	fprintf(logfi, "Quitting.\n");
 	fclose(logfi);
-	printf("uoc:%lu\nsmc:%lu\n", uoc, smc);
 	return 0;
 }

@@ -229,8 +229,6 @@ static void quit_video(void) {
 int mgfx_init(int w, int h) {
   int i;
   
-  printf("mgfx_init()\n");
-  
   atexit(SDL_Quit);
   
   video_w = w;
