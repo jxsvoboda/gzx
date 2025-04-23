@@ -67,25 +67,25 @@
 #include "sysmidi.h"
 
 /*
-  Clock comparison is calculated in unsigned long. It works as long
-  as u.long has least 32 bits, and as long
-  as the clocks don't diverge by more than 2^31 T-states (=~600s).
-  (Much more than what is needed.)
-*/
+ * Clock comparison is calculated in unsigned long. It works as long
+ * as u.long has least 32 bits, and as long
+ * as the clocks don't diverge by more than 2^31 T-states (=~600s).
+ * (Much more than what is needed.)
+ */
 #define CLOCK_LT(a,b) ( (((a)-(b)) >> 31) != 0 )
 #define CLOCK_GE(a,b) ( (((a)-(b)) >> 31) == 0 )
 
 static void zx_scr_save(void);
 static void zx_proc_instr(void);
 
-int scr_no=0;
+int scr_no = 0;
 
 FILE *logfi;
 
 static unsigned long disp_t;
 
-int quit=0;
-int slow_load=0;
+int quit = 0;
+int slow_load = 0;
 
 /** User interface lock */
 static bool ui_lock = false;
@@ -131,84 +131,119 @@ void gzx_toggle_dbl_ln(void)
 
 static void key_unmod(wkey_t *k)
 {
-   switch(k->key) {
-      case WKEY_ESC:
-	main_menu();
-	break;
-      case WKEY_F1:
-	zx_load_snap("test.sna");
-	break;
-      case WKEY_F2:
-        save_snap_dialog();
-        if (0) zx_scr_save(); // XXX
-        break;
-      case WKEY_F4: display_menu(); break;
-      case WKEY_F3: load_snap_dialog(); break;
-      case WKEY_F5: tape_menu(); break;
-      case WKEY_F6: hwopts_menu(); break;
-      case WKEY_F7: zx_select_memmodel(ZXM_48K); zx_reset(); break;
-      case WKEY_F8: zx_select_memmodel(ZXM_128K); zx_reset(); break;
-      case WKEY_F9: select_tapefile_dialog(); break;
-      case WKEY_F10: printf("F10 pressed\n"); quit=1; break;
-      case WKEY_F11: mgfx_toggle_fs(); break;
-      case WKEY_NPLUS: tape_deck_play(tape_deck); break;
-      case WKEY_NMINUS: tape_deck_stop(tape_deck); break;
-      case WKEY_NSTAR: tape_deck_rewind(tape_deck); break;
-      case WKEY_NSLASH: slow_load=!slow_load; break;
+	switch (k->key) {
+	case WKEY_ESC:
+		main_menu();
+		break;
+	case WKEY_F1:
+		zx_load_snap("test.sna");
+		break;
+	case WKEY_F2:
+		save_snap_dialog();
+		if (0)
+			zx_scr_save(); // XXX
+		break;
+	case WKEY_F4:
+		display_menu();
+		break;
+	case WKEY_F3:
+		load_snap_dialog();
+		break;
+	case WKEY_F5:
+		tape_menu();
+		break;
+	case WKEY_F6:
+		hwopts_menu();
+		break;
+	case WKEY_F7:
+		zx_select_memmodel(ZXM_48K);
+		zx_reset();
+		break;
+	case WKEY_F8:
+		zx_select_memmodel(ZXM_128K);
+		zx_reset();
+		break;
+	case WKEY_F9:
+		select_tapefile_dialog();
+		break;
+	case WKEY_F10:
+		printf("F10 pressed\n");
+		quit = 1;
+		break;
+	case WKEY_F11:
+		mgfx_toggle_fs();
+		break;
+	case WKEY_NPLUS:
+		tape_deck_play(tape_deck);
+		break;
+	case WKEY_NMINUS:
+		tape_deck_stop(tape_deck);
+		break;
+	case WKEY_NSTAR:
+		tape_deck_rewind(tape_deck);
+		break;
+	case WKEY_NSLASH:
+		slow_load = !slow_load;
+		break;
 #ifdef XMAP
-      case WKEY_N5: xmap_clear(); break;
+	case WKEY_N5:
+		xmap_clear();
+		break;
 #endif
-      case WKEY_F12: debugger_run(&dbg); break;
-      default: break;
-    }
+	case WKEY_F12:
+		debugger_run(&dbg);
+		break;
+	default:
+		break;
+	}
 }
 
 static void key_lalt(wkey_t *k)
 {
-   switch(k->key) {
-      case WKEY_R:
-	if (iorec == NULL)
-	  (void) iorec_open("out.ior", &iorec);
-	break;
-      case WKEY_T:
-        if (iorec != NULL) {
-	  iorec_close(iorec);
-	  iorec = NULL;
+	switch (k->key) {
+	case WKEY_R:
+		if (iorec == NULL)
+			(void) iorec_open("out.ior", &iorec);
+		break;
+	case WKEY_T:
+		if (iorec != NULL) {
+			iorec_close(iorec);
+			iorec = NULL;
+		}
+		break;
+	case WKEY_W:
+		key_lalt_held = 0;
+		rec_audio_dialog();
+		break;
+	case WKEY_E:
+		printf("Stopping audio capture.\n");
+		zx_sound_stop_capture();
+		break;
+	case WKEY_N:
+		zx_scr_prev_bg();
+		break;
+	case WKEY_M:
+		zx_scr_next_bg();
+		break;
+	case WKEY_9:
+		zx_scr_mode(0);
+		break;
+	case WKEY_0:
+		zx_scr_mode(1);
+		break;
 	}
-	break;
-      case WKEY_W:
-        key_lalt_held = 0;
-        rec_audio_dialog();
-        break;
-      case WKEY_E:
-        printf("Stopping audio capture.\n");
-        zx_sound_stop_capture();
-        break;
-      case WKEY_N:
-        zx_scr_prev_bg();
-        break;
-      case WKEY_M:
-        zx_scr_next_bg();
-        break;
-      case WKEY_9:
-        zx_scr_mode(0);
-        break;
-      case WKEY_0:
-        zx_scr_mode(1);
-        break;
-    }
 }
 
 static void key_lalt_lshift(wkey_t *k)
 {
-   switch(k->key) {
-      case WKEY_L:
-	ui_lock = true;
-	break;
-      case WKEY_U:
-	ui_lock = false;
-	break;
-    }
+	switch (k->key) {
+	case WKEY_L:
+		ui_lock = true;
+		break;
+	case WKEY_U:
+		ui_lock = false;
+		break;
+	}
 }
 
 /** Currently we always map cursor keys to Kempston joystick */
@@ -239,48 +274,50 @@ static void key_joy_state_set(int key, int press)
 	}
 }
 
-static void key_handler(wkey_t *k) {
-  
-  if (k->key == WKEY_LALT) {
-    key_lalt_held = k->press;
-    return;
-  }
+static void key_handler(wkey_t *k)
+{
 
-  if (k->key == WKEY_LSHIFT)
-    key_lshift_held = k->press;
+	if (k->key == WKEY_LALT) {
+		key_lalt_held = k->press;
+		return;
+	}
 
-  if (key_lalt_held && key_lshift_held && k->press) {
-      key_lalt_lshift(k);
-      return;
-  }
+	if (k->key == WKEY_LSHIFT)
+		key_lshift_held = k->press;
 
-  if (key_lalt_held && k->press && !ui_lock) {
-      key_lalt(k);
-      return;
-  }
+	if (key_lalt_held && key_lshift_held && k->press) {
+		key_lalt_lshift(k);
+		return;
+	}
 
-  if(k->key>=KST_SIZE) {
-    printf("warning. got a key with a too high scancode (>=KST_SIZE)\n");
-    printf("ignoring key\n");
-    return;
-  }
-  
-  zx_key_state_set(&keys, k->key, k->press?1:0);
-  key_joy_state_set(k->key, k->press?1:0);
-  
-  if (k->press && !ui_lock) {
-      key_unmod(k);
-  }
+	if (key_lalt_held && k->press && !ui_lock) {
+		key_lalt(k);
+		return;
+	}
+
+	if (k->key >= KST_SIZE) {
+		printf("warning. got a key with a too high scancode (>=KST_SIZE)\n");
+		printf("ignoring key\n");
+		return;
+	}
+
+	zx_key_state_set(&keys, k->key, k->press ? 1 : 0);
+	key_joy_state_set(k->key, k->press ? 1 : 0);
+
+	if (k->press && !ui_lock) {
+		key_unmod(k);
+	}
 }
 
-static void zx_scr_save(void) {
-  FILE *f;
-  char name[32];
+static void zx_scr_save(void)
+{
+	FILE *f;
+	char name[32];
 
-  snprintf(name, 32, "scr%04d.bin",scr_no++);
-  f=fopen(name,"wb");
-  fwrite(zxscr,1,0x1B00,f);
-  fclose(f);
+	snprintf(name, 32, "scr%04d.bin", scr_no++);
+	f = fopen(name, "wb");
+	fwrite(zxscr, 1, 0x1B00, f);
+	fclose(f);
 }
 
 /** Value was written to AY I/O port.
@@ -307,236 +344,259 @@ static void gzx_midi_msg(void *arg, midi_msg_t *msg)
 #endif
 }
 
-static unsigned long snd_t,tapp_t;
+static unsigned long snd_t, tapp_t;
 
-void zx_reset(void) {
+void zx_reset(void)
+{
 #ifdef XTRACE
-  xtrace_reset();
+	xtrace_reset();
 #endif
-  if (gpu_is_on()) {
-    gpu_reset();
-    gpu_disable();
-  }
-  zx_scr_reset();
-  z80_reset();
-  ay_reset(&ay0);
-  
-  /* select default banks */
-  bnk_lock48=0;
-  zx_out8(0x7ffd,0x07);
+	if (gpu_is_on()) {
+		gpu_reset();
+		gpu_disable();
+	}
+	zx_scr_reset();
+	z80_reset();
+	ay_reset(&ay0);
+
+	/* select default banks */
+	bnk_lock48 = 0;
+	zx_out8(0x7ffd, 0x07);
 }
 
-static int zx_init(void) {
-//  printf("coreleft:%lu\n",coreleft());
+static int zx_init(void)
+{
+	//  printf("coreleft:%lu\n",coreleft());
 
-  z80_init_tables();
+	z80_init_tables();
 
-  /* important! otherwise zx_select_memmodel would crash reallocing */
-  zxrom=NULL;
-  zxram=NULL;
-  zx_select_memmodel(ZXM_48K);
+	/* important! otherwise zx_select_memmodel would crash reallocing */
+	zxrom = NULL;
+	zxram = NULL;
+	zx_select_memmodel(ZXM_48K);
 
-  gpu_init();
-//  if (gpu_enable() < 0)
-//    return -1;
-  printf("load font\n");
-  gloadfont("font.bin");
-  printf("init screen\n");
-  if(zx_scr_init(0)<0) return -1;
-  if(zx_keys_init(&keys)<0) return -1;
-  printf("sound\n");
-  if(zx_sound_init()<0) return -1;
+	gpu_init();
+	//  if (gpu_enable() < 0)
+	//    return -1;
+	printf("load font\n");
+	gloadfont("font.bin");
+	printf("init screen\n");
+	if (zx_scr_init(0) < 0)
+		return -1;
+	if (zx_keys_init(&keys) < 0)
+		return -1;
+	printf("sound\n");
+	if (zx_sound_init() < 0)
+		return -1;
 #ifdef WITH_MIDI
-  if (sysmidi_init(midi_dev)<0) {
-	printf("Note: MIDI not available.\n");
-  }
+	if (sysmidi_init(midi_dev) < 0) {
+		printf("Note: MIDI not available.\n");
+	}
 #endif
 
-  printf("ay\n");
-  if(ay_init(&ay0, ZX_SOUND_TICKS_SMP)<0) return -1;
-  ay0.ioport_write = gzx_ay_ioport_write;
-  ay0.ioport_write_arg = &ay0;
+	printf("ay\n");
+	if (ay_init(&ay0, ZX_SOUND_TICKS_SMP) < 0)
+		return -1;
+	ay0.ioport_write = gzx_ay_ioport_write;
+	ay0.ioport_write_arg = &ay0;
 
-  rs232_init(&rs232, Z80_CLOCK / MIDI_BAUD);
-  rs232.sendchar = gzx_rs232_sendchar;
-  rs232.sendchar_arg = &rs232;
+	rs232_init(&rs232, Z80_CLOCK / MIDI_BAUD);
+	rs232.sendchar = gzx_rs232_sendchar;
+	rs232.sendchar_arg = &rs232;
 
-  midi_port_init(&midi);
-  midi.midi_msg = gzx_midi_msg;
-  midi.midi_msg_arg = &midi;
+	midi_port_init(&midi);
+	midi.midi_msg = gzx_midi_msg;
+	midi.midi_msg_arg = &midi;
 
-  kempston_joy_init(&kjoy0);
+	kempston_joy_init(&kjoy0);
 
-  if(tape_deck_create(&tape_deck, ZX_TAPE_TICKS_SMP, true) != 0) return -1;
+	if (tape_deck_create(&tape_deck, ZX_TAPE_TICKS_SMP, true) != 0)
+		return -1;
 
-  zx_reset();
-  
-  disp_t=0;
-  snd_t=0;
-  tapp_t=0;
+	zx_reset();
 
-  border=7;
-  
-  return 0;
+	disp_t = 0;
+	snd_t = 0;
+	tapp_t = 0;
+
+	border = 7;
+
+	return 0;
 }
 
-static void writestat_i(int i) {
-  int j;
-  
-  for(j=0;j<64;j++)
-    fprintf(logfi,"0x%02x: %10d, %10d, %10d, %10d\n",j*4,
-      z80_getstat(i,4*j),  z80_getstat(i,4*j+1),
-      z80_getstat(i,4*j+2),z80_getstat(i,4*j+3));
+static void writestat_i(int i)
+{
+	int j;
+
+	for (j = 0; j < 64; j++) {
+		fprintf(logfi, "0x%02x: %10d, %10d, %10d, %10d\n", j * 4,
+		    z80_getstat(i, 4 * j),  z80_getstat(i, 4 * j + 1),
+		    z80_getstat(i, 4 * j + 2), z80_getstat(i, 4 * j + 3));
+	}
 }
 
-static void writestat(void) {
-  fprintf(logfi,"\nop:\n");     writestat_i(0);
-  fprintf(logfi,"\nDDop:\n");   writestat_i(1);
-  fprintf(logfi,"\nFDop:\n");   writestat_i(2);
-  fprintf(logfi,"\nCBop:\n");   writestat_i(3);
-  fprintf(logfi,"\nDDCBop:\n"); writestat_i(4);
-  fprintf(logfi,"\nFDCBop:\n"); writestat_i(5);
-  fprintf(logfi,"\nEDop:\n");   writestat_i(6);
+static void writestat(void)
+{
+	fprintf(logfi, "\nop:\n");
+	writestat_i(0);
+	fprintf(logfi, "\nDDop:\n");
+	writestat_i(1);
+	fprintf(logfi, "\nFDop:\n");
+	writestat_i(2);
+	fprintf(logfi, "\nCBop:\n");
+	writestat_i(3);
+	fprintf(logfi, "\nDDCBop:\n");
+	writestat_i(4);
+	fprintf(logfi, "\nFDCBop:\n");
+	writestat_i(5);
+	fprintf(logfi, "\nEDop:\n");
+	writestat_i(6);
 }
 
 /** Process an instruction and anything that we check for every instruction. */
 static void zx_proc_instr(void)
 {
-    if (!gpu_is_on()) {
-      while(CLOCK_LT(zx_scr_get_clock(),z80_clock)) {
-        zx_scr_disp();
-      }
-    } else {
-      while(CLOCK_LT(zx_scr_get_clock(),z80_clock)) {
-        zx_scr_disp_fast();
-      }
-    }
-    
-    if(CLOCK_GE(z80_clock-snd_t,ZX_SOUND_TICKS_SMP)) { 
-      zx_sound_smp(ay_get_sample(&ay0)+(tape_smp?+16:-16));
-      /* build a new sound sample */
-      snd_t+=ZX_SOUND_TICKS_SMP;
-    }
-    if(CLOCK_GE(z80_clock-tapp_t,ZX_TAPE_TICKS_SMP)) {
-      tape_deck_getsmp(tape_deck, &tape_smp);
-      ear=tape_smp;
-      tapp_t+=ZX_TAPE_TICKS_SMP;
-    }
-    if(!slow_load) {
-      if(cpus.PC==TAPE_LDBYTES_TRAP) {
-        printf("load trapped!\n");
-	tape_quick_ldbytes(tape_deck);
-      }
-      if(cpus.PC==TAPE_SABYTES_TRAP) {
-        printf("save trapped!\n");
-	tape_quick_sabytes(tape_deck);
-      }
-    }
-    if (dbg.stop_enabled && cpus.PC == dbg.stop_addr) {
-      debugger_run(&dbg);
-    }
+	if (!gpu_is_on()) {
+		while (CLOCK_LT(zx_scr_get_clock(), z80_clock)) {
+			zx_scr_disp();
+		}
+	} else {
+		while (CLOCK_LT(zx_scr_get_clock(), z80_clock)) {
+			zx_scr_disp_fast();
+		}
+	}
+
+	if (CLOCK_GE(z80_clock - snd_t, ZX_SOUND_TICKS_SMP)) {
+		zx_sound_smp(ay_get_sample(&ay0) + (tape_smp ? +16 : -16));
+		/* build a new sound sample */
+		snd_t += ZX_SOUND_TICKS_SMP;
+	}
+	if (CLOCK_GE(z80_clock - tapp_t, ZX_TAPE_TICKS_SMP)) {
+		tape_deck_getsmp(tape_deck, &tape_smp);
+		ear = tape_smp;
+		tapp_t += ZX_TAPE_TICKS_SMP;
+	}
+	if (!slow_load) {
+		if (cpus.PC == TAPE_LDBYTES_TRAP) {
+			printf("load trapped!\n");
+			tape_quick_ldbytes(tape_deck);
+		}
+		if (cpus.PC == TAPE_SABYTES_TRAP) {
+			printf("save trapped!\n");
+			tape_quick_sabytes(tape_deck);
+		}
+	}
+	if (dbg.stop_enabled && cpus.PC == dbg.stop_addr) {
+		debugger_run(&dbg);
+	}
 #ifdef XMAP
-    xmap_mark();
+	xmap_mark();
 #endif
 #ifdef XTRACE
-    xtrace_instr();
+	xtrace_instr();
 #endif
 
-    if (gpu_is_on())
-      z80_g_execinstr();
-    else
-      z80_execinstr();
+	if (gpu_is_on())
+		z80_g_execinstr();
+	else
+		z80_execinstr();
 
-    /* Instruction trap? */
-    if (dbg.itrap_enabled) {
-      /*
-       * Normally we don't want to break into debugger during int_lock
-       * (i.e. after DD/CB prefix. However, if there are more DD/CB
-       * prefixes in sequence, we will break into debugger.
-       */
-      if (!cpus.int_lock || dbg.prev_int_lock)
-        debugger_run(&dbg);
-      dbg.prev_int_lock = cpus.int_lock;
-    }
+	/* Instruction trap? */
+	if (dbg.itrap_enabled) {
+		/*
+		 * Normally we don't want to break into debugger during int_lock
+		 * (i.e. after DD/CB prefix. However, if there are more DD/CB
+		 * prefixes in sequence, we will break into debugger.
+		 */
+		if (!cpus.int_lock || dbg.prev_int_lock)
+			debugger_run(&dbg);
+		dbg.prev_int_lock = cpus.int_lock;
+	}
 }
 
-int main(int argc, char **argv) {
-  int argi;
-  timer frmt;
-  wkey_t k;
-  
-  argi = 1;
-  
-  dbl_ln=0;
+int main(int argc, char **argv)
+{
+	int argi;
+	timer frmt;
+	wkey_t k;
 
-  while (argc > argi && argv[argi][0] == '-') {
-    if (!strcmp(argv[argi],"-midi")) {
-	    if (argc <= argi + 1) {
-		    printf("Option -midi missing argument.\n");
-		    exit(1);
-	    }
-	    midi_dev = argv[argi + 1];
-	    argi+=2;
-    } else {
-	    printf("Invalid option '%s'.\n", argv[argi]);
-	    exit(1);
-    }
-  }
+	argi = 1;
 
-  uoc=0;
-  smc=0;
-  
-  logfi=fopen("log.txt","wt");
-  
-  start_dir = sys_getcwd(NULL,0);
-  
-  printf("\n\n\n");
-  if(zx_init()<0) return -1;
-/*  slow_load=1;*/
-  /*if(zx_load_snap(SNAP_NAME1)<0) {
-    printf("error loading snapshot\n");
-    return -1;
-  }*/
+	dbl_ln = 0;
 
-  if(argc > argi && zx_load_snap(argv[argi])<0) {
-    printf("error loading snapshot\n");
-    return -1;
-  }
+	while (argc > argi && argv[argi][0] == '-') {
+		if (!strcmp(argv[argi], "-midi")) {
+			if (argc <= argi + 1) {
+				printf("Option -midi missing argument.\n");
+				exit(1);
+			}
+			midi_dev = argv[argi + 1];
+			argi += 2;
+		} else {
+			printf("Invalid option '%s'.\n", argv[argi]);
+			exit(1);
+		}
+	}
 
-  //printf("inited.\n");
-  
-  timer_reset(&frmt);
-  
-  while(!quit) {
-    if(CLOCK_GE(z80_clock-disp_t,ULA_FIELD_TICKS)) { /* every 50th of a second */
-      disp_t+=ULA_FIELD_TICKS;
+	uoc = 0;
+	smc = 0;
+
+	logfi = fopen("log.txt", "wt");
+
+	start_dir = sys_getcwd(NULL, 0);
+
+	printf("\n\n\n");
+	if (zx_init() < 0)
+		return -1;
+	/*  slow_load=1; */
+	/*
+	 * if(zx_load_snap(SNAP_NAME1)<0) {
+	 * printf("error loading snapshot\n");
+	 * return -1;
+	 * }
+	 */
+
+	if (argc > argi && zx_load_snap(argv[argi]) < 0) {
+		printf("error loading snapshot\n");
+		return -1;
+	}
+
+	//printf("inited.\n");
+
+	timer_reset(&frmt);
+
+	while (!quit) {
+		if (CLOCK_GE(z80_clock - disp_t, ULA_FIELD_TICKS)) { /* every 50th of a second */
+			disp_t += ULA_FIELD_TICKS;
 #ifdef WITH_MIDI
-      sysmidi_poll(z80_clock);
+			sysmidi_poll(z80_clock);
 #endif
-      mgfx_updscr();
+			mgfx_updscr();
 
-      mgfx_input_update();
-      while(w_getkey(&k)) key_handler(&k);
+			mgfx_input_update();
+			while (w_getkey(&k))
+				key_handler(&k);
 #ifdef LOG
-      if(cpus.iff1) fprintf(logfi,"interrupt\n");
+			if (cpus.iff1)
+				fprintf(logfi, "interrupt\n");
 #endif
-    }
-    
-    zx_proc_instr();
-  }
-  
-  /* Graphics is closed automatically atexit() */
-  
-#ifdef XMAP
-  xmap_save();
-#endif
-  
-  zx_sound_done();
-  tape_deck_destroy(tape_deck);
-  tape_deck = NULL;
+		}
 
-  writestat();  
-  fclose(logfi);
-  printf("uoc:%lu\nsmc:%lu\n",uoc,smc);
-  return 0;
+		zx_proc_instr();
+	}
+
+	/* Graphics is closed automatically atexit() */
+
+#ifdef XMAP
+	xmap_save();
+#endif
+
+	zx_sound_done();
+	tape_deck_destroy(tape_deck);
+	tape_deck = NULL;
+
+	writestat();
+	fclose(logfi);
+	printf("uoc:%lu\nsmc:%lu\n", uoc, smc);
+	return 0;
 }

@@ -8,7 +8,6 @@
 ./da_itab.c
 ./disasm.c
 ./fileutil.c
-./gzx.c
 ./memio.c
 ./mgfx.c
 ./snap.c
