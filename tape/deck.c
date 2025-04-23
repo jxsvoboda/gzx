@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Tape deck
  *
- * Copyright (c) 1999-2019 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,7 @@
 #include <string.h>
 #include "deck.h"
 #include "player.h"
+#include "sampler.h"
 #include "tap.h"
 #include "tape.h"
 #include "tzx.h"
@@ -50,13 +51,15 @@ static void tape_deck_process_sig(tape_deck_t *, tape_player_sig_t);
 /** Create tape deck.
  *
  * @param mode48k Start in 48K mode
+ * @param delta_t Clock ticks per sample
  * @param rdeck Place to store pointer to new tape deck
- * @return EOK on success, ENOMEM if out of memory
+ * @return Zero on success, ENOMEM if out of memory
  */
-int tape_deck_create(tape_deck_t **rdeck, bool mode48k)
+int tape_deck_create(tape_deck_t **rdeck, uint32_t delta_t, bool mode48k)
 {
 	tape_deck_t *deck;
 	tape_player_t *player = NULL;
+	tape_sampler_t *sampler = NULL;
 	int rc;
 
 	deck = calloc(1, sizeof(tape_deck_t));
@@ -72,8 +75,18 @@ int tape_deck_create(tape_deck_t **rdeck, bool mode48k)
 
 	deck->player = player;
 
+	rc = tape_sampler_create(player, delta_t, &sampler);
+	if (rc != 0) {
+		tape_player_destroy(deck->player);
+		free(deck);
+		return rc;
+	}
+
+	deck->sampler = sampler;
+
 	rc = tape_deck_new(deck);
 	if (rc != 0) {
+		tape_sampler_destroy(deck->sampler);
 		tape_player_destroy(deck->player);
 		free(deck);
 		return rc;
@@ -95,6 +108,9 @@ void tape_deck_destroy(tape_deck_t *deck)
 
 	if (deck->player != NULL)
 		tape_player_destroy(deck->player);
+
+	if (deck->sampler != NULL)
+		tape_sampler_destroy(deck->sampler);
 
 	free(deck);
 }
@@ -280,23 +296,17 @@ int tape_deck_save_as(tape_deck_t *deck, const char *fname)
  */
 void tape_deck_play(tape_deck_t *deck)
 {
-	tape_player_sig_t sig;
-
 	if (deck->paused) {
 		deck->paused = false;
 		return;
 	}
 
-	tape_player_init(deck->player, deck->cur_block);
-	deck->cur_lvl = tape_player_cur_lvl(deck->player);
+	tape_sampler_init(deck->sampler, deck->cur_block);
 
-	if (tape_player_is_end(deck->player))
+	if (tape_sampler_is_end(deck->sampler))
 		return;
 
 	deck->playing = true;
-	tape_player_get_next(deck->player, &deck->next_delay, &deck->next_lvl,
-	    &sig);
-	tape_deck_process_sig(deck, sig);
 }
 
 /** Pause tape.
@@ -320,7 +330,7 @@ void tape_deck_stop(tape_deck_t *deck)
 
 	deck->playing = false;
 	deck->paused = false;
-	deck->cur_block = tape_player_cur_block(deck->player);
+	deck->cur_block = tape_sampler_cur_block(deck->sampler);
 }
 
 /** Rewind tape.
@@ -373,27 +383,17 @@ bool tape_deck_is_playing(tape_deck_t *deck)
 void tape_deck_getsmp(tape_deck_t *deck, uint8_t *smp)
 {
 	tape_player_sig_t sig;
-	uint32_t td;
 
 	if (!deck->playing || deck->paused) {
-		*smp = deck->cur_lvl;
+		*smp = deck->cur_smp;
 		return;
 	}
 
-	td = deck->delta_t;
-	while (deck->playing && !deck->paused && deck->next_delay <= td &&
-	    !tape_player_is_end(deck->player)) {
-		td -= deck->next_delay;
-		deck->cur_lvl = deck->next_lvl;
-		tape_player_get_next(deck->player, &deck->next_delay,
-		    &deck->next_lvl, &sig);
+	tape_sampler_getsmp(deck->sampler, &deck->cur_smp, &sig);
+	if (sig != tps_none)
 		tape_deck_process_sig(deck, sig);
-	}
 
-	if (deck->next_delay > td)
-		deck->next_delay -= td;
-
-	*smp = deck->cur_lvl;
+	*smp = deck->cur_smp;
 }
 
 /** Get current tape block.
@@ -404,7 +404,7 @@ void tape_deck_getsmp(tape_deck_t *deck, uint8_t *smp)
 tape_block_t *tape_deck_cur_block(tape_deck_t *deck)
 {
 	if (deck->playing)
-		return tape_player_cur_block(deck->player);
+		return tape_sampler_cur_block(deck->sampler);
 
 	return deck->cur_block;
 }

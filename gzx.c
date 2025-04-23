@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Main module
  *
- * Copyright (c) 1999-2024 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -367,8 +367,7 @@ static int zx_init(void) {
 
   kempston_joy_init(&kjoy0);
 
-  if(tape_deck_create(&tape_deck, true) != 0) return -1;
-  tape_deck->delta_t = ZX_TAPE_TICKS_SMP;
+  if(tape_deck_create(&tape_deck, ZX_TAPE_TICKS_SMP, true) != 0) return -1;
 
   zx_reset();
   

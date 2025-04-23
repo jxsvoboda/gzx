@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * ULA video generator
  *
- * Copyright (c) 1999-2019 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -291,7 +291,7 @@ void video_ula_disp(video_ula_t *ula)
  * @param ula ULA video generator
  * @param clock Initial clock value
  * @param vout Video output
- * @return EOK on success or an error code
+ * @return Zero on success or an error code
  */
 int video_ula_init(video_ula_t *ula, unsigned long clock, video_out_t *vout)
 {

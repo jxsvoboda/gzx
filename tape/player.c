@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Tape player
  *
- * Copyright (c) 1999-2019 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -72,7 +72,7 @@ static void tape_player_stop_48k_next(tape_player_t *, tblock_stop_48k_t *);
 /** Create tape player.
  *
  * @param rplayer Place to store pointer to new tape player
- * @return EOK on success, ENOMEM if out of memory
+ * @return Zero on success, ENOMEM if out of memory
  */
 int tape_player_create(tape_player_t **rplayer)
 {

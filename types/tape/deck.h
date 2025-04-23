@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Tape deck types
  *
- * Copyright (c) 1999-2019 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "player.h"
+#include "sampler.h"
 #include "tape.h"
 
 /** Tape deck */
@@ -51,22 +52,17 @@ typedef struct {
 	tape_block_t *cur_block;
 	/** Tape player */
 	tape_player_t *player;
+	/** Tape sampler */
+	tape_sampler_t *sampler;
 
-	/** Delay between tape samples */
-	int delta_t;
 	/** Tape is playing */
 	bool playing;
 	/** Tape is paused */
 	bool paused;
+	/** Current sample */
+	uint8_t cur_smp;
 	/** Mode is 48K */
 	bool mode48k;
-
-	/** Current level */
-	tape_lvl_t cur_lvl;
-	/** Delay until next event */
-	uint32_t next_delay;
-	/** Next level */
-	tape_lvl_t next_lvl;
 } tape_deck_t;
 
 #endif

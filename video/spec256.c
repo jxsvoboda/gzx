@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Spec256 video generator
  *
- * Copyright (c) 1999-2019 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -232,7 +232,7 @@ error:
  * @param spec Spec256 video generator
  * @param fname Background file name
  * @param idx Index of background to load (>=0).
- * @return EOK on success or an error code
+ * @return Zero on success or an error code
  */
 int video_spec256_load_bg(video_spec256_t *spec, const char *fname, int idx)
 {

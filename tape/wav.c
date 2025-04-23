@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * WAV as tape file format support
  *
- * Copyright (c) 1999-2019 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,8 @@
 #include "../byteorder.h"
 #include "../clock.h"
 #include "../wav/rwave.h"
+#include "player.h"
+#include "sampler.h"
 #include "tape.h"
 #include "wav.h"
 
@@ -310,13 +312,15 @@ error:
 	return rc;
 }
 
-/** Save tape to WAV file.
+/** Save tape containing only of direct recording blocks of the
+ * same sample duration to WAV file.
  *
  * @param tape Tape
  * @param fname File name
- * @return Zero on success or error code
+ * @return Zero on success, ENOTSUP if tape contains other blocks,
+ *         or a different error code
  */
-int wav_tape_save(tape_t *tape, const char *fname)
+static int wav_tape_save_drec(tape_t *tape, const char *fname)
 {
 	rwavew_t *ww = NULL;
 	rwave_params_t params;
@@ -348,13 +352,16 @@ int wav_tape_save(tape_t *tape, const char *fname)
 		block = tape_next(block);
 	}
 
-	if (smp_dur == 0)
-		smp_dur = 79; /* ~44100 Hz */
-
 	/* Initialize params */
 	params.channels = 1;
 	params.bits_smp = 8;
-	params.smp_freq = Z80_CLOCK / smp_dur;
+
+	if (smp_dur == 0) {
+		params.smp_freq = 44100;
+		smp_dur = Z80_CLOCK / params.smp_freq;
+	} else {
+		params.smp_freq = Z80_CLOCK / smp_dur;
+	}
 
 	rc = rwave_wopen(fname, &params, &ww);
 	if (rc != 0)
@@ -390,5 +397,98 @@ int wav_tape_save(tape_t *tape, const char *fname)
 error:
 	if (ww != NULL)
 		rwave_wclose(ww);
+	return rc;
+}
+
+/** Save tape to WAV file.
+ *
+ * @param tape Tape
+ * @param fname File name
+ * @return Zero on success or error code
+ */
+int wav_tape_save(tape_t *tape, const char *fname)
+{
+	rwavew_t *ww = NULL;
+	rwave_params_t params;
+	tape_player_t *player = NULL;
+	tape_sampler_t *sampler = NULL;
+	tape_player_sig_t sig;
+	uint8_t smp;
+	uint16_t smp_dur = 0;
+	size_t i;
+	uint8_t *buf = NULL;
+	int rc;
+	int rv;
+
+	/* Try if tape can be saved directly without resampling. */
+	rc = wav_tape_save_drec(tape, fname);
+
+	/* If it worked or there was a different error, then stop. */
+	if (rc == 0 || rc != ENOTSUP)
+		return rc;
+
+	/* Tape needs to be resampled. */
+
+	smp_dur = 79; /* ~44100 Hz */
+
+	/* Initialize params */
+	params.channels = 1;
+	params.bits_smp = 8;
+	params.smp_freq = Z80_CLOCK / smp_dur;
+
+	buf = calloc(1, wav_buf_size);
+	if (buf == NULL) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	rc = rwave_wopen(fname, &params, &ww);
+	if (rc != 0)
+		return rc;
+
+	rc = tape_player_create(&player);
+	if (rc != 0)
+		goto error;
+
+	tape_player_init(player, tape_first(tape));
+
+	rc = tape_sampler_create(player, smp_dur, &sampler);
+	if (rc != 0)
+		goto error;
+
+	while (!tape_sampler_is_end(sampler)) {
+		for (i = 0; i < wav_buf_size; i++) {
+			tape_sampler_getsmp(sampler, &smp, &sig);
+			(void)sig;
+
+			buf[i] = (smp != 0) ? 0xff : 0x80;
+			if (tape_sampler_is_end(sampler))
+				break;
+		}
+
+		rc = rwave_write_samples(ww, buf, i);
+		if (rc != 0)
+			return EIO;
+	}
+
+	rv = rwave_wclose(ww);
+	if (rv < 0) {
+		rc = EIO;
+		goto error;
+	}
+
+	free(buf);
+	tape_sampler_destroy(sampler);
+	tape_player_destroy(player);
+	return 0;
+error:
+	if (sampler != NULL)
+		tape_sampler_destroy(sampler);
+	if (player != NULL)
+		tape_player_destroy(player);
+	if (ww != NULL)
+		rwave_wclose(ww);
+	if (buf != NULL)
+		free(buf);
 	return rc;
 }

@@ -1,8 +1,14 @@
 #
-# GZX makefile
+# GZX - George's ZX Spectrum Emulator
+# Makefile
 #
-# We can build either natively in generic GNU/Unix-like environment or
-# cross compile for Win32 using MinGW cross-compiler
+# Copyright (c) 1999-2025 Jiri Svoboda
+# All rights reserved.
+#
+# We can build:
+#  - natively in generic GNU/Unix-like environment
+#  - cross compile for Win32 using MinGW cross-compiler
+#  - cross compile for HelenOS using XCW from HelenOS source tree
 #
 
 CC		= gcc
@@ -34,6 +40,7 @@ sources_generic = \
     joystick/kempston.c \
     tape/deck.c \
     tape/player.c \
+    tape/sampler.c \
     tape/quick.c \
     tape/tap.c \
     tape/tape.c \
@@ -86,6 +93,7 @@ sources_gtap_generic = \
     tape/deck.c \
     tape/player.c \
     tape/romblock.c \
+    tape/sampler.c \
     tape/tap.c \
     tape/tape.c \
     tape/tonegen.c \
