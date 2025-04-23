@@ -461,7 +461,7 @@ int wav_tape_save(tape_t *tape, const char *fname)
 			tape_sampler_getsmp(sampler, &smp, &sig);
 			(void)sig;
 
-			buf[i] = (smp != 0) ? 0xff : 0x80;
+			buf[i] = (smp != 0) ? 0xff : 0x00;
 			if (tape_sampler_is_end(sampler))
 				break;
 		}
