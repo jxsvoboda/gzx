@@ -208,6 +208,19 @@ void zx_keys_init(zx_keys_t *keys)
 	zx_key_register(keys, WKEY_N0,    0, 0, 0, 0, ZX_KEY_0, 0, 0, 0);
 	zx_key_register(keys, WKEY_LCTRL, 0, 0, 0, 0, 0, 0, 0, ZX_KEY_SS);
 	zx_key_register(keys, WKEY_RCTRL, 0, 0, 0, 0, 0, 0, 0, ZX_KEY_SS);
+	zx_key_register(keys, WKEY_TAB, ZX_KEY_CS, 0, 0, 0, 0, 0, 0, ZX_KEY_SS);
+	zx_key_register(keys, WKEY_GRAVE, ZX_KEY_CS, 0, 0, 0, ZX_KEY_9, 0, 0, 0);
+	zx_key_register(keys, WKEY_INS, ZX_KEY_CS, 0, 0, ZX_KEY_1, 0, 0, 0, 0);
+	zx_key_register(keys, WKEY_CLOCK, ZX_KEY_CS, 0, 0, ZX_KEY_2, 0, 0, 0, 0);
+	zx_key_register(keys, WKEY_LBR, ZX_KEY_CS, 0, 0, ZX_KEY_3, 0, 0, 0, 0);
+	zx_key_register(keys, WKEY_RBR, ZX_KEY_CS, 0, 0, ZX_KEY_4, 0, 0, 0, 0);
+	zx_key_register(keys, WKEY_SCOLON, 0, 0, 0, 0, 0, ZX_KEY_O, 0, ZX_KEY_SS);
+	zx_key_register(keys, WKEY_FOOT, 0, 0, 0, 0, 0, ZX_KEY_P, 0, ZX_KEY_SS);
+	zx_key_register(keys, WKEY_DEL, ZX_KEY_CS, 0, 0, 0, 0, 0, 0, ZX_KEY_SP);
+
+	zx_key_register(keys, WKEY_COMMA, 0, 0, 0, 0, 0, 0, 0, ZX_KEY_N | ZX_KEY_SS);
+	zx_key_register(keys, WKEY_PERIOD, 0, 0, 0, 0, 0, 0, 0, ZX_KEY_M | ZX_KEY_SS);
+	zx_key_register(keys, WKEY_SLASH, ZX_KEY_V, 0, 0, 0, 0, 0, 0, ZX_KEY_SS);
 }
 
 /** Set key state.

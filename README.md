@@ -90,8 +90,20 @@ Spectrum Key Mappings
   ------------ | ------------
   Shift        | Caps Shift
   Ctrl         | Symbol Shift
-  Shift+Arrows | Cursor Keys
+  Caps Lock    | Caps Lock
+  Arrows       | Arrow Keys
   Backspace    | Delete
+  Backtick     | Graph
+  Tab          | Extend Mode
+  Insert       | Edit
+  Delete       | Break
+  Enter        | Enter
+  [            | True Video
+  ]            | Inverse Video
+  Comma        | ,
+  Period       | .
+  Semicolon    | ;
+  Quote (')    | "
 
 Key functions while in the debugger
 -----------------------------------
