@@ -201,10 +201,10 @@ void zx_keys_init(zx_keys_t *keys)
 	zx_key_register(keys, WKEY_SPACE,  0, 0, 0, 0, 0, 0, 0, ZX_KEY_SP);
 
 	zx_key_register(keys, WKEY_BS,    ZX_KEY_CS, 0, 0, 0, ZX_KEY_0, 0, 0, 0);
-	zx_key_register(keys, WKEY_LEFT,  0, 0, 0, ZX_KEY_5, 0, 0, 0, 0);
-	zx_key_register(keys, WKEY_DOWN,  0, 0, 0, 0, ZX_KEY_6, 0, 0, 0);
-	zx_key_register(keys, WKEY_UP,    0, 0, 0, 0, ZX_KEY_7, 0, 0, 0);
-	zx_key_register(keys, WKEY_RIGHT, 0, 0, 0, 0, ZX_KEY_8, 0, 0, 0);
+	zx_key_register(keys, WKEY_LEFT,  ZX_KEY_CS, 0, 0, ZX_KEY_5, 0, 0, 0, 0);
+	zx_key_register(keys, WKEY_DOWN,  ZX_KEY_CS, 0, 0, 0, ZX_KEY_6, 0, 0, 0);
+	zx_key_register(keys, WKEY_UP,    ZX_KEY_CS, 0, 0, 0, ZX_KEY_7, 0, 0, 0);
+	zx_key_register(keys, WKEY_RIGHT, ZX_KEY_CS, 0, 0, 0, ZX_KEY_8, 0, 0, 0);
 	zx_key_register(keys, WKEY_N0,    0, 0, 0, 0, ZX_KEY_0, 0, 0, 0);
 	zx_key_register(keys, WKEY_LCTRL, 0, 0, 0, 0, 0, 0, 0, ZX_KEY_SS);
 	zx_key_register(keys, WKEY_RCTRL, 0, 0, 0, 0, 0, 0, 0, ZX_KEY_SS);
