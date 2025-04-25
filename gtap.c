@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Tape utility
  *
- * Copyright (c) 1999-2019 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include "clock.h"
 #include "tape/deck.h"
 #include "tape/romblock.h"
 #include "tape/tape.h"
@@ -83,7 +84,7 @@ static int gtap_list(const char *fname)
 	unsigned bidx;
 	int rc;
 
-	rc = tape_deck_create(&deck, false);
+	rc = tape_deck_create(&deck, ZX_TAPE_TICKS_SMP, false);
 	if (rc != 0) {
 		printf("Out of memory.\n");
 		return ENOMEM;
