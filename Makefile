@@ -249,6 +249,11 @@ $(binary_test): $(objects_test)
 	$(CC) $(CFLAGS) -o $@ $^
 
 $(objects): $(headers)
+$(objects_gtap): $(headers)
+$(objects_w32): $(headers)
+$(objects_w32_gtap): $(headers)
+$(objects_helenos): $(headers)
+$(objects_helenos_gtap): $(headers)
 
 %.w32.o: %.c
 	$(CC_w32) -c $(CFLAGS_w32) -o $@ $<
