@@ -1480,14 +1480,14 @@ static void ei_daa(void) {
     if(cpus.F & fC) res += 0x60;
       else if(res>0x99) { res += 0x60; cpus.F|=fC; }
       
-    if(cpus.F & fHC) res += 0x06;
+    if(cpus.F & fHC) { if ((res & 0x0f) <= 0x09) cpus.F &= ~fHC; res += 0x06; }
       else if((res&0x0f)>0x09) { res += 0x06; cpus.F|=fHC; }
   } else {
     if(cpus.F & fC) res -= 0x60;
       else if(res>0x99) { res -= 0x60; cpus.F|=fC; }
       
-    if(cpus.F & fHC) res -= 0x06;
-      else if((res&0x0f)>0x09) { res -= 0x06; cpus.F|=fHC; }
+    if(cpus.F & fHC) { if ((res & 0x0f) >= 0x06) cpus.F &= ~fHC; res -= 0x06; }
+      else if((res&0x0f)>0x09) { res -= 0x06; }
   }
   setflags((res>>7)&1,
 	   (res&0xff)==0,
