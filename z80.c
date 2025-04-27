@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Z80 CPU emulation
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -2878,22 +2878,23 @@ static void ei_ldir(void) {
 /************************************************************************/
 
 static void ei_neg(void) {               /* A <- neg(A) .. two's complement */
-  uint16_t res;
-//  printf("NEG(2c)\n");
-  res = (cpus.r[rA] ^ 0xff)+1;
-  
-  setflags((res>>7)&1,
-	   (res&0xff)==0,
-	   (res&0x0f)==0,        /* not sure about this, verify!!!! */
-	   (res&0xff)==0x80,     /* 127 -> -128 */
-	   1,
-	   res>0xff);		 /* not sure about this, verify!!!! */
+  uint8_t oldA;
+  uint8_t res;
 
-  cpus.r[rA] = res & 0xff;
-  setundocflags8(cpus.r[rA]);
+  oldA = cpus.r[rA];
+  res = (oldA ^ 0xff)+1;
+
+  setflags(res>>7,
+	   res==0,
+	   (oldA&0x0f)!=0,
+	   oldA==0x80,     /* 127 -> -128 */
+	   1,
+	   oldA != 0x00);
+
+  cpus.r[rA] = res;
+  setundocflags8(res);
   z80_clock_inc(8);
 }
-
 
 /************************************************************************/
 
@@ -4792,19 +4793,22 @@ static void Ui_ednop(void) { /* different from ei_nop! */
 }
 
 static void Ui_neg(void) {               /* A <- neg(A) .. two's complement */
-  uint16_t res;
-//  printf("NEG(2c)\n");
-  res = (cpus.r[rA] ^ 0xff)+1;
-  cpus.r[rA] = res & 0xff;
-  setflags((res>>7)&1,
-	   (res&0xff)==0,
-	   (res&0x0f)==0,        /* not sure about this, verify !!!!! */
-	   -2,
-	   1,
-	   res>0xff);		 /* not sure about this, verify !!!!! */
+  uint8_t oldA;
+  uint8_t res;
 
-  cpus.r[rA] = res & 0xff;
-  z80_clock_inc(8); /* timing taken from ei_neg */
+  oldA = cpus.r[rA];
+  res = (oldA ^ 0xff)+1;
+
+  setflags(res>>7,
+	   res==0,
+	   (oldA&0x0f)!=0,
+	   oldA==0x80,     /* 127 -> -128 */
+	   1,
+	   oldA != 0x00);
+
+  cpus.r[rA] = res;
+  setundocflags8(res);
+  z80_clock_inc(8);
   uoc++;
 }
 
