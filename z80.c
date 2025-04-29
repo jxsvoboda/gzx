@@ -36,7 +36,6 @@
   
   some games known not to work:
     belegost (dies)
-    tapper (dies)
     
   !spemu		not implemented right in spectemu
   
@@ -534,7 +533,7 @@ static uint8_t _bit8(uint8_t a, uint8_t b) {
   uint8_t res;
 
   res=b & (1<<a);
-  cpus.F=(cpus.F&fC)|ox_tab[res]; /* CF does not change */
+  cpus.F=(cpus.F&fC)|ox_tab[res]|fHC; /* CF does not change */
 /*  setflags(res&0x80,
 	   res==0,
 	   1,
