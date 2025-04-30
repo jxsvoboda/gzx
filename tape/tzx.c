@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * TZX file format support
  *
- * Copyright (c) 1999-2019 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1223,7 +1223,6 @@ static int tzx_load_hwinfo(FILE *f, tape_hwinfo_t **rhwinfo)
 	size_t nread;
 	int rc;
 
-	printf("Load hardware info\n");
 	nread = fread(&tzxhwinfo, 1, sizeof(tzx_hwinfo_t), f);
 	if (nread != sizeof(tzx_hwinfo_t)) {
 		rc = EIO;
@@ -1365,19 +1364,16 @@ static int tzx_load_unknown(FILE *f, uint8_t btype, tape_t *tape)
 	void *data;
 	int rc;
 
-	printf("load unknown block (%02x)\n", btype);
 	nread = fread(&block, 1, sizeof(tzx_block_unknown_t), f);
 	if (nread != sizeof(tzx_block_unknown_t))
 		return EIO;
 
 	blen = uint32_t_le2host(block.block_len);
-	printf("block size:%u\n", (unsigned) blen);
 	data = malloc(blen);
 	if (data == NULL)
 		return ENOMEM;
 
 	nread = fread(data, 1, blen, f);
-	printf("bytes read: %u\n", (unsigned) nread);
 	if (nread != blen) {
 		rc = EIO;
 		goto error;
@@ -1560,8 +1556,6 @@ int tzx_tape_save(tape_t *tape, const char *fname)
 
 	/* Write TZX header */
 
-	printf("write header\n");
-
 	tzx_header_init(tape, &header);
 
 	nwr = fwrite(&header, 1, sizeof(tzx_header_t), f);
@@ -1570,12 +1564,10 @@ int tzx_tape_save(tape_t *tape, const char *fname)
 		goto error;
 	}
 
-	printf("write blocks\n");
 	block = tape_first(tape);
 	while (block != NULL) {
 		/* Write block type */
 		btype = tzx_block_type(block);
-		printf("write block type (0x%x)\n", btype);
 
 		nwr = fwrite(&btype, 1, sizeof(uint8_t), f);
 		if (nwr != sizeof(uint8_t)) {
@@ -1583,7 +1575,6 @@ int tzx_tape_save(tape_t *tape, const char *fname)
 			goto error;
 		}
 
-		printf("write block\n");
 		switch (block->btype) {
 		case tb_data:
 			rc = tzx_save_data((tblock_data_t *) block->ext, f);

@@ -96,7 +96,6 @@ static int wav_load_direct_rec(rwaver_t *wr, rwave_params_t *params,
 
 	bytes_smp = params->bits_smp / 8;
 
-	printf("load direct recording block\n");
 	buf = calloc(1, wav_buf_size);
 	if (buf == NULL) {
 		rc = ENOMEM;
@@ -190,10 +189,6 @@ static int wav_load_direct_rec(rwaver_t *wr, rwave_params_t *params,
 		goto error;
 	}
 
-	printf("pause after:%u\n", (unsigned) drec->pause_after);
-	printf("data len:%u\n", (unsigned) drec->data_len);
-	printf("lb bits:%u\n", (unsigned) drec->lb_bits);
-
 	tape_append(tape, drec->block);
 	free(buf);
 	return 0;
@@ -220,8 +215,6 @@ static int wav_save_direct_rec(tblock_direct_rec_t *drec, rwavew_t *ww)
 	int i;
 	int nb;
 	int rc;
-
-	printf("save direct recording block\n");
 
 	buf = calloc(1, wav_buf_size);
 	if (buf == NULL) {
@@ -291,7 +284,6 @@ int wav_tape_load(const char *fname, tape_t **rtape)
 	tape->version.major = wav_ver_major;
 	tape->version.minor = wav_ver_minor;
 
-	printf("read blocks\n");
 	while (true) {
 		/* May need to split large WAV into multiple blocks */
 		rc = wav_load_direct_rec(rw, &params, tape);
@@ -367,10 +359,8 @@ static int wav_tape_save_drec(tape_t *tape, const char *fname)
 	if (rc != 0)
 		return rc;
 
-	printf("write blocks\n");
 	block = tape_first(tape);
 	while (block != NULL) {
-		printf("write block\n");
 		switch (block->btype) {
 		case tb_direct_rec:
 			rc = wav_save_direct_rec(

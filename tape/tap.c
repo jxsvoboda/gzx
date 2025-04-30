@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Gerton Lunter's TAP file format support
  *
- * Copyright (c) 1999-2019 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,8 +62,6 @@ static int tap_load_data(FILE *f, tape_t *tape)
 	size_t nread;
 	int rc;
 
-	printf("load data block\n");
-
 	nread = fread(&data_len, 1, sizeof(data_len), f);
 	if (nread != sizeof(data_len)) {
 		/* Check for end of file */
@@ -84,9 +82,6 @@ static int tap_load_data(FILE *f, tape_t *tape)
 		rc = ENOMEM;
 		goto error;
 	}
-
-	printf("pause after:%u\n", (unsigned) data->pause_after);
-	printf("data len:%u\n", (unsigned) data->data_len);
 
 	nread = fread(data->data, 1, data->data_len, f);
 	if (nread != data->data_len) {
@@ -112,8 +107,6 @@ static int tap_save_data(tblock_data_t *data, FILE *f)
 {
 	size_t nwr;
 	uint16_t data_len;
-
-	printf("save data block\n");
 
 	data_len = host2uint16_t_le(data->data_len);
 
@@ -151,7 +144,6 @@ int tap_tape_load(const char *fname, tape_t **rtape)
 	tape->version.major = tap_ver_major;
 	tape->version.minor = tap_ver_minor;
 
-	printf("read blocks\n");
 	while (true) {
 		rc = tap_load_data(f, tape);
 		if (rc != 0) {
@@ -188,10 +180,8 @@ int tap_tape_save(tape_t *tape, const char *fname)
 	if (f == NULL)
 		return ENOENT;
 
-	printf("write blocks\n");
 	block = tape_first(tape);
 	while (block != NULL) {
-		printf("write block\n");
 		switch (block->btype) {
 		case tb_data:
 			rc = tap_save_data((tblock_data_t *) block->ext, f);
