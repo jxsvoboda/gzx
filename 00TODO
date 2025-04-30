@@ -13,9 +13,22 @@ Old
 
 Enhancements
 ============
+ - Accurate W register emulation
  - Cycle-accurate tape, SPK and AY sampling with filtering, 16 bits/sample
+ - Show tape status/position (in tape menu?, status bar?)
  - Tape Record function
- - Tape browser
+ - Tape browser/editor
+ - Dual tape deck
+ - Connect EAR directly to audio input
+ - Record tape directly from audio input
  - Pause
  - BASIC keyboard layout help screen
+ - Configurable use of Arrow keys (Kempston, Key mapping)
+ - Configurable screen scaling
  - Persistent configuration
+ - Printer emulation
+ - 128K RS-232 emulation
+ - Interface I / microdrive emulation
+ - Betadisk emulation
+ - +3 floppy emulation
+ - 16-bit DOS port
