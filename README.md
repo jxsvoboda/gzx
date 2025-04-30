@@ -1,6 +1,6 @@
 GZX - George's ZX Spectrum Emulator
 ===================================
-Copyright (c) 1999-2020 Jiri Svoboda
+Copyright (c) 1999-2025 Jiri Svoboda
 
 Introduction
 ------------
@@ -23,6 +23,12 @@ Some of the features of this emulator:
   * Record data sent to I/O ports
   * Built-in debugger
 
+Most of this emulator (i.e., source code, binaries, emulator font FONT.BIN,
+documentation) is free software, provided under an MIT-style
+license. The only exception are the enclosed ZX Spectrum ROM files.
+The copyright to the ROM files was held by Sinclair Research ltd.
+and later Amstrad plc. Amstrad allowed distributing ZX Spectrum ROM
+files toghether with emulator software.
 
 Running
 -------
@@ -226,3 +232,38 @@ To check ccstyle type
 This requires the `ccheck` tool from the [Sycek project][1]
 
 [1]: https://github.com/jxsvoboda/sycek
+
+License
+-------
+Most of this emulator (i.e., source code, binaries, emulator font FONT.BIN,
+documentation) is free software, provided under an MIT-style
+license. The only exception are the enclosed ZX Spectrum ROM files.
+The copyright to the ROM files was held by Sinclair Research ltd.
+and later Amstrad plc. Amstrad allowed distributing ZX Spectrum ROM
+files toghether with emulator software.
+
+Copyright (c) 1999-2025 Jiri Svoboda
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+  * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+  * The name of the author may not be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
