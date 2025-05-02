@@ -3021,33 +3021,49 @@ static void ei_out_iC_L(void) {
 
 static void ei_outd(void) {
   uint8_t res;
-
-  _out8(getBC(),_iHL8());
-  setHL(getHL()-1);
-  res=(cpus.r[rB]-1)&0x0f;
+  uint8_t val;
+  uint16_t bc;
   
+  res=cpus.r[rB]-1;
+  bc = ((uint16_t)res << 8) | cpus.r[rC];
+  val = _iHL8();
+  _out8(bc,val);
+  setHL(getHL()-1);
+  
+  cpus.F = res & (fU1 | fU2);
   setflags(res>>7,
            res==0,
-	   (cpus.r[rB]&0x0f)+1>0x0f,
-	   res==127,
-	   1,
-	   -1);
-  /* undoc flags not affected */
-	   
+	   ((uint16_t)val+cpus.r[rL])>0xff,
+	   oddp8(((val+cpus.r[rL])&7)^res),
+	   val>>7,
+	   ((uint16_t)val+cpus.r[rL])>0xff);
+   
   cpus.r[rB]=res;
   z80_clock_inc(16);
 }
 
 static void ei_otdr(void) {
-  _out8(getBC(),_iHL8());
-  setHL(getHL()-1);
-  cpus.r[rB]--;
+  uint8_t res;
+  uint8_t val;
+  uint16_t bc;
   
-  if(cpus.r[rB]==0) {
-//    printf("B==0. otdr terminated.\n");
-    setflags(0,1,0,0,1,-1);
-    /* undoc flags not affected */
-    z80_clock_inc(1);
+  res=cpus.r[rB]-1;
+  bc = ((uint16_t)res << 8) | cpus.r[rC];
+  val = _iHL8();
+  _out8(bc,val);
+  setHL(getHL()-1);
+  
+  cpus.F = res & (fU1 | fU2);
+  setflags(res>>7,
+           res==0,
+	   ((uint16_t)val+cpus.r[rL])>0xff,
+	   oddp8(((val+cpus.r[rL])&7)^res),
+	   val>>7,
+	   ((uint16_t)val+cpus.r[rL])>0xff);
+  
+  cpus.r[rB]=res;
+  if(res==0) {
+    z80_clock_inc(16);
   } else {
     z80_clock_inc(21);
     cpus.PC-=2;
@@ -3056,33 +3072,49 @@ static void ei_otdr(void) {
 
 static void ei_outi(void) {
   uint8_t res;
-
-  _out8(getBC(),_iHL8());
-  setHL(getHL()+1);
-  res=(cpus.r[rB]-1)&0xff;
+  uint8_t val;
+  uint16_t bc;
   
+  res=cpus.r[rB]-1;
+  bc = ((uint16_t)res << 8) | cpus.r[rC];
+  val = _iHL8();
+  _out8(bc,val);
+  setHL(getHL()+1);
+  
+  cpus.F = res & (fU1 | fU2);
   setflags(res>>7,
            res==0,
-	   (cpus.r[rB]&0x0f)-1<0, /* I hope */
-	   res==127,
-	   1,
-	   -1);
-  /* undoc flags not affected */
-  
+	   ((uint16_t)val+cpus.r[rL])>0xff,
+	   oddp8(((val+cpus.r[rL])&7)^res),
+	   val>>7,
+	   ((uint16_t)val+cpus.r[rL])>0xff);
+   
   cpus.r[rB]=res;
   z80_clock_inc(16);
 }
 
 static void ei_otir(void) {
-  _out8(getBC(),_iHL8());
-  setHL(getHL()+1);
-  cpus.r[rB]--;
+  uint8_t res;
+  uint8_t val;
+  uint16_t bc;
   
-  if(cpus.r[rB]==0) {
-//    printf("B==0. otir terminated.\n");
-    setflags(0,1,0,0,1,-1);
-    /* undoc flags not affected */
-    z80_clock_inc(1);
+  res=cpus.r[rB]-1;
+  bc = ((uint16_t)res << 8) | cpus.r[rC];
+  val = _iHL8();
+  _out8(bc,val);
+  setHL(getHL()+1);
+  
+  cpus.F = res & (fU1 | fU2);
+  setflags(res>>7,
+           res==0,
+	   ((uint16_t)val+cpus.r[rL])>0xff,
+	   oddp8(((val+cpus.r[rL])&7)^res),
+	   val>>7,
+	   ((uint16_t)val+cpus.r[rL])>0xff);
+  
+  cpus.r[rB]=res;
+  if(res==0) {
+    z80_clock_inc(16);
   } else {
     z80_clock_inc(21);
     cpus.PC-=2;
