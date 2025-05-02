@@ -2248,7 +2248,7 @@ static void ei_ld_A_I(void) {
 
   cpus.r[rA]=cpus.I;
   setflags(cpus.r[rA]>>7,
-	   cpus.r[rA]!=0,
+	   cpus.r[rA]==0,
 	   0,
 	   cpus.IFF2,
 	   0,
@@ -2259,10 +2259,9 @@ static void ei_ld_A_I(void) {
 
 static void ei_ld_A_R(void) {
 
-  //cpus.r[rA]=cpus.R;
-  cpus.r[rA] = 0x00;
+  cpus.r[rA]=cpus.R;
   setflags(cpus.r[rA]>>7,
-	   cpus.r[rA]!=0,
+	   cpus.r[rA]==0,
 	   0,
 	   cpus.IFF2,
 	   0,
