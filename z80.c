@@ -1973,37 +1973,44 @@ static void ei_inc_IY(void) {
 /************************************************************************/
 
 static void ei_ind(void) {
-  uint8_t res,tmp;
+  uint8_t res,val;
 
-  tmp=_in8(getBC());
-  s_iHL8(tmp);
+  val=_in8(getBC());
+  s_iHL8(val);
   setHL(getHL()-1);
   res=(cpus.r[rB]-1)&0xff;
   
+  cpus.F = res & (fU1 | fU2);
   setflags(res>>7,
            res==0,
-	   (cpus.r[rB]&0x0f)-1<0, /* I hope */
-	   res==127,
-	   1,
-	   -1);
-  /* dunno how undoc flags work here */
+	   ((uint16_t)val+(uint8_t)(cpus.r[rC]-1))>0xff,
+	   oddp8(((val+(uint8_t)(cpus.r[rC]-1))&7)^res),
+	   val>>7,
+	   ((uint16_t)val+(uint8_t)(cpus.r[rC]-1))>0xff);
   
   cpus.r[rB]=res;
   z80_clock_inc(16);
 }
 
 static void ei_indr(void) {
-  uint8_t res;
-  
-  res=_in8(getBC());
-  s_iHL8(res);
+  uint8_t res,val;
+
+  val=_in8(getBC());
+  s_iHL8(val);
   setHL(getHL()-1);
-  cpus.r[rB]--;
+  res=(cpus.r[rB]-1)&0xff;
   
-  if(cpus.r[rB]==0) {
-//    printf("B==0. indr terminated.\n");
-    setflags(0,1,0,0,1,-1);
-    /* dunno how undoc flags work here */
+  cpus.F = res & (fU1 | fU2);
+  setflags(res>>7,
+           res==0,
+	   ((uint16_t)val+(uint8_t)(cpus.r[rC]-1))>0xff,
+	   oddp8(((val+(uint8_t)(cpus.r[rC]-1))&7)^res),
+	   val>>7,
+	   ((uint16_t)val+(uint8_t)(cpus.r[rC]-1))>0xff);
+  
+  cpus.r[rB]=res;
+  
+  if(res==0) {
     z80_clock_inc(16);
   } else {
     z80_clock_inc(21);
@@ -2012,37 +2019,44 @@ static void ei_indr(void) {
 }
 
 static void ei_ini(void) {
-  uint8_t res,tmp;
+  uint8_t res,val;
 
-  tmp=_in8(getBC());
-  s_iHL8(tmp);
+  val=_in8(getBC());
+  s_iHL8(val);
   setHL(getHL()+1);
   res=(cpus.r[rB]-1)&0xff;
   
+  cpus.F = res & (fU1 | fU2);
   setflags(res>>7,
            res==0,
-	   (cpus.r[rB]&0x0f)-1<0, /* doufam */
-	   res==127,
-	   1,
-	   -1);
-  /* dunno how undoc flags work here */
+	   ((uint16_t)val+(uint8_t)(cpus.r[rC]+1))>0xff,
+	   oddp8(((val+(uint8_t)(cpus.r[rC]+1))&7)^res),
+	   val>>7,
+	   ((uint16_t)val+(uint8_t)(cpus.r[rC]+1))>0xff);
   
   cpus.r[rB]=res;
   z80_clock_inc(16);
 }
 
 static void ei_inir(void) {
-  uint8_t res;
-  
-  res=_in8(getBC());
-  s_iHL8(res);
+  uint8_t res,val;
+
+  val=_in8(getBC());
+  s_iHL8(val);
   setHL(getHL()+1);
-  cpus.r[rB]--;
+  res=(cpus.r[rB]-1)&0xff;
   
-  if(cpus.r[rB]==0) {
-//    printf("B==0. inir terminated.\n");
-    setflags(0,1,0,0,1,-1);
-    /* dunno how undoc flags work here */
+  cpus.F = res & (fU1 | fU2);
+  setflags(res>>7,
+           res==0,
+	   ((uint16_t)val+(uint8_t)(cpus.r[rC]+1))>0xff,
+	   oddp8(((val+(uint8_t)(cpus.r[rC]+1))&7)^res),
+	   val>>7,
+	   ((uint16_t)val+(uint8_t)(cpus.r[rC]+1))>0xff);
+  
+  cpus.r[rB]=res;
+  
+  if(res==0) {
     z80_clock_inc(16);
   } else {
     z80_clock_inc(21);
