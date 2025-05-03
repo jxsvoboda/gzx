@@ -824,9 +824,9 @@ static uint16_t _sbc16(uint16_t a, uint16_t b) {
   res1=a1-b1-c1;
   setflags(res1&0x80,
 	   !((res0&0xff)|(res1&0xff)),
-	   (a1&0x0f) - (b1&0x0f)<0,
+	   (a1&0x0f) < (b1&0x0f)+c1,
 	   sbc_v16(a,b,c),
-	   0,
+	   1,
 	   res1>0xff);
   setundocflags8(res1);
   return (res0&0xff)|((res1&0xff)<<8);
