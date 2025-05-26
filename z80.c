@@ -1179,14 +1179,17 @@ static void ei_and_iIYN(void) {
 
 static void ei_bit_b_r(void) {
   _bit8((opcode>>3)&0x07,cpus.r[opcode & 0x07]);
-
+  /* Note that undoc flags are set from source operand, not from result! */
+  setundocflags8(cpus.r[opcode & 0x07]);
   z80_clock_inc(8);
 }
 
 static void ei_bit_b_iHL(void) {
   _bit8((opcode>>3)&0x07,_iHL8());
-  /* undoc flags are set in a VERY weird way here.
-     I didn't implement this yet. */
+  /*
+   * setundocflags8(cpus.W);
+   * W register not implemented yet.
+   */
 
   z80_clock_inc(12);
 }
