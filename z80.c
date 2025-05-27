@@ -1354,22 +1354,24 @@ static void ei_cp_iIYN(void) {
 static void ei_cpd(void) {
   uint8_t a,b,ufr,res;
   uint16_t newBC;
+  uint8_t hf;
 
   a=cpus.r[rA];
   b=_iHL8();
   res=a-b;
   setHL(getHL()-1);
   newBC=getBC()-1; setBC(newBC);
+  hf=(a&0x0f)-(b&0x0f) < 0;
   
   setflags((res>>7)&1,
 	   (res&0xff)==0,
-	   (a&0x0f)-(b&0x0f) < 0,
+	   hf,
 	   newBC!=0,
 	   1,
 	   -1);
-	   
+
   ufr=cpus.r[rA]-b;
-  if(newBC!=0) ufr--;  /* if we turned H flag on, decrease by 1 */
+  if(hf!=0) ufr--;  /* if we turned H flag on, decrease by 1 */
   setundocflags8(((ufr&0x02)<<4)|(ufr&0x08));
 
   z80_clock_inc(16);
@@ -1378,22 +1380,24 @@ static void ei_cpd(void) {
 static void ei_cpdr(void) {
   uint8_t a,b,ufr,res;
   uint16_t newBC;
+  uint8_t hf;
 
   a=cpus.r[rA];
   b=_iHL8();
   res=a-b;
   setHL(getHL()-1);
   newBC=getBC()-1; setBC(newBC);
-  
+  hf=(a&0x0f)-(b&0x0f) < 0;
+
   setflags((res>>7)&1,
 	   (res&0xff)==0,
-	   (a&0x0f)-(b&0x0f) < 0,
+	   hf,
 	   newBC!=0,
 	   1,
 	   -1);
-	   
+
   ufr=cpus.r[rA]-b;
-  if(newBC!=0) ufr--;  /* if we turned H flag on, decrease by 1 */
+  if(hf!=0) ufr--;  /* if we turned H flag on, decrease by 1 */
   setundocflags8(((ufr&0x02)<<4)|(ufr&0x08));
 
   if(newBC==0 || (cpus.F & fZ)) {
@@ -1407,22 +1411,24 @@ static void ei_cpdr(void) {
 static void ei_cpi(void) {
   uint8_t a,b,ufr,res;
   uint16_t newBC;
+  uint8_t hf;
 
   a=cpus.r[rA];
   b=_iHL8();
   res=a-b;
   setHL(getHL()+1);
   newBC=getBC()-1; setBC(newBC);
+  hf=(a&0x0f)-(b&0x0f) < 0;
   
   setflags((res>>7)&1,
 	   (res&0xff)==0,
-	   (a&0x0f)-(b&0x0f) < 0,
+	   hf,
 	   newBC!=0,
 	   1,
 	   -1);
-	   
+
   ufr=cpus.r[rA]-b;
-  if(newBC!=0) ufr--;  /* if we turned H flag on, decrease by 1 */
+  if(hf!=0) ufr--;  /* if we turned H flag on, decrease by 1 */
   setundocflags8(((ufr&0x02)<<4)|(ufr&0x08));
 
   z80_clock_inc(16);
@@ -1431,22 +1437,24 @@ static void ei_cpi(void) {
 static void ei_cpir(void) {
   uint8_t a,b,ufr,res;
   uint16_t newBC;
+  uint8_t hf;
 
   a=cpus.r[rA];
   b=_iHL8();
   res=a-b;
   setHL(getHL()+1);
   newBC=getBC()-1; setBC(newBC);
+  hf=(a&0x0f)-(b&0x0f) < 0;
   
   setflags((res>>7)&1,
 	   (res&0xff)==0,
-	   (a&0x0f)-(b&0x0f) < 0,
+	  hf,
 	   newBC!=0,
 	   1,
 	   -1);
-	   
+
   ufr=cpus.r[rA]-b;
-  if(newBC!=0) ufr--;  /* if we turned H flag on, decrease by 1 */
+  if(hf!=0) ufr--;  /* if we turned H flag on, decrease by 1 */
   setundocflags8(((ufr&0x02)<<4)|(ufr&0x08));
 
   if(newBC==0 || (cpus.F & fZ)) {
