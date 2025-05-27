@@ -168,6 +168,7 @@ static void setflags(int s, int z, int hc, int pv, int n, int c) {
   if(pv>=0) cpus.F = (cpus.F & (fPV^0xff)) | (pv?fPV:0);
   if(n>=0) cpus.F = (cpus.F & (fN^0xff)) | (n?fN:0);
   if(c>=0) cpus.F = (cpus.F & (fC^0xff)) | (c?fC:0);
+  cpus.flags_aff = 1;
 }
 
 #ifndef NO_Z80UNDOC
@@ -524,6 +525,7 @@ static uint8_t _and8(uint8_t a, uint8_t b) {
 
   res=a&b;
   cpus.F=ox_tab[res]|fHC;
+  cpus.flags_aff=1;
   return res;
 }
 
@@ -534,6 +536,7 @@ static uint8_t _bit8(uint8_t a, uint8_t b) {
 
   res=b & (1<<a);
   cpus.F=(cpus.F&fC)|ox_tab[res]|fHC; /* CF does not change */
+  cpus.flags_aff=1;
 /*  setflags(res&0x80,
 	   res==0,
 	   1,
@@ -640,6 +643,7 @@ static uint8_t _or8(uint8_t a, uint8_t b) {
 
   res=a|b;
   cpus.F=ox_tab[res];
+  cpus.flags_aff=1;
   return res;
 }
 
@@ -682,6 +686,7 @@ static uint8_t _rla8(uint8_t a) {
   oC=(cpus.F & fC)?1:0;
   a=(a<<1)|oC;
   cpus.F = (cpus.F & ~(fU1|fHC|fU2|fN|fC)) | (a&(fU1|fU2)) | nC;
+  cpus.flags_aff=1;
   return a;
 }
 
@@ -692,6 +697,7 @@ static uint8_t _rl8(uint8_t a) {
   oC=(cpus.F & fC)?1:0;
   a=(a<<1)|oC;
   cpus.F=ox_tab[a]|nC;
+  cpus.flags_aff=1;
   return a;
 }
 
@@ -701,6 +707,7 @@ static uint8_t _rlca8(uint8_t a) {
   tmp=a>>7;
   a=(a<<1)|tmp;
   cpus.F = (cpus.F & ~(fU1|fHC|fU2|fN|fC)) | (a&(fU1|fU2)) | tmp;
+  cpus.flags_aff=1;
   return a;
 }
 
@@ -710,6 +717,7 @@ static uint8_t _rlc8(uint8_t a) {
   tmp=a>>7;
   a=(a<<1)|tmp;
   cpus.F=ox_tab[a]|tmp;
+  cpus.flags_aff=1;
   return a;
 }
 
@@ -720,6 +728,7 @@ static uint8_t _rra8(uint8_t a) {
   oC=(cpus.F & fC)?1:0;
   a=(a>>1)|(oC<<7);
   cpus.F = (cpus.F & ~(fU1|fHC|fU2|fN|fC)) | (a&(fU1|fU2)) | nC;
+  cpus.flags_aff=1;
   return a;
 }
 
@@ -730,6 +739,7 @@ static uint8_t _rr8(uint8_t a) {
   oC=(cpus.F & fC)?1:0;
   a=(a>>1)|(oC<<7);
   cpus.F=ox_tab[a]|nC;
+  cpus.flags_aff=1;
   return a;
 }
 
@@ -739,6 +749,7 @@ static uint8_t _rrca8(uint8_t a) {
   tmp=a&1;
   a=(a>>1)|(tmp<<7);
   cpus.F = (cpus.F & ~(fU1|fHC|fU2|fN|fC)) | (a&(fU1|fU2)) | tmp;
+  cpus.flags_aff=1;
   return a;
 }
 
@@ -748,6 +759,7 @@ static uint8_t _rrc8(uint8_t a) {
   tmp=a&1;
   a=(a>>1)|(tmp<<7);
   cpus.F=ox_tab[a]|tmp;
+  cpus.flags_aff=1;
   return a;
 }
 
@@ -761,6 +773,7 @@ static uint8_t _sla8(uint8_t a) {
   nC=a>>7;
   a<<=1;
   cpus.F=ox_tab[a]|nC;
+  cpus.flags_aff=1;
   return a;
 }
 
@@ -770,6 +783,7 @@ static uint8_t _sra8(uint8_t a) {
   nC=a&1;
   a=(a&0x80) | (a>>1);
   cpus.F=ox_tab[a]|nC;
+  cpus.flags_aff=1;
   return a;
 }
 
@@ -782,6 +796,7 @@ static uint8_t _sll8(uint8_t a) {
   nC=a>>7;
   a=(a<<1)|0x1;
   cpus.F=ox_tab[a]|nC;
+  cpus.flags_aff=1;
   return a;
 }
 
@@ -793,6 +808,7 @@ static uint8_t _srl8(uint16_t a) {
   nC=a&1;
   a>>=1;
   cpus.F=ox_tab[a]|nC;
+  cpus.flags_aff=1;
   return a;
 }
 
@@ -866,6 +882,7 @@ static uint8_t _xor8(uint8_t a, uint8_t b) {
 
   res=a^b;
   cpus.F=ox_tab[res];
+  cpus.flags_aff=1;
   return res;
 }
 
@@ -1308,7 +1325,17 @@ static void ei_ccf(void) { /* complement carry flag */
   uint8_t nHC;
   
   nHC=(cpus.F&fC)?fHC:0;
-  cpus.F= ((cpus.F ^ fC) & ~(fU1|fHC|fU2|fN)) | nHC | (cpus.r[rA]&(fU1|fU2));
+
+  /*
+   * As found by Patrik Rak in 2012, if the previous instruction affected
+   * flags, then SCF/CCF moves flags 3,5 from A. If it did not affect flags,
+   * it ORs F with bits 3,5 from A.
+   */
+  if (cpus.pflags_aff)
+    cpus.F &= ~fU;
+
+  cpus.F= ((cpus.F ^ fC) & ~(fHC|fN)) | nHC | (cpus.r[rA]&(fU1|fU2));
+  cpus.flags_aff=1;
   z80_clock_inc(4);
 }
 
@@ -3435,6 +3462,7 @@ static void ei_rld(void) {
   s_iHL8(tmp2);
   
   cpus.F=(cpus.F&fC)|ox_tab[cpus.r[rA]];
+  cpus.flags_aff=1;
 
   z80_clock_inc(18);
 }
@@ -3544,6 +3572,7 @@ static void ei_rrd(void) {
   s_iHL8(tmp2);
   
   cpus.F=(cpus.F&fC)|ox_tab[cpus.r[rA]];
+  cpus.flags_aff=1;
 
   z80_clock_inc(18);
 }
@@ -3684,7 +3713,14 @@ static void ei_sbc_HL_SP(void) {
 
 static void ei_scf(void) {
   setflags(-1,-1,0,-1,0,1);
-  setundocflags8(cpus.r[rA]);
+  /*
+   * As found by Patrik Rak in 2012, if the previous instruction affected
+   * flags, then SCF/CCF moves flags 3,5 from A. If it did not affect flags,
+   * it ORs F with bits 3,5 from A.
+   */
+  if (cpus.pflags_aff)
+    cpus.F &= ~fU;
+  setundocflags8(cpus.r[rA] | cpus.F);
   z80_clock_inc(4);
 }
 
@@ -5368,6 +5404,9 @@ int z80_readinstr(void) {
 void z80_execinstr(void) {
   int lastuoc;
 
+  cpus.pflags_aff=cpus.flags_aff;
+  cpus.flags_aff=0;
+
   /* Process pending NMI or interrupt */
   z80_check_nmi();
   z80_check_int();
@@ -5495,6 +5534,8 @@ int z80_reset(void) {
   cpus.halted=0;
   cpus.int_lock=0;
   cpus.modifier=0;
+  cpus.flags_aff=0;
+  cpus.pflags_aff=0;
   
   cpus.r[rA]=0;  cpus.F=0;
   cpus.r[rB]=0;  cpus.r[rC]=0;

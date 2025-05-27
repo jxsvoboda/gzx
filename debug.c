@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Integrated Debugger
  *
- * Copyright (c) 1999-2021 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -157,6 +157,8 @@ static void debbuger_disp_regs(void)
 	dflag("ILCK:", cpus.int_lock);
 	gmovec(33, 3);
 	dreg8("Pg", page_reg);
+	gmovec(33, 4);
+	dflag("FA:", cpus.flags_aff);
 
 	gmovec(1, 7);
 	dflag("S:", (cpus.F & fS) != 0);
