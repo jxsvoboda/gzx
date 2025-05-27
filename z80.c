@@ -600,6 +600,7 @@ static uint8_t _in8(uint16_t a) {
 	   oddp8(res),
 	   0,
 	   -1);
+  setundocflags8(res);
   return res;
 }
 
@@ -1978,7 +1979,7 @@ static void ei_inc_IY(void) {
 static void ei_ind(void) {
   uint8_t res,val;
 
-  val=_in8(getBC());
+  val=_in8pf(getBC());
   s_iHL8(val);
   setHL(getHL()-1);
   res=(cpus.r[rB]-1)&0xff;
@@ -1998,7 +1999,7 @@ static void ei_ind(void) {
 static void ei_indr(void) {
   uint8_t res,val;
 
-  val=_in8(getBC());
+  val=_in8pf(getBC());
   s_iHL8(val);
   setHL(getHL()-1);
   res=(cpus.r[rB]-1)&0xff;
@@ -2024,7 +2025,7 @@ static void ei_indr(void) {
 static void ei_ini(void) {
   uint8_t res,val;
 
-  val=_in8(getBC());
+  val=_in8pf(getBC());
   s_iHL8(val);
   setHL(getHL()+1);
   res=(cpus.r[rB]-1)&0xff;
@@ -2044,7 +2045,7 @@ static void ei_ini(void) {
 static void ei_inir(void) {
   uint8_t res,val;
 
-  val=_in8(getBC());
+  val=_in8pf(getBC());
   s_iHL8(val);
   setHL(getHL()+1);
   res=(cpus.r[rB]-1)&0xff;
