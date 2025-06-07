@@ -110,6 +110,8 @@ Spectrum Key Mappings
   Period       | .
   Semicolon    | ;
   Quote (')    | "
+  Minus        | -
+  Equals       | =
 
 Key functions while in the debugger
 -----------------------------------

@@ -212,6 +212,8 @@ void zx_keys_init(zx_keys_t *keys)
 	zx_key_register(keys, WKEY_GRAVE, ZX_KEY_CS, 0, 0, 0, ZX_KEY_9, 0, 0, 0);
 	zx_key_register(keys, WKEY_INS, ZX_KEY_CS, 0, 0, ZX_KEY_1, 0, 0, 0, 0);
 	zx_key_register(keys, WKEY_CLOCK, ZX_KEY_CS, 0, 0, ZX_KEY_2, 0, 0, 0, 0);
+	zx_key_register(keys, WKEY_MINUS, 0, 0, 0, 0, 0, 0, ZX_KEY_J, ZX_KEY_SS);
+	zx_key_register(keys, WKEY_EQUAL, 0, 0, 0, 0, 0, 0, ZX_KEY_L, ZX_KEY_SS);
 	zx_key_register(keys, WKEY_LBR, ZX_KEY_CS, 0, 0, ZX_KEY_3, 0, 0, 0, 0);
 	zx_key_register(keys, WKEY_RBR, ZX_KEY_CS, 0, 0, ZX_KEY_4, 0, 0, 0, 0);
 	zx_key_register(keys, WKEY_SCOLON, 0, 0, 0, 0, 0, ZX_KEY_O, 0, ZX_KEY_SS);
