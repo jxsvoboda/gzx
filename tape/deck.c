@@ -272,8 +272,8 @@ int tape_deck_save_as(tape_deck_t *deck, const char *fname)
 	} else if (strcmpci(ext, ".wav") == 0) {
 		rc = wav_tape_save(deck->tape, fname);
 	} else {
-		assert(false);
 		free(name);
+		printf("Invalid file extension.\n");
 		return ENOTSUP;
 	}
 
