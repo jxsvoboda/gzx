@@ -244,22 +244,38 @@ static uint8_t _iDE8(void) {
 
 /* returns (IX+N) */
 static uint8_t _iIXN8(uint16_t N) {
-  return z80_memget8(get_addrIX()+u8sval(N));
+  uint16_t a16;
+
+  a16 = get_addrIX()+u8sval(N);
+  cpus.W = a16 >> 8;
+  return z80_memget8(a16);
 }
 
 /* returns (IY+N) */
 static uint8_t _iIYN8(uint16_t N) {
-  return z80_memget8(get_addrIY()+u8sval(N));
+  uint16_t a16;
+
+  a16 = get_addrIY()+u8sval(N);
+  cpus.W = a16 >> 8;
+  return z80_memget8(a16);
 }
 
 /* (IX+N) <- val*/
 static void s_iIXN8(uint16_t N, uint8_t val) {
-  z80_memset8(get_addrIX()+u8sval(N),val);
+  uint16_t a16;
+
+  a16 = get_addrIX()+u8sval(N);
+  cpus.W = a16 >> 8;
+  z80_memset8(a16,val);
 }
 
 /* (IY+N) <- val*/
 static void s_iIYN8(uint16_t N, uint8_t val) {
-  z80_memset8(get_addrIY()+u8sval(N),val);
+  uint16_t a16;
+
+  a16 = get_addrIY()+u8sval(N);
+  cpus.W = a16 >> 8;
+  z80_memset8(a16,val);
 }
 
 
@@ -552,6 +568,7 @@ static uint8_t _bit8(uint8_t a, uint8_t b) {
 
 static void _call16(uint16_t addr) {
   _push16(cpus.PC);
+  cpus.W=addr>>8; // XXX not sure if RST should also affect W !!!!!!
   cpus.PC=addr;
 }
 
@@ -633,7 +650,10 @@ static void _jp16(uint16_t addr) {
 /************************************************************************/
 
 static void _jr8(uint8_t ofs) {
-  cpus.PC+=u8sval(ofs);
+  uint16_t addr;
+  addr=cpus.PC+u8sval(ofs);
+  cpus.W=addr>>8;
+  cpus.PC=addr;
 }
 
 /************************************************************************/
@@ -946,6 +966,7 @@ static void ei_adc_A_iIYN(void) {
 static void ei_adc_HL_BC(void) {
   uint16_t res;
 
+  cpus.W=cpus.r[rH];
   res=_adc16(getHL(),getBC());
   setHL(res);
 
@@ -955,6 +976,7 @@ static void ei_adc_HL_BC(void) {
 static void ei_adc_HL_DE(void) {
   uint16_t res;
 
+  cpus.W=cpus.r[rH];
   res=_adc16(getHL(),getDE());
   setHL(res);
 
@@ -964,6 +986,7 @@ static void ei_adc_HL_DE(void) {
 static void ei_adc_HL_HL(void) {
   uint16_t res;
 
+  cpus.W=cpus.r[rH];
   res=_adc16(getHL(),getHL());
   setHL(res);
 
@@ -973,6 +996,7 @@ static void ei_adc_HL_HL(void) {
 static void ei_adc_HL_SP(void) {
   uint16_t res;
 
+  cpus.W=cpus.r[rH];
   res=_adc16(getHL(),cpus.SP);
   setHL(res);
 
@@ -1035,6 +1059,7 @@ static void ei_add_A_iIYN(void) {
 static void ei_add_HL_BC(void) {
   uint16_t res;
 
+  cpus.W=cpus.r[rH];
   res=_add16(getHL(),getBC());
   setHL(res);
 
@@ -1044,6 +1069,7 @@ static void ei_add_HL_BC(void) {
 static void ei_add_HL_DE(void) {
   uint16_t res;
 
+  cpus.W=cpus.r[rH];
   res=_add16(getHL(),getDE());
   setHL(res);
 
@@ -1053,6 +1079,7 @@ static void ei_add_HL_DE(void) {
 static void ei_add_HL_HL(void) {
   uint16_t res;
 
+  cpus.W=cpus.r[rH];
   res=_add16(getHL(),getHL());
   setHL(res);
 
@@ -1062,6 +1089,7 @@ static void ei_add_HL_HL(void) {
 static void ei_add_HL_SP(void) {
   uint16_t res;
 
+  cpus.W=cpus.r[rH];
   res=_add16(getHL(),cpus.SP);
   setHL(res);
 
@@ -1071,6 +1099,7 @@ static void ei_add_HL_SP(void) {
 static void ei_add_IX_BC(void) {
   uint16_t res;
 
+  cpus.W=cpus.IX>>8;
   res=_add16(cpus.IX,getBC());
   cpus.IX=res;
 
@@ -1080,6 +1109,7 @@ static void ei_add_IX_BC(void) {
 static void ei_add_IX_DE(void) {
   uint16_t res;
 
+  cpus.W=cpus.IX>>8;
   res=_add16(cpus.IX,getDE());
   cpus.IX=res;
 
@@ -1089,6 +1119,7 @@ static void ei_add_IX_DE(void) {
 static void ei_add_IX_IX(void) {
   uint16_t res;
 
+  cpus.W=cpus.IX>>8;
   res=_add16(cpus.IX,cpus.IX);
   cpus.IX=res;
 
@@ -1098,6 +1129,7 @@ static void ei_add_IX_IX(void) {
 static void ei_add_IX_SP(void) {
   uint16_t res;
 
+  cpus.W=cpus.IX>>8;
   res=_add16(cpus.IX,cpus.SP);
   cpus.IX=res;
 
@@ -1107,6 +1139,7 @@ static void ei_add_IX_SP(void) {
 static void ei_add_IY_BC(void) {
   uint16_t res;
 
+  cpus.W=cpus.IY>>8;
   res=_add16(cpus.IY,getBC());
   cpus.IY=res;
 
@@ -1116,6 +1149,7 @@ static void ei_add_IY_BC(void) {
 static void ei_add_IY_DE(void) {
   uint16_t res;
 
+  cpus.W=cpus.IY>>8;
   res=_add16(cpus.IY,getDE());
   cpus.IY=res;
 
@@ -1125,6 +1159,7 @@ static void ei_add_IY_DE(void) {
 static void ei_add_IY_IY(void) {
   uint16_t res;
 
+  cpus.W=cpus.IY>>8;
   res=_add16(cpus.IY,cpus.IY);
   cpus.IY=res;
 
@@ -1134,6 +1169,7 @@ static void ei_add_IY_IY(void) {
 static void ei_add_IY_SP(void) {
   uint16_t res;
 
+  cpus.W=cpus.IY>>8;
   res=_add16(cpus.IY,cpus.SP);
   cpus.IY=res;
 
@@ -1204,18 +1240,14 @@ static void ei_bit_b_r(void) {
 
 static void ei_bit_b_iHL(void) {
   _bit8((opcode>>3)&0x07,_iHL8());
-  /*
-   * setundocflags8(cpus.W);
-   * W register not implemented yet.
-   */
-
+  setundocflags8(cpus.W);
   z80_clock_inc(12);
 }
 
 /* DDCB ! */
 static void ei_bit_b_iIXN(void) {
   _bit8((opcode>>3)&0x07,_iIXN8(cbop));
-  setundocflags8((cpus.IX+u8sval(cbop))>>8); /* weird, huh? */
+  setundocflags8(cpus.W);
 
   z80_clock_inc(16);
 }
@@ -1224,7 +1256,7 @@ static void ei_bit_b_iIXN(void) {
 static void ei_bit_b_iIYN(void) {
 
   _bit8((opcode>>3)&0x07,_iIYN8(cbop));
-  setundocflags8((cpus.IY+u8sval(cbop))>>8); /* weird, huh? */
+  setundocflags8(cpus.W);
 
   z80_clock_inc(16);
 }
@@ -1386,6 +1418,7 @@ static void ei_cpd(void) {
   a=cpus.r[rA];
   b=_iHL8();
   res=a-b;
+  cpus.W = cpus.r[rB];
   setHL(getHL()-1);
   newBC=getBC()-1; setBC(newBC);
   hf=(a&0x0f)-(b&0x0f) < 0;
@@ -1412,6 +1445,7 @@ static void ei_cpdr(void) {
   a=cpus.r[rA];
   b=_iHL8();
   res=a-b;
+  cpus.W = cpus.r[rB];
   setHL(getHL()-1);
   newBC=getBC()-1; setBC(newBC);
   hf=(a&0x0f)-(b&0x0f) < 0;
@@ -1443,6 +1477,7 @@ static void ei_cpi(void) {
   a=cpus.r[rA];
   b=_iHL8();
   res=a-b;
+  cpus.W = cpus.r[rB];
   setHL(getHL()+1);
   newBC=getBC()-1; setBC(newBC);
   hf=(a&0x0f)-(b&0x0f) < 0;
@@ -1469,6 +1504,7 @@ static void ei_cpir(void) {
   a=cpus.r[rA];
   b=_iHL8();
   res=a-b;
+  cpus.W = cpus.r[rB];
   setHL(getHL()+1);
   newBC=getBC()-1; setBC(newBC);
   hf=(a&0x0f)-(b&0x0f) < 0;
@@ -1798,6 +1834,7 @@ static void ei_in_A_iN(void) {
 
   op=z80_iget8();
 
+  cpus.W=cpus.r[rA];
   res=_in8pf(((uint16_t)cpus.r[rA]<<8)|(uint16_t)op);
   cpus.r[rA]=res;
 
@@ -1808,6 +1845,7 @@ static void Ui_in_iC(void) {
 
 //  printf("ei_in_iC (unsupported)\n");
   _in8(getBC());
+  cpus.W=cpus.r[rB];
 
   uoc++;
   z80_clock_inc(12);
@@ -1817,6 +1855,7 @@ static void ei_in_A_iC(void) {
   uint8_t res;
 
   res=_in8(getBC());
+  cpus.W=cpus.r[rB];
   cpus.r[rA]=res;
 
   z80_clock_inc(12);
@@ -1826,6 +1865,7 @@ static void ei_in_B_iC(void) {
   uint8_t res;
 
   res=_in8(getBC());
+  cpus.W=cpus.r[rB];
   cpus.r[rB]=res;
 
   z80_clock_inc(12);
@@ -1835,6 +1875,7 @@ static void ei_in_C_iC(void) {
   uint8_t res;
 
   res=_in8(getBC());
+  cpus.W=cpus.r[rB];
   cpus.r[rC]=res;
 
   z80_clock_inc(12);
@@ -1844,6 +1885,7 @@ static void ei_in_D_iC(void) {
   uint8_t res;
 
   res=_in8(getBC());
+  cpus.W=cpus.r[rB];
   cpus.r[rD]=res;
 
   z80_clock_inc(12);
@@ -1853,6 +1895,7 @@ static void ei_in_E_iC(void) {
   uint8_t res;
 
   res=_in8(getBC());
+  cpus.W=cpus.r[rB];
   cpus.r[rE]=res;
 
   z80_clock_inc(12);
@@ -1862,6 +1905,7 @@ static void ei_in_H_iC(void) {
   uint8_t res;
 
   res=_in8(getBC());
+  cpus.W=cpus.r[rB];
   cpus.r[rH]=res;
 
   z80_clock_inc(12);
@@ -1871,6 +1915,7 @@ static void ei_in_L_iC(void) {
   uint8_t res;
 
   res=_in8(getBC());
+  cpus.W=cpus.r[rB];
   cpus.r[rL]=res;
 
   z80_clock_inc(12);
@@ -2017,6 +2062,7 @@ static void ei_ind(void) {
   val=_in8pf(getBC());
   s_iHL8(val);
   setHL(getHL()-1);
+  cpus.W = cpus.r[rB];
   res=(cpus.r[rB]-1)&0xff;
   
   cpus.F = res & (fU1 | fU2);
@@ -2037,6 +2083,7 @@ static void ei_indr(void) {
   val=_in8pf(getBC());
   s_iHL8(val);
   setHL(getHL()-1);
+  cpus.W = cpus.r[rB];
   res=(cpus.r[rB]-1)&0xff;
   
   cpus.F = res & (fU1 | fU2);
@@ -2063,6 +2110,7 @@ static void ei_ini(void) {
   val=_in8pf(getBC());
   s_iHL8(val);
   setHL(getHL()+1);
+  cpus.W = cpus.r[rB];
   res=(cpus.r[rB]-1)&0xff;
   
   cpus.F = res & (fU1 | fU2);
@@ -2083,6 +2131,7 @@ static void ei_inir(void) {
   val=_in8pf(getBC());
   s_iHL8(val);
   setHL(getHL()+1);
+  cpus.W = cpus.r[rB];
   res=(cpus.r[rB]-1)&0xff;
   
   cpus.F = res & (fU1 | fU2);
@@ -2109,6 +2158,7 @@ static void ei_jp_NN(void) {
   uint16_t addr;
 
   addr=z80_iget16();
+  cpus.W=addr>>8;
  // printf("jp 0x%04x\n",addr);
   _jp16(addr);
   z80_clock_inc(10);
@@ -2143,6 +2193,7 @@ static void ei_jp_C_NN(void) {
   uint16_t addr;
 
   addr=z80_iget16();
+  cpus.W=addr>>8;
   if(cpus.F & fC) {
     _jp16(addr);
   }
@@ -2153,6 +2204,7 @@ static void ei_jp_NC_NN(void) {
   uint16_t addr;
 
   addr=z80_iget16();
+  cpus.W=addr>>8;
   if(!(cpus.F & fC)) {
     _jp16(addr);
   }
@@ -2163,6 +2215,7 @@ static void ei_jp_M_NN(void) {
   uint16_t addr;
 
   addr=z80_iget16();
+  cpus.W=addr>>8;
   if(cpus.F & fS) {
     _jp16(addr);
   }
@@ -2173,6 +2226,7 @@ static void ei_jp_P_NN(void) {
   uint16_t addr;
 
   addr=z80_iget16();
+  cpus.W=addr>>8;
   if(!(cpus.F & fS)) {
     _jp16(addr);
   }
@@ -2183,6 +2237,7 @@ static void ei_jp_Z_NN(void) {
   uint16_t addr;
 
   addr=z80_iget16();
+  cpus.W=addr>>8;
   if(cpus.F & fZ) {
     _jp16(addr);
   }
@@ -2193,6 +2248,7 @@ static void ei_jp_NZ_NN(void) {
   uint16_t addr;
 
   addr=z80_iget16();
+  cpus.W=addr>>8;
   if(!(cpus.F & fZ)) {
     _jp16(addr);
   }
@@ -2203,6 +2259,7 @@ static void ei_jp_PE_NN(void) {
   uint16_t addr;
 
   addr=z80_iget16();
+  cpus.W=addr>>8;
   if(cpus.F & fPV) {
     _jp16(addr);
   }
@@ -2213,6 +2270,7 @@ static void ei_jp_PO_NN(void) {
   uint16_t addr;
 
   addr=z80_iget16();
+  cpus.W=addr>>8;
   if(!(cpus.F & fPV)) {
     _jp16(addr);
   }
@@ -2326,12 +2384,14 @@ static void ei_ld_A_N(void) {
 static void ei_ld_A_iBC(void) {
 
   cpus.r[rA]=_iBC8();
+  cpus.W=cpus.r[rB];
   z80_clock_inc(7);
 }
 
 static void ei_ld_A_iDE(void) {
 
   cpus.r[rA]=_iDE8();
+  cpus.W=cpus.r[rD];
   z80_clock_inc(7);
 }
 
@@ -2362,6 +2422,7 @@ static void ei_ld_A_iNN(void) {
 
   addr=z80_iget16();
   cpus.r[rA]=z80_memget8(addr);
+  cpus.W=addr>>8;
   z80_clock_inc(13);
 }
 
@@ -2620,6 +2681,7 @@ static void ei_ld_HL_iNN(void) {
 
   addr=z80_iget16();
   setHL(z80_memget16(addr));
+  cpus.W=addr>>8;
   z80_clock_inc(16);
 }
 
@@ -2761,6 +2823,7 @@ static void ei_ld_iNN_HL(void) {
 
   addr=z80_iget16();
   z80_memset16(addr,getHL());
+  cpus.W=addr>>8;
   z80_clock_inc(16);
 }
 
@@ -3013,6 +3076,7 @@ static void ei_out_iN_A(void) {
 
   op=z80_iget8();
 
+  cpus.W=cpus.r[rA];
   _out8(((uint16_t)cpus.r[rA]<<8)|(uint16_t)op,cpus.r[rA]);
 
   z80_clock_inc(11);
@@ -3021,6 +3085,7 @@ static void ei_out_iN_A(void) {
 static void Ui_out_iC_0(void) {
 
 //  printf("ei_out_iC_0 (unsupported)\n");
+  cpus.W=cpus.r[rB];
   _out8(getBC(),0);
 
   uoc++;
@@ -3029,42 +3094,49 @@ static void Ui_out_iC_0(void) {
 
 static void ei_out_iC_A(void) {
 
+  cpus.W=cpus.r[rB];
   _out8(getBC(),cpus.r[rA]);
   z80_clock_inc(12);
 }
 
 static void ei_out_iC_B(void) {
 
+  cpus.W=cpus.r[rB];
   _out8(getBC(),cpus.r[rB]);
   z80_clock_inc(12);
 }
 
 static void ei_out_iC_C(void) {
 
+  cpus.W=cpus.r[rB];
   _out8(getBC(),cpus.r[rC]);
   z80_clock_inc(12);
 }
 
 static void ei_out_iC_D(void) {
 
+  cpus.W=cpus.r[rB];
   _out8(getBC(),cpus.r[rD]);
   z80_clock_inc(12);
 }
 
 static void ei_out_iC_E(void) {
 
+  cpus.W=cpus.r[rB];
   _out8(getBC(),cpus.r[rE]);
   z80_clock_inc(12);
 }
 
 static void ei_out_iC_H(void) {
 
+  cpus.W=cpus.r[rB];
   _out8(getBC(),cpus.r[rH]);
   z80_clock_inc(12);
 }
 
 static void ei_out_iC_L(void) {
 
+  cpus.W=cpus.r[rB];
   _out8(getBC(),cpus.r[rL]);
   z80_clock_inc(12);
 }
@@ -3080,6 +3152,7 @@ static void ei_outd(void) {
   bc = ((uint16_t)res << 8) | cpus.r[rC];
   val = _iHL8();
   _out8(bc,val);
+  cpus.W=res;
   setHL(getHL()-1);
   
   cpus.F = res & (fU1 | fU2);
@@ -3103,6 +3176,7 @@ static void ei_otdr(void) {
   bc = ((uint16_t)res << 8) | cpus.r[rC];
   val = _iHL8();
   _out8(bc,val);
+  cpus.W=res;
   setHL(getHL()-1);
   
   cpus.F = res & (fU1 | fU2);
@@ -3131,6 +3205,7 @@ static void ei_outi(void) {
   bc = ((uint16_t)res << 8) | cpus.r[rC];
   val = _iHL8();
   _out8(bc,val);
+  cpus.W=res;
   setHL(getHL()+1);
   
   cpus.F = res & (fU1 | fU2);
@@ -3154,6 +3229,7 @@ static void ei_otir(void) {
   bc = ((uint16_t)res << 8) | cpus.r[rC];
   val = _iHL8();
   _out8(bc,val);
+  cpus.W=res;
   setHL(getHL()+1);
   
   cpus.F = res & (fU1 | fU2);
@@ -3280,6 +3356,7 @@ static void ei_res_b_iIYN(void) {
 
 static void ei_ret(void) {
   cpus.PC=_pop16();
+  cpus.W=cpus.PC>>8;
   z80_clock_inc(10);
 }
 
@@ -3345,6 +3422,7 @@ static void ei_ret_PO(void) {
 static void ei_reti(void) {
   cpus.IFF1=cpus.IFF2;
   cpus.PC=_pop16();
+  cpus.W=cpus.PC>>8;
   z80_clock_inc(14);
 }
 
@@ -3352,6 +3430,7 @@ static void ei_reti(void) {
 static void ei_retn(void) {
   cpus.IFF1=cpus.IFF2;
   cpus.PC=_pop16();
+  cpus.W=cpus.PC>>8;
   z80_clock_inc(14);
 }
 
@@ -3675,6 +3754,7 @@ static void ei_sbc_A_iIYN(void) {
 static void ei_sbc_HL_BC(void) {
   uint16_t res;
 
+  cpus.W=cpus.r[rH];
   res=_sbc16(getHL(),getBC());
   setHL(res);
 
@@ -3684,6 +3764,7 @@ static void ei_sbc_HL_BC(void) {
 static void ei_sbc_HL_DE(void) {
   uint16_t res;
 
+  cpus.W=cpus.r[rH];
   res=_sbc16(getHL(),getDE());
   setHL(res);
 
@@ -3693,6 +3774,7 @@ static void ei_sbc_HL_DE(void) {
 static void ei_sbc_HL_HL(void) {
   uint16_t res;
 
+  cpus.W=cpus.r[rH];
   res=_sbc16(getHL(),getHL());
   setHL(res);
 
@@ -3702,6 +3784,7 @@ static void ei_sbc_HL_HL(void) {
 static void ei_sbc_HL_SP(void) {
   uint16_t res;
 
+  cpus.W=cpus.r[rH];
   res=_sbc16(getHL(),cpus.SP);
   setHL(res);
 
@@ -4928,6 +5011,7 @@ static void Ui_im_2(void) { /* probably ..*/
 static void Ui_reti(void) { /* undoc RETI behaves like RETN actually.. */
   cpus.IFF1=cpus.IFF2;
   cpus.PC=_pop16();
+  cpus.W=cpus.PC>>8;
   z80_clock_inc(14); /* timing taken from ei_reti */
   uoc++;
 }
@@ -4935,6 +5019,7 @@ static void Ui_reti(void) { /* undoc RETI behaves like RETN actually.. */
 static void Ui_retn(void) {
   cpus.IFF1=cpus.IFF2;
   cpus.PC=_pop16();
+  cpus.W=cpus.PC>>8;
   z80_clock_inc(14);  /* timing taken from ei_retn */
   uoc++;
 }
@@ -5034,8 +5119,7 @@ static void Ui_ld_r_srl_iIXN(void) {
 static void Ui_bit_b_iIXN(void) {
 
   _bit8((opcode>>3)&0x07,_iIXN8(cbop));
-  
-  setundocflags8((cpus.IX+u8sval(cbop))>>8); /* weird, huh? */
+  setundocflags8(cpus.W);
 
   z80_clock_inc(16); /* timing&flags taken from ei_bit_b_iIXN */
   uoc++;
@@ -5158,7 +5242,7 @@ static void Ui_ld_r_srl_iIYN(void) {
 static void Ui_bit_b_iIYN(void) {
 
   _bit8((opcode>>3)&0x07,_iIYN8(cbop));
-  setundocflags8((cpus.IY+u8sval(cbop))>>8); /* weird, huh? */
+  setundocflags8(cpus.W);
 
   z80_clock_inc(16); /* timing&flags taken from ei_bit_b_iIYN */
   uoc++;
@@ -5530,6 +5614,7 @@ int z80_reset(void) {
   cpus.SP=0;
   cpus.I=0;
   cpus.R=0;
+  cpus.W=0;
   
   cpus.halted=0;
   cpus.int_lock=0;

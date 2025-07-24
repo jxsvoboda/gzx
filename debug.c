@@ -159,6 +159,8 @@ static void debbuger_disp_regs(void)
 	dreg8("Pg", page_reg);
 	gmovec(33, 4);
 	dflag("FA:", cpus.flags_aff);
+	gmovec(33, 5);
+	dreg8("W:", cpus.W);
 
 	gmovec(1, 7);
 	dflag("S:", (cpus.F & fS) != 0);

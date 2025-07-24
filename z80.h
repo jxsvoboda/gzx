@@ -80,6 +80,8 @@ typedef struct _z80s {
 	uint8_t R;
 	/** Stack pointer */
 	uint16_t SP;
+	/** W register */
+	uint8_t W;
 
 	/** Interrupt flip-flops */
 	int IFF1, IFF2;
