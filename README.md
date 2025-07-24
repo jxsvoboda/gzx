@@ -82,12 +82,12 @@ These might change or be removed in the future:
 
 On the numerical keypad:
 
-  Key | Function
-  --- | --------
-  +   | Start the tape
-  -   | Stop the tape
-  *   | Rewind the tape
-  /   | Toggle quick load
+  Key  | Function
+  ---- | --------
+  +    | Start the tape
+  -    | Stop the tape
+  *    | Rewind the tape
+  /    | Toggle quick load
 
 Spectrum Key Mappings
 ---------------------
@@ -166,7 +166,7 @@ implemented).
 To get the latest source
 ------------------------
 
-    $ hg clone https://bitbucket.org/jiri_svoboda/gzx/ gzx/trunk
+    $ git clone https://github.com/jxsvoboda/gzx gzx/trunk
     $ cd gzx/trunk
 
 Compiling
