@@ -9,11 +9,11 @@ good emulators and it's been the only emulator I used ever since.
 
 Some of the features of this emulator:
 
-  * Run in Windows (DirectDraw or GDI) and Linux (SDL 1.x)
+  * Run in Windows (DirectDraw or GDI), Linux (SDL 1.x), HelenOS
   * ZX Spectrum 48K, 128K
   * Joystick (Kempston) emulation
   * AY-3-8192
-  * Read and write TZX, TAP, WAV tape formats
+  * Read, write and convert TZX, TAP, WAV tape formats
   * Z80, SNA, AY snapshots
   * Double line mode (i.e. interlaced image emulation)
   * ULAplus emulation
