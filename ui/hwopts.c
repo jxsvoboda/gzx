@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Hardware options menu
  *
- * Copyright (c) 1999-2019 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,8 @@
 
 #include <stdlib.h>
 
+#include "../gzx.h"
+#include "../memio.h"
 #include "../mgfx.h"
 #include "../video/ula.h"
 #include "../z80g.h"
@@ -41,9 +43,10 @@
 
 static void hwopts_next_opt(int l);
 
-#define HWOPTS_NENT 4
+#define HWOPTS_NENT 5
 
 static const char *hwopts_text[HWOPTS_NENT] = {
+	"~Model",
 	"~AY-3-8192 PSG",
 	"~Kempston Joy.",
 	"~ULAplus",
@@ -51,7 +54,7 @@ static const char *hwopts_text[HWOPTS_NENT] = {
 };
 
 static int hwopts_keys[HWOPTS_NENT] = {
-	WKEY_A, WKEY_K, WKEY_U, WKEY_G
+	WKEY_M, WKEY_A, WKEY_K, WKEY_U, WKEY_G
 };
 
 static void hwopts_run_line(int l)
@@ -63,15 +66,21 @@ static void hwopts_prev_opt(int l)
 {
 	switch (l) {
 	case 0:
-		ay0_enable = !ay0_enable;
+		if (mem_model > ZXM_48K) {
+			zx_select_memmodel(mem_model - 1);
+			zx_reset();
+		}
 		break;
 	case 1:
-		kjoy0_enable = !kjoy0_enable;
+		ay0_enable = !ay0_enable;
 		break;
 	case 2:
-		video_ula_enable_plus(&video_ula, !video_ula.plus_enable);
+		kjoy0_enable = !kjoy0_enable;
 		break;
 	case 3:
+		video_ula_enable_plus(&video_ula, !video_ula.plus_enable);
+		break;
+	case 4:
 		gpu_set_allow(!gpu_allow);
 		break;
 	}
@@ -81,17 +90,39 @@ static void hwopts_next_opt(int l)
 {
 	switch (l) {
 	case 0:
-		ay0_enable = !ay0_enable;
+		if (mem_model < ZXM_PLUS3) {
+			zx_select_memmodel(mem_model + 1);
+			zx_reset();
+		}
 		break;
 	case 1:
-		kjoy0_enable = !kjoy0_enable;
+		ay0_enable = !ay0_enable;
 		break;
 	case 2:
-		video_ula_enable_plus(&video_ula, !video_ula.plus_enable);
+		kjoy0_enable = !kjoy0_enable;
 		break;
 	case 3:
+		video_ula_enable_plus(&video_ula, !video_ula.plus_enable);
+		break;
+	case 4:
 		gpu_set_allow(!gpu_allow);
 		break;
+	}
+}
+
+static const char *hwopts_model_str(int model)
+{
+	switch (model) {
+	case ZXM_48K:
+		return "48K";
+	case ZXM_128K:
+		return "128K";
+	case ZXM_PLUS2:
+		return "+2";
+	case ZXM_PLUS3:
+		return "+3";
+	default:
+		return NULL;
 	}
 }
 
@@ -99,12 +130,14 @@ static const char *hwopts_get_opt(int l)
 {
 	switch (l) {
 	case 0:
-		return ay0_enable ? "On" : "Off";
+		return hwopts_model_str(mem_model);
 	case 1:
-		return kjoy0_enable ? "On" : "Off";
+		return ay0_enable ? "On" : "Off";
 	case 2:
-		return video_ula.plus_enable ? "On" : "Off";
+		return kjoy0_enable ? "On" : "Off";
 	case 3:
+		return video_ula.plus_enable ? "On" : "Off";
+	case 4:
 		return gpu_allow ? "Auto" : "Off";
 	default:
 		return NULL;
