@@ -37,13 +37,15 @@
 #include "hwopts.h"
 #include "mainmenu.h"
 #include "menu.h"
+#include "tapemenu.h"
 
-#define MENU_NENT 9
+#define MENU_NENT 10
 
 static const char *mentry_text[MENU_NENT] = {
 	"~Load Snapshot",
 	"~Save Snapshot",
 	"Select ~Tapefile",
+	"T~ape",
 	"Reset ~48",
 	"Reset ~128",
 	"~Display",
@@ -53,7 +55,7 @@ static const char *mentry_text[MENU_NENT] = {
 };
 
 static int mkeys[MENU_NENT] = {
-	WKEY_L, WKEY_S, WKEY_T, WKEY_4, WKEY_1, WKEY_D, WKEY_H,
+	WKEY_L, WKEY_S, WKEY_T, WKEY_A, WKEY_4, WKEY_1, WKEY_D, WKEY_H,
 	WKEY_U, WKEY_Q
 };
 
@@ -70,23 +72,26 @@ static void menu_run_line(int l)
 		select_tapefile_dialog();
 		break;
 	case 3:
+		tape_menu();
+		break;
+	case 4:
 		zx_select_memmodel(ZXM_48K);
 		zx_reset();
 		break;
-	case 4:
+	case 5:
 		zx_select_memmodel(ZXM_128K);
 		zx_reset();
 		break;
-	case 5:
+	case 6:
 		display_menu();
 		break;
-	case 6:
+	case 7:
 		hwopts_menu();
 		break;
-	case 7:
+	case 8:
 		gzx_ui_lock();
 		break;
-	case 8:
+	case 9:
 		quit = 1;
 		break;
 	}
@@ -110,16 +115,18 @@ static const char *menu_get_opt(int l)
 	case 2:
 		return "F9";
 	case 3:
-		return "F7";
+		return "F5";
 	case 4:
-		return "F8";
+		return "F7";
 	case 5:
-		return "F4";
+		return "F8";
 	case 6:
-		return "F6";
+		return "F4";
 	case 7:
-		return "Alt-Sh-U";
+		return "F6";
 	case 8:
+		return "Alt-Sh-L";
+	case 9:
 		return "F10";
 	default:
 		return NULL;
