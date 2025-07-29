@@ -32,6 +32,7 @@
 #include "../gzx.h"
 #include "../memio.h"
 #include "../mgfx.h"
+#include "../version.h"
 #include "display.h"
 #include "fdlg.h"
 #include "hwopts.h"
@@ -134,7 +135,7 @@ static const char *menu_get_opt(int l)
 }
 
 static menu_t main_menu_spec = {
-	.caption = "Main Menu",
+	.caption = "GZX " VERSION_STR,
 	.nent = MENU_NENT,
 	.mentry_text = mentry_text,
 	.mkeys = mkeys,
