@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Main menu
  *
- * Copyright (c) 1999-2019 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -102,7 +102,28 @@ static void menu_next_opt(int l)
 
 static const char *menu_get_opt(int l)
 {
-	return NULL;
+	switch (l) {
+	case 0:
+		return "F3";
+	case 1:
+		return "F2";
+	case 2:
+		return "F9";
+	case 3:
+		return "F7";
+	case 4:
+		return "F8";
+	case 5:
+		return "F4";
+	case 6:
+		return "F6";
+	case 7:
+		return "Alt-Sh-U";
+	case 8:
+		return "F10";
+	default:
+		return NULL;
+	}
 }
 
 static menu_t main_menu_spec = {
