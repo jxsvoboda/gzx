@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Memory and I/O port access
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,11 +35,12 @@
 #include <stdint.h>
 
 /* memory models */
-#define ZXM_48K   0
-#define ZXM_128K  1
-#define ZXM_PLUS2 2
-#define ZXM_PLUS3 3
-#define ZXM_ZX81  4
+#define ZXM_48K    0
+#define ZXM_128K   1
+#define ZXM_PLUS2  2
+#define ZXM_PLUS2A 3
+#define ZXM_PLUS3  4
+#define ZXM_ZX81   5
 
 /* spectrum memory access */
 extern uint8_t zx_memget8(uint16_t addr);
@@ -54,10 +55,13 @@ extern void zx_out8(uint16_t addr, uint8_t val);
 extern uint8_t zx_in8(uint16_t addr);
 
 extern int zx_select_memmodel(int model);
-extern void zx_mem_page_select(uint8_t val);
+extern void zx_mem_page_select(uint16_t, uint8_t val);
+extern void zx_mem_page_reset(void);
+extern int zx_mem_is_48k_basic_rom(void);
 extern int gfxrom_load(char *fname, unsigned bank);
 
 extern uint8_t page_reg;
+extern uint8_t epg_reg;
 extern uint8_t border;
 extern uint8_t spk, mic, ear;
 extern uint8_t *zxram, *zxrom, *zxscr, *zxbnk[4];

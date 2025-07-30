@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * I/O port definitions
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,6 +47,9 @@
  */
 #define ZX128K_PAGESEL_PORT_MASK 0x8002
 #define ZX128K_PAGESEL_PORT_VAL  0x0000
+
+#define ZXPLUS_PAGESEL_PORT 0x7ffd
+#define ZXPLUS_EPG_PORT 0x1ffd
 
 #define ULA_PORT_MASK 0x00ff
 #define ULA_PORT      0x00fe

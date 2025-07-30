@@ -10,7 +10,7 @@ good emulators and it's been the only emulator I used ever since.
 Some of the features of this emulator:
 
   * Run in Windows (DirectDraw or GDI), Linux (SDL 1.x), HelenOS
-  * ZX Spectrum 48K, 128K, +2
+  * ZX Spectrum 48K, 128K, +2, +2A
   * Joystick (Kempston) emulation
   * AY-3-8192
   * Read, write and convert TZX, TAP, WAV tape formats

@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Snapshot loading/saving
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "fileutil.h"
+#include "iospace.h"
 #include "memio.h"
 #include "strutil.h"
 #include "ay.h"
@@ -205,7 +206,7 @@ int zx_load_snap_z80(char *name) {
       case 3:
       case 4:
         zx_select_memmodel(ZXM_128K);
-	zx_mem_page_select(page);
+	zx_mem_page_select(ZXPLUS_PAGESEL_PORT, page);
 	pages=8;
 	break;
 	
@@ -536,7 +537,7 @@ int zx_load_snap_sna(char *name) {
     fseek(f,49179,SEEK_SET);
     cpus.PC=fgetu16le(f);
     pageout=fgetu8(f);
-    zx_mem_page_select(pageout);
+    zx_mem_page_select(ZXPLUS_PAGESEL_PORT, pageout);
     fgetu8(f); /* ??? I thought 128k didn't have TR-DOS? */
     
     curpaged=pageout & 0x07;

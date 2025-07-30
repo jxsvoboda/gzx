@@ -90,7 +90,7 @@ static void hwopts_next_opt(int l)
 {
 	switch (l) {
 	case 0:
-		if (mem_model < ZXM_PLUS3) {
+		if (mem_model < ZXM_PLUS2A) {
 			zx_select_memmodel(mem_model + 1);
 			zx_reset();
 		}
@@ -119,8 +119,8 @@ static const char *hwopts_model_str(int model)
 		return "128K";
 	case ZXM_PLUS2:
 		return "+2";
-	case ZXM_PLUS3:
-		return "+3";
+	case ZXM_PLUS2A:
+		return "+2A";
 	default:
 		return NULL;
 	}

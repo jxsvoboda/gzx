@@ -358,10 +358,7 @@ void zx_reset(void)
 	zx_scr_reset();
 	z80_reset();
 	ay_reset(&ay0);
-
-	/* select default banks */
-	bnk_lock48 = 0;
-	zx_out8(0x7ffd, 0x07);
+	zx_mem_page_reset();
 }
 
 static int zx_init(void)
@@ -498,11 +495,11 @@ static void zx_proc_instr(void)
 		tapp_t += ZX_TAPE_TICKS_SMP;
 	}
 	if (!slow_load) {
-		if (cpus.PC == TAPE_LDBYTES_TRAP) {
+		if (cpus.PC == TAPE_LDBYTES_TRAP && zx_mem_is_48k_basic_rom()) {
 			fprintf(logfi, "Load trapped.\n");
 			tape_quick_ldbytes(tape_deck);
 		}
-		if (cpus.PC == TAPE_SABYTES_TRAP) {
+		if (cpus.PC == TAPE_SABYTES_TRAP && zx_mem_is_48k_basic_rom()) {
 			fprintf(logfi, "Save trapped!\n");
 			tape_quick_sabytes(tape_deck);
 		}

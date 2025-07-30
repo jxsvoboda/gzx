@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Memory and I/O port access
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,10 +53,11 @@ uint8_t border;
 uint8_t spk,mic,ear;
 
 uint32_t ram_size,rom_size;
-int has_banksw,bnk_lock48;
+int has_banksw,bnk_lock48,has_epg;
 int mem_model;
 
 uint8_t page_reg; /* last data written to the page select port */
+uint8_t epg_reg; /* last data written to the enhanced paging port */
 
 static int rom_load(char *fname, int bank, uint16_t banksize);
 static int spec_rom_load(char *fname, int bank);
@@ -88,7 +89,7 @@ void zx_memset8(uint16_t addr, uint8_t val) {
   if(mem_model==ZXM_ZX81) {
     if(addr>=8192 && addr<=0x7fff) zxbnk[addr>>14][addr&0x1fff]=val;
   } else {
-    if(addr>=16384) zxbnk[addr>>14][addr&0x3fff]=val;
+    if(addr>=16384 || (epg_reg & 1) != 0) zxbnk[addr>>14][addr&0x3fff]=val;
       else {
   //      printf("%4x: memory protecion error, write to 0x%04x\n",
   //             cpus.PC, addr);
@@ -110,16 +111,98 @@ void zx_memset16(uint16_t addr, uint16_t val) {
   zx_memset8(addr+1, val >> 8);
 }
 
-void zx_mem_page_select(uint8_t val) {
-  page_reg = val; /* needed for snapshot saving */
+static void zx_epg_write(uint8_t val)
+{
+  uint8_t memmode;
+  epg_reg = val;
+
+  if ((epg_reg & 1) == 0)
+    return;
+
+  /* 'enhanced' paging */
+  memmode = (epg_reg >> 1) & 0x03;
+  switch (memmode) {
+  case 0:
+    zxbnk[0]=zxram + 0*0x4000;
+    zxbnk[1]=zxram + 1*0x4000;
+    zxbnk[2]=zxram + 2*0x4000;
+    zxbnk[3]=zxram + 3*0x4000;
+    break;
+  case 1:
+    zxbnk[0]=zxram + 4*0x4000;
+    zxbnk[1]=zxram + 5*0x4000;
+    zxbnk[2]=zxram + 6*0x4000;
+    zxbnk[3]=zxram + 7*0x4000;
+    break;
+  case 2:
+    zxbnk[0]=zxram + 4*0x4000;
+    zxbnk[1]=zxram + 5*0x4000;
+    zxbnk[2]=zxram + 6*0x4000;
+    zxbnk[3]=zxram + 3*0x4000;
+    break;
+  case 3:
+    zxbnk[0]=zxram + 4*0x4000;
+    zxbnk[1]=zxram + 7*0x4000;
+    zxbnk[2]=zxram + 6*0x4000;
+    zxbnk[3]=zxram + 3*0x4000;
+    break;
+  }
+}
+
+void zx_mem_page_select(uint16_t addr, uint8_t val) {
+  uint8_t rom;
+
+  if (!has_banksw || bnk_lock48)
+    return;
+
+  if (has_epg) {
+    /* with EPG exact port numbers are needed for EPG and PAGESEL */
+    if (addr == ZXPLUS_EPG_PORT) {
+      zx_epg_write(val);
+    } else if (addr == ZXPLUS_PAGESEL_PORT) {
+      page_reg = val;
+    }
+
+    rom = ((page_reg&0x10)?1:0) +
+     ((epg_reg & 0x04)?2 : 0);
+  } else {
+    /* for 128K exact PAGESEL port number is not required */
+    page_reg = val;
+    rom = (val&0x10)?1:0;
+  }
   
-  zxbnk[3]=zxram + ((uint32_t)(val&0x07)<<14);   /* RAM select */
-  zxbnk[0]=zxrom + ((val&0x10)?0x4000:0);        /* ROM select */
-  zxscr   =zxram + ((val&0x08)?0x1c000:0x14000); /* screen select */
+  zxbnk[3]=zxram + ((uint32_t)(page_reg&0x07)<<14)  ; /* RAM select */
+  zxbnk[0]=zxrom + rom*0x4000;                        /* ROM select */
+  zxscr   =zxram + ((page_reg&0x08)?0x1c000:0x14000); /* screen select */
 //  printf("bnk select 0x%02x: ram=%d,rom=%d,scr=%d\n",val,val&7,val&0x10,val&0x08);
-  if(val&0x20) { /* 48k lock */
+  if(page_reg&0x20) { /* 48k lock */
     bnk_lock48=1;
     gzx_notify_mode_48k(true);
+  }
+}
+
+/* select default banks */
+void zx_mem_page_reset(void) {
+  bnk_lock48 = 0;
+  epg_reg = 0x00;
+  zx_mem_page_select(ZXPLUS_PAGESEL_PORT, 0x07);
+}
+
+/* Return nonzero if 0-0x3fff contains 48K BASIC ROM. */
+int zx_mem_is_48k_basic_rom(void) {
+  if (!has_banksw)
+    return 1;
+  if (has_epg) {
+    if ((epg_reg & 1) == 0) {
+      /* only if ROM 3 is paged in */
+      return ((page_reg & 0x10) != 0 && (epg_reg & 0x04) != 0) ? 1 :0;
+    } else {
+      /* all-RAM mode */
+      return 0;
+    }
+  } else {
+    /* only if ROM 1 is paged in */
+    return (page_reg & 0x10) ? 1 : 0;
   }
 }
 
@@ -163,8 +246,8 @@ void zx_out8(uint16_t addr, uint8_t val) {
 //    printf("border %d, spk:%d, mic:%d\n",border,(val>>4)&1,(val>>3)&1);
 //    z80_printstatus();
 //    getchar();
-  } else if((addr&ZX128K_PAGESEL_PORT_MASK) == ZX128K_PAGESEL_PORT_VAL && has_banksw && !bnk_lock48)
-    zx_mem_page_select(val);
+  } else if((addr&ZX128K_PAGESEL_PORT_MASK) == ZX128K_PAGESEL_PORT_VAL)
+    zx_mem_page_select(addr, val);
   else if(addr==AY_REG_WRITE_PORT && ay0_enable) {
     ay_reg_write(&ay0, val);
   } if(addr==AY_REG_SEL_PORT && ay0_enable) {
@@ -191,30 +274,36 @@ int zx_select_memmodel(int model) {
       ram_size=48*1024; /* 48K spectrum */
       rom_size=16*1024;
       has_banksw=0;
+      has_epg=0;
       break;
       
     case ZXM_128K:
       ram_size=128*1024; /* 128K spectrum */
       rom_size=32*1024;
       has_banksw=1;
+      has_epg=0;
       break;
       
     case ZXM_PLUS2:
       ram_size=128*1024; /*  spectrum +2 */
       rom_size=32*1024;
       has_banksw=1;
+      has_epg=0;
       break;
       
+    case ZXM_PLUS2A:
     case ZXM_PLUS3:
       ram_size=128*1024; /*  spectrum +3 */
       rom_size=64*1024;
       has_banksw=1;
+      has_epg=1;
       break;
       
     case ZXM_ZX81:
       ram_size=24*1024; /*  ZX81 */
       rom_size=16*1024;
       has_banksw=0;
+      has_epg=0;
       break;
   }
   
@@ -250,9 +339,12 @@ int zx_select_memmodel(int model) {
       if(spec_rom_load("roms/zxp2_1.rom",1)<0) return -1;
       break;
       
+    case ZXM_PLUS2A:
     case ZXM_PLUS3:
       if(spec_rom_load("roms/zxp3_0.rom",0)<0) return -1;
       if(spec_rom_load("roms/zxp3_1.rom",1)<0) return -1;
+      if(spec_rom_load("roms/zxp3_2.rom",2)<0) return -1;
+      if(spec_rom_load("roms/zxp3_3.rom",3)<0) return -1;
       break;
       
     case ZXM_ZX81:
@@ -283,6 +375,7 @@ int zx_select_memmodel(int model) {
       zxscr   =zxram+5*0x4000;
       break;
       
+    case ZXM_PLUS2A:
     case ZXM_PLUS3:
       zxbnk[0]=zxrom;
       zxbnk[1]=zxram+5*0x4000;
