@@ -158,5 +158,5 @@ static menu_t hwopts_menu_spec = {
 /** Hardware options menu */
 void hwopts_menu(void)
 {
-	menu_run(&hwopts_menu_spec);
+	menu_run(&hwopts_menu_spec, 0);
 }

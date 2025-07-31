@@ -1,6 +1,6 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Display menu
+ * Hardware options menu
  *
  * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
@@ -29,89 +29,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "../video/display.h"
-#include "../mgfx.h"
-#include "../gzx.h"
-#include "../zx_scr.h"
-#include "display.h"
-#include "menu.h"
+#ifndef UI_MODEL_H
+#define UI_MODEL_H
 
-static void display_prev_opt(int l);
+extern void model_menu(void);
 
-#define DISPLAY_NENT 3
-
-static const char *display_text[DISPLAY_NENT] = {
-	"~Area",
-	"~Double Line",
-	"~Windowed"
-};
-
-static int display_keys[DISPLAY_NENT] = {
-	WKEY_A, WKEY_D, WKEY_W
-};
-
-static void display_run_line(int l)
-{
-	display_prev_opt(l);
-}
-
-static void display_prev_opt(int l)
-{
-	switch (l) {
-	case 0:
-		zx_scr_set_area(video_area_prev(video_out_area));
-		break;
-	case 1:
-		gzx_toggle_dbl_ln();
-		break;
-	case 2:
-		mgfx_toggle_fs();
-		break;
-	}
-}
-
-static void display_next_opt(int l)
-{
-	switch (l) {
-	case 0:
-		zx_scr_set_area(video_area_next(video_out_area));
-		break;
-	case 1:
-		gzx_toggle_dbl_ln();
-		break;
-	case 2:
-		mgfx_toggle_fs();
-		break;
-	}
-}
-
-static const char *display_get_opt(int l)
-{
-	switch (l) {
-	case 0:
-		return video_area_str(video_out_area);
-	case 1:
-		return dbl_ln ? "On" : "Off";
-	case 2:
-		return mgfx_is_fs() ? "Off" : "On";
-	default:
-		return NULL;
-	}
-}
-
-static menu_t display_menu_spec = {
-	.caption = "Display Options",
-	.nent = DISPLAY_NENT,
-	.mentry_text = display_text,
-	.mkeys = display_keys,
-	.run_line = display_run_line,
-	.prev_opt = display_prev_opt,
-	.next_opt = display_next_opt,
-	.get_opt = display_get_opt
-};
-
-/** Display options menu */
-void display_menu(void)
-{
-	menu_run(&display_menu_spec, 0);
-}
+#endif

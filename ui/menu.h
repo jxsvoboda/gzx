@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Menu
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,6 @@
 
 #include "../types/ui/menu.h"
 
-extern void menu_run(menu_t *);
+extern void menu_run(menu_t *, int);
 
 #endif

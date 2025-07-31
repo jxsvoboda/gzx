@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Menu
  *
- * Copyright (c) 1999-2019 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -120,14 +120,14 @@ static void menu_undraw(menu_t *menu)
 	mgfx_fillrect(0, 0, scr_xs, scr_ys, 0);
 }
 
-void menu_run(menu_t *menu)
+void menu_run(menu_t *menu, int start_pos)
 {
 	wkey_t k;
 	int end_menu = 0;
 	int j;
 	int mpos;
 
-	mpos = 0;
+	mpos = start_pos;
 	menu->cx0 = scr_xs / 16 - 10;
 
 	while (!end_menu) {

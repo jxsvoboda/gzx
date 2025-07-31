@@ -53,6 +53,7 @@ sources_generic = \
     ui/hwopts.c \
     ui/mainmenu.c \
     ui/menu.c \
+    ui/model.c \
     ui/tapemenu.c \
     ui/teline.c \
     fileutil.c \

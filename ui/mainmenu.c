@@ -38,6 +38,7 @@
 #include "hwopts.h"
 #include "mainmenu.h"
 #include "menu.h"
+#include "model.h"
 #include "tapemenu.h"
 
 #define MENU_NENT 10
@@ -47,8 +48,8 @@ static const char *mentry_text[MENU_NENT] = {
 	"~Save Snapshot",
 	"Select ~Tapefile",
 	"T~ape",
-	"Reset ~48",
-	"Reset ~128",
+	"~Reset",
+	"Select ~Model",
 	"~Display",
 	"~Hardware",
 	"Lock ~UI",
@@ -56,7 +57,7 @@ static const char *mentry_text[MENU_NENT] = {
 };
 
 static int mkeys[MENU_NENT] = {
-	WKEY_L, WKEY_S, WKEY_T, WKEY_A, WKEY_4, WKEY_1, WKEY_D, WKEY_H,
+	WKEY_L, WKEY_S, WKEY_T, WKEY_A, WKEY_R, WKEY_M, WKEY_D, WKEY_H,
 	WKEY_U, WKEY_Q
 };
 
@@ -76,12 +77,10 @@ static void menu_run_line(int l)
 		tape_menu();
 		break;
 	case 4:
-		zx_select_memmodel(ZXM_48K);
 		zx_reset();
 		break;
 	case 5:
-		zx_select_memmodel(ZXM_128K);
-		zx_reset();
+		model_menu();
 		break;
 	case 6:
 		display_menu();
@@ -148,5 +147,5 @@ static menu_t main_menu_spec = {
 /** Main menu */
 void main_menu(void)
 {
-	menu_run(&main_menu_spec);
+	menu_run(&main_menu_spec, 0);
 }

@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Tape menu
  *
- * Copyright (c) 1999-2019 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -122,5 +122,5 @@ static menu_t tape_menu_spec = {
 /** Tape menu */
 void tape_menu(void)
 {
-	menu_run(&tape_menu_spec);
+	menu_run(&tape_menu_spec, 0);
 }

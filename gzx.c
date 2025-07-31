@@ -54,6 +54,7 @@
 #include "ui/fdlg.h"
 #include "ui/hwopts.h"
 #include "ui/mainmenu.h"
+#include "ui/model.h"
 #include "ui/tapemenu.h"
 #include "zx_sound.h"
 #include "ay.h"
@@ -156,12 +157,10 @@ static void key_unmod(wkey_t *k)
 		hwopts_menu();
 		break;
 	case WKEY_F7:
-		zx_select_memmodel(ZXM_48K);
 		zx_reset();
 		break;
 	case WKEY_F8:
-		zx_select_memmodel(ZXM_128K);
-		zx_reset();
+		model_menu();
 		break;
 	case WKEY_F9:
 		select_tapefile_dialog();

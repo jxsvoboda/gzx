@@ -60,8 +60,8 @@ Note that most functions can be accessed via menus as well as via shortcuts.
   F4          | Display options
   F5          | Tape menu
   F6          | Hardware options
-  F7          | Reset to 48K mode
-  F8          | Reset to 128K mode
+  F7          | Reset
+  F8          | Select model
   F9          | Select tapefile
   F10         | Quit
   F11         | Toggle fullscreen mode
