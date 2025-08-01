@@ -72,6 +72,10 @@ static int inited=0;
 
 static int video_w, video_h;
 
+static int bestmode_w;
+static int bestmode_h;
+static int bestmode_bits;
+
 static int sxs,sys;
 static unsigned char *vscr2;
 
@@ -334,26 +338,71 @@ static int c_prim_surf(void) {
   return 0;
 }
 
+static APIENTRY HRESULT dd_enum_modes_cb(LPDDSURFACEDESC desc, LPVOID arg) {
+  DWORD flags;
+  int w, h, bits;
+  int vw, vh;
+  int xscale, yscale;
+
+  w = desc->dwWidth;
+  h = desc->dwHeight;
+
+  flags = desc->ddpfPixelFormat.dwFlags;
+
+  /* Only consider 8-bit indexed or RGB modes */
+  if (flags & DDPF_PALETTEINDEXED8)
+    bits = 8;
+  else if (flags & DDPF_RGB)
+    bits = desc->ddpfPixelFormat.dwRGBBitCount;
+  else
+    return DDENUMRET_OK;
+
+  if(dbl_ln) {
+    xscale = 2;
+    yscale = 1;
+  } else {
+    xscale = 2;
+    yscale = 2;
+  }
+
+  vw = scr_xs * xscale;
+  vh = scr_ys * yscale;
+
+  /* Check if the resolution is enough to display everything */
+  if (w >= vw && h >= vh) {
+    /*
+     * Select the smallest acceptable resolution. If two modes differ just
+     * in bit depth, select the one with the lowest bit depth.
+     */
+    if (bestmode_w == 0 || (w < bestmode_w || h < bestmode_h) ||
+      (w == bestmode_w && h == bestmode_h && bits < bestmode_bits)) {
+        bestmode_w = w;
+        bestmode_h = h;
+        bestmode_bits = bits;
+    }
+  }
+  return DDENUMRET_OK;
+}
+
 /* Initialise DirectDraw */
 static int dd_init(HWND wnd) {
   HRESULT ddrval;
-  int ddxr,ddyr;
 
   ddrval=ddc_proc(NULL,&lpdd,NULL); /* DirectDrawCreate */
   if(ddrval!=DD_OK) return -1;
-
+ 
   ddrval=IDirectDraw_SetCooperativeLevel(lpdd,wnd, DDSCL_EXCLUSIVE | DDSCL_FULLSCREEN);
   if(ddrval!=DD_OK) {
     dd_close();
     return -1;
   }
 
-  if(dbl_ln) {
-    ddxr=640; ddyr=400;
-  } else {
-    ddxr=640; ddyr=400;
-  }
-  ddrval=IDirectDraw_SetDisplayMode(lpdd,ddxr,ddyr,/*8*/16);
+
+  void *arg= NULL;
+  bestmode_w = bestmode_h = bestmode_bits = 0;
+  ddrval=IDirectDraw_EnumDisplayModes(lpdd, 0, NULL, arg, dd_enum_modes_cb);
+
+  ddrval=IDirectDraw_SetDisplayMode(lpdd,bestmode_w,bestmode_h,bestmode_bits);
   if(ddrval!=DD_OK) {
     dd_close();
     return -1;
