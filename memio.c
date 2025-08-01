@@ -116,8 +116,12 @@ static void zx_epg_write(uint8_t val)
   uint8_t memmode;
   epg_reg = val;
 
-  if ((epg_reg & 1) == 0)
+  if ((epg_reg & 1) == 0) {
+    /* back to normal paging */
+    zxbnk[1]=zxram+5*0x4000;
+    zxbnk[2]=zxram+2*0x4000;
     return;
+  }
 
   /* 'enhanced' paging */
   memmode = (epg_reg >> 1) & 0x03;
@@ -159,6 +163,8 @@ void zx_mem_page_select(uint16_t addr, uint8_t val) {
     /* with EPG exact port numbers are needed for EPG and PAGESEL */
     if (addr == ZXPLUS_EPG_PORT) {
       zx_epg_write(val);
+      if ((epg_reg & 1) != 0)
+        return;
     } else if (addr == ZXPLUS_PAGESEL_PORT) {
       page_reg = val;
     }
