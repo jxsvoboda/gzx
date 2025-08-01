@@ -338,6 +338,12 @@ static int zx_save_snap_z80(char *name) {
   long hdr_end;
   int i;
   
+  switch(mem_model) {
+    case ZXM_48K: hw=0; break;
+    case ZXM_128K: hw=3; break;
+    default: printf("Invalid model for Z80 snapshot.\n"); return -1;
+  }
+
   prepare_cpu();
   
   f=fopen(name,"wb");
@@ -392,11 +398,6 @@ static int zx_save_snap_z80(char *name) {
     
   fputu16le(f,cpus.PC);
   
-  switch(mem_model) {
-    case ZXM_48K: hw=0; break;
-    case ZXM_128K: hw=3; break;
-    default: printf("HW mode not supported\n"); return -1;
-  }
   fputu8(f,hw);
   fputu8(f,page_reg); /* 128k:last out to 7ffd, samram:something else */
     
@@ -570,6 +571,12 @@ static int zx_save_snap_sna(char *name) {
   uint8_t curpaged;
   int i;
   
+  switch(mem_model) {
+    case ZXM_48K: break;
+    case ZXM_128K: break;
+    default: printf("Invalid model for SNA snapshot.\n"); return -1;
+  }
+
   f=fopen(name,"wb");
   if(!f) {
     printf("cannot open snapshot file '%s'\n",name);
