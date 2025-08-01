@@ -69,5 +69,7 @@ extern int mem_model;
 
 extern int bnk_lock48;
 extern uint32_t ram_size, rom_size;
+extern int has_banksw;
+extern int has_epg;
 
 #endif

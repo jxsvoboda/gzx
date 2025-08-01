@@ -156,11 +156,16 @@ static void debbuger_disp_regs(void)
 	gmovec(33, 2);
 	dflag("ILCK:", cpus.int_lock);
 	gmovec(33, 3);
-	dreg8("Pg", page_reg);
-	gmovec(33, 4);
 	dflag("FA:", cpus.flags_aff);
-	gmovec(33, 5);
-	dreg8("W:", cpus.W);
+	gmovec(33, 4);
+	dreg8("W", cpus.W);
+	if (has_epg) {
+		gmovec(33, 5);
+		dreg("P", (page_reg << 8) | epg_reg);
+	} else if (has_banksw) {
+		gmovec(33, 5);
+		dreg8("Pg", page_reg);
+	}
 
 	gmovec(1, 7);
 	dflag("S:", (cpus.F & fS) != 0);
