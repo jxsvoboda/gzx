@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * WinGDI/DirectDraw graphics
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -75,6 +75,8 @@ static int video_w, video_h;
 static int bestmode_w;
 static int bestmode_h;
 static int bestmode_bits;
+static int disp_dx;
+static int disp_dy;
 
 static int sxs,sys;
 static unsigned char *vscr2;
@@ -342,7 +344,6 @@ static APIENTRY HRESULT dd_enum_modes_cb(LPDDSURFACEDESC desc, LPVOID arg) {
   DWORD flags;
   int w, h, bits;
   int vw, vh;
-  int xscale, yscale;
 
   w = desc->dwWidth;
   h = desc->dwHeight;
@@ -357,16 +358,9 @@ static APIENTRY HRESULT dd_enum_modes_cb(LPDDSURFACEDESC desc, LPVOID arg) {
   else
     return DDENUMRET_OK;
 
-  if(dbl_ln) {
-    xscale = 2;
-    yscale = 1;
-  } else {
-    xscale = 2;
-    yscale = 2;
-  }
-
-  vw = scr_xs * xscale;
-  vh = scr_ys * yscale;
+  vw = scr_xs * 2;
+  vh = scr_ys * 2;
+  printf("vw=%u vh=%u\n", vw, vh);
 
   /* Check if the resolution is enough to display everything */
   if (w >= vw && h >= vh) {
@@ -387,6 +381,7 @@ static APIENTRY HRESULT dd_enum_modes_cb(LPDDSURFACEDESC desc, LPVOID arg) {
 /* Initialise DirectDraw */
 static int dd_init(HWND wnd) {
   HRESULT ddrval;
+  int vw, vh;
 
   ddrval=ddc_proc(NULL,&lpdd,NULL); /* DirectDrawCreate */
   if(ddrval!=DD_OK) return -1;
@@ -407,6 +402,11 @@ static int dd_init(HWND wnd) {
     dd_close();
     return -1;
   }
+  vw = scr_xs * 2;
+  vh = scr_ys * 2;
+  /* Center image on screen */
+  disp_dx = (bestmode_w - vw) / 2;
+  disp_dy = (bestmode_h - vh) / 2;
   return 0;
 }
 
@@ -586,7 +586,7 @@ static void mwin_draw(void) {
 
   scrdc=CreateCompatibleDC(dc);
   SelectObject(scrdc,scrbmp);
-  BitBlt(dc,0,0,sxs,sys,scrdc,0,0,SRCCOPY);
+  BitBlt(dc,disp_dx,disp_dy,sxs,sys,scrdc,0,0,SRCCOPY);
   DeleteDC(scrdc);
   
   DeleteObject(scrbmp);
