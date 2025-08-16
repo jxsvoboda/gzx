@@ -126,6 +126,7 @@ Key functions while in the debugger
   Page Down    | Move cursor down one page
   Home         | Move cursor up by 256 bytes
   End          | Move cursor down by 256 bytes
+  G            | Enter address to which cursor is then moved
   F7           | Trace into
   F8           | Step over
   F9           | Go to cursor (run until PC = cursor position)

@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Text editing line
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,8 @@
 
 #ifndef UI_TELINE_H
 #define UI_TELINE_H
+
+#include "../mgfx.h"
 
 #define TELINE_MAX 64
 

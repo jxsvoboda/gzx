@@ -33,6 +33,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "ui/teline.h"
 
 /** Debugger views */
 typedef enum {
@@ -65,6 +66,9 @@ typedef struct {
 	bool stop_enabled;
 	/** When run upto cursor is selected, the address is stored here */
 	uint16_t stop_addr;
+
+	/** Text input */
+	teline_t teline;
 
 	bool exit;
 } debugger_t;

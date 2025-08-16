@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 #include "debug.h"
 #include "gzx.h"
 #include "memio.h"
@@ -535,6 +536,45 @@ static void debugger_curs_end(debugger_t *dbg)
 	}
 }
 
+/** Move cursor to the specified address.
+ *
+ * @param dbg Debugger
+ */
+static void debugger_curs_to_addr(debugger_t *dbg, uint16_t addr)
+{
+	int i;
+
+	switch (dbg->focus) {
+	case dbgv_disasm:
+		dbg->instr_base = addr;
+		for (i = 0; i < dbg->ic_ln; i++)
+			instr_prev(dbg);
+		break;
+	case dbgv_memory:
+		dbg->hex_base = (addr & ~0x7) - (dbg->mem_off & ~0x7);
+		dbg->mem_off = (dbg->mem_off & ~0x7) + (addr & 0x07);
+		break;
+	}
+}
+
+/** Go to address (activate text input).
+ *
+ * @param dbg Debugger
+ */
+static void debugger_goto(debugger_t *dbg)
+{
+	switch (dbg->focus) {
+	case dbgv_disasm:
+		teline_init(&dbg->teline, 1, INSTR_CY + dbg->ic_ln, 4);
+		break;
+	case dbgv_memory:
+		teline_init(&dbg->teline, 1, HEX_CY + (dbg->mem_off >> 3), 4);
+		break;
+	}
+
+	dbg->teline.focus = 1;
+}
+
 /** Process debugger key without modifiers.
  *
  * @param dbg Debugger
@@ -555,7 +595,9 @@ static void debugger_key_unmod(debugger_t *dbg, wkey_t k)
 		if (++dbg->focus >= (dbg_view_t)dbgv_limit)
 			dbg->focus = dbgv_first;
 		break;
-
+	case WKEY_G:
+		debugger_goto(dbg);
+		break;
 	case WKEY_UP:
 		debugger_curs_up(dbg);
 		break;
@@ -597,6 +639,35 @@ static void debugger_key_unmod(debugger_t *dbg, wkey_t k)
 	}
 }
 
+/** Process debugger key when text edit line is active.
+ *
+ * @param dbg Debugger
+ * @param k Key
+ */
+static void debugger_teline_key(debugger_t *dbg, wkey_t k)
+{
+	uint16_t addr;
+	char *eptr;
+
+	switch (k.key) {
+	case WKEY_ESC:
+		dbg->teline.focus = 0;
+		break;
+	case WKEY_ENTER:
+		dbg->teline.focus = 0;
+		dbg->teline.buf[dbg->teline.len] = '\0';
+		addr = (uint16_t)strtoul(dbg->teline.buf, &eptr, 16);
+		if (dbg->teline.buf[0] != '\0' && *eptr == '\0') {
+			/* conversion successful */
+			debugger_curs_to_addr(dbg, addr);
+		}
+		break;
+	default:
+		teline_key(&dbg->teline, &k);
+		break;
+	}
+}
+
 /** Display debuger.
  *
  * @param dbg Debugger
@@ -609,6 +680,9 @@ static void debugger_display(debugger_t *dbg)
 	debugger_disp_memdump(dbg);
 	debugger_disp_stack();
 	debugger_disp_instr(dbg);
+
+	if (dbg->teline.focus != 0)
+		teline_draw(&dbg->teline);
 	mgfx_updscr();
 }
 
@@ -636,7 +710,11 @@ void debugger_run(debugger_t *dbg)
 			sys_usleep(1000);
 		} while (!w_getkey(&k));
 
-		if (k.press)
-			debugger_key_unmod(dbg, k);
+		if (k.press) {
+			if (dbg->teline.focus != 0)
+				debugger_teline_key(dbg, k);
+			else
+				debugger_key_unmod(dbg, k);
+		}
 	}
 }
