@@ -14,7 +14,6 @@ Old
 Enhancements
 ============
  - Keyboard auto-repeat
- - Goto address in debugger
  - Accurate W register emulation
  - Cycle-accurate tape, SPK and AY sampling with filtering, 16 bits/sample
  - Show tape status/position (in tape menu?, status bar?)
