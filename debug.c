@@ -213,18 +213,20 @@ static void debugger_disp_memdump(debugger_t *dbg)
 		fgc = 5;
 		for (j = 0; j < 8; j++) {
 			b = zx_memget8(dbg->hex_base + 8 * i + j);
-			gputc(b);
-		}
-		for (j = 0; j < 8; j++) {
-			b = zx_memget8(dbg->hex_base + 8 * i + j);
 			snprintf(buf, 16, "%02X", b);
 			if (dbg->focus == dbgv_memory)
 				bgc = 8 * i + j == dbg->mem_off ? 1 : 0;
-			gmovec(16 + 3 * j, HEX_CY + i);
+			gmovec(6 + (j >> 2) + 3 * j, HEX_CY + i);
 			gputs(buf);
 		}
-
 		bgc = 0;
+
+		fgc = 4;
+		gmovec(5 + 8*3 + 2, HEX_CY + i);
+		for (j = 0; j < 8; j++) {
+			b = zx_memget8(dbg->hex_base + 8 * i + j);
+			gputc(b);
+		}
 	}
 }
 
