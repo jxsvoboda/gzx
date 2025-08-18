@@ -1,5 +1,4 @@
 ./platform/win/gfx_win.c
-./disasm.c
 ./fileutil.c
 ./snap.c
 ./snap_ay.c

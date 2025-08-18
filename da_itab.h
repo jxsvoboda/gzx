@@ -106,9 +106,10 @@
 #define o_ui   128
 
 #define o_x    128
-/* when ORed with operation number, it means that the assembler does not
+/*
+ * when ORed with operation number, it means that the assembler does not
  * understand this and it needs to be written out as DB.
- * Used for some undocumented opcodes. 
+ * Used for some undocumented opcodes.
  */
 
 #define A_T	0	/* trivial */
