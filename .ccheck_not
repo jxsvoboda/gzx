@@ -1,12 +1,8 @@
 ./platform/win/gfx_win.c
-./da_itab.c
 ./disasm.c
 ./fileutil.c
-./memio.c
-./mgfx.c
 ./snap.c
 ./snap_ay.c
-./ui/fsel.c
 ./z80.c
 ./z80g.c
 ./z80itab.c
