@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * HelenOS system platform wrapper
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,7 +70,7 @@ char *sys_getcwd(char *buf, int buflen)
 	return buf;
 }
 
-int sys_isdir(char *filename)
+int sys_isdir(const char *filename)
 {
 	vfs_stat_t statbuf;
 	int rc;
@@ -81,7 +81,7 @@ int sys_isdir(char *filename)
 	return statbuf.is_directory;
 }
 
-int sys_opendir(char *path)
+int sys_opendir(const char *path)
 {
 	sd = opendir(path);
 	return sd ? 0 : -1;

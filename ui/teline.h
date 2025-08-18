@@ -44,9 +44,10 @@ typedef struct {
 } teline_t;
 
 extern void teline_empty(teline_t *);
-extern void teline_settext(teline_t *, char *);
+extern void teline_set_text(teline_t *, char *);
 extern void teline_init(teline_t *, int, int, int);
 extern void teline_draw(teline_t *);
 extern void teline_key(teline_t *, wkey_t *);
+extern const char *teline_get_text(teline_t *);
 
 #endif

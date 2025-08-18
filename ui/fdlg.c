@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * File dialogs
  *
- * Copyright (c) 1999-2019 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,6 +58,7 @@ int save_file_dialog(const char *caption, char **fname)
 	int fscols;
 	int flist_cx0;
 	teline_t fn_line;
+	const char *str;
 
 	*fname = NULL;
 	fscols = 20;
@@ -86,8 +87,8 @@ int save_file_dialog(const char *caption, char **fname)
 				return -1;
 
 			case WKEY_ENTER:
-				fn_line.buf[fn_line.len] = 0;
-				*fname = strdupl(fn_line.buf);
+				str = teline_get_text(&fn_line);
+				*fname = strdupl(str);
 				if (fname == NULL)
 					return -1;
 				return 0;

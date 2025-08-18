@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Text editing line
  *
- * Copyright (c) 1999-2019 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ void teline_empty(teline_t *t)
 	t->buf[t->maxlen] = 0;
 }
 
-void teline_settext(teline_t *t, char *s)
+void teline_set_text(teline_t *t, char *s)
 {
 	int l;
 
@@ -126,4 +126,10 @@ void teline_key(teline_t *t, wkey_t *k)
 		}
 		break;
 	}
+}
+
+const char *teline_get_text(teline_t *t)
+{
+	t->buf[t->len] = '\0';
+	return (char *)t->buf;
 }

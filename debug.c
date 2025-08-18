@@ -222,7 +222,7 @@ static void debugger_disp_memdump(debugger_t *dbg)
 		bgc = 0;
 
 		fgc = 4;
-		gmovec(5 + 8*3 + 2, HEX_CY + i);
+		gmovec(5 + 8 * 3 + 2, HEX_CY + i);
 		for (j = 0; j < 8; j++) {
 			b = zx_memget8(dbg->hex_base + 8 * i + j);
 			gputc(b);
@@ -650,6 +650,7 @@ static void debugger_teline_key(debugger_t *dbg, wkey_t k)
 {
 	uint16_t addr;
 	char *eptr;
+	const char *str;
 
 	switch (k.key) {
 	case WKEY_ESC:
@@ -657,9 +658,9 @@ static void debugger_teline_key(debugger_t *dbg, wkey_t k)
 		break;
 	case WKEY_ENTER:
 		dbg->teline.focus = 0;
-		dbg->teline.buf[dbg->teline.len] = '\0';
-		addr = (uint16_t)strtoul(dbg->teline.buf, &eptr, 16);
-		if (dbg->teline.buf[0] != '\0' && *eptr == '\0') {
+		str = teline_get_text(&dbg->teline);
+		addr = (uint16_t)strtoul(str, &eptr, 16);
+		if (str[0] != '\0' && *eptr == '\0') {
 			/* conversion successful */
 			debugger_curs_to_addr(dbg, addr);
 		}

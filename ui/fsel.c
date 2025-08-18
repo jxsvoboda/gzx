@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * File selector
  *
- * Copyright (c) 1999-2019 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,7 +59,7 @@ static int nent;
 static int fsscrpos, fscurspos;
 static int fsscrlines,fscols;
 static int flist_cx0;
-static char *sf;
+static const char *sf;
 
 #define QSBUF_MAXL 64
 static char qsbuf[QSBUF_MAXL+1];
@@ -76,7 +76,7 @@ static int fsel_fnsearch(char *name, int n);
 static void fsel_setpos(int pos);
 
 static void fsel_set_fnline(void) {
- teline_settext(&fn_line,flist[fscurspos].name);
+ teline_set_text(&fn_line,flist[fscurspos].name);
 }
 
 /*
@@ -217,7 +217,7 @@ static void get_dir(void) {
   fprintf(logfi,"finished reading dir\n");
 }
 
-static int fs_select(char *name) {
+static int fs_select(const char *name) {
 
   fprintf(logfi,"selected file '%s'\n",name); fflush(logfi);
 
@@ -307,6 +307,7 @@ static void fsel_draw(void) {
 static void fsel_nameline(void) {
   int end = 0;
   int res;
+  const char *str;
   wkey_t k;
   
   fn_line.focus = 1;
@@ -330,8 +331,8 @@ static void fsel_nameline(void) {
 	break;
 
       case WKEY_ENTER:
-        fn_line.buf[fn_line.len]=0;
-        res = fs_select(fn_line.buf);
+        str = teline_get_text(&fn_line);
+        res = fs_select(str);
 	if(res>0) { end=1; end_fsel=1; }
         if(fn_line.len<fn_line.maxlen)
           fn_line.buf[fn_line.len]=' ';

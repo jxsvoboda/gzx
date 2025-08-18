@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * UN*X system platform wrapper
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -71,14 +71,14 @@ char *sys_getcwd(char *buf, int buflen) {
   return getcwd(buf,buflen);
 }
 
-int sys_isdir(char *filename) {
+int sys_isdir(const char *filename) {
   struct stat statbuf;
 
   stat(filename,&statbuf);
   return S_ISDIR(statbuf.st_mode);
 }
 
-int sys_opendir(char *path) {
+int sys_opendir(const char *path) {
   sd = opendir(path);
   return sd ? 0 : -1;
 }

@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Platform-specific system functions
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,8 +45,8 @@ int sys_chdir(const char *path);
 char *sys_getcwd(char *buf, int buflen);
 
 /* static buffers are evil, I know */
-int sys_isdir(char *path);
-int sys_opendir(char *path);
+int sys_isdir(const char *path);
+int sys_opendir(const char *path);
 int sys_readdir(char **name, int *is_dir);
 void sys_closedir(void);
 void sys_usleep(unsigned);
