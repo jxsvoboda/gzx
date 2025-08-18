@@ -1,8 +1,8 @@
 /*
  * GZX - George's ZX Spectrum Emulator
- * Z80 disassembler opcode table - include into disasm.c
+ * Z80 disassembler opcode table
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "da_itab.h"
 
 unsigned char d_op[1024] = {
 	o_NOP,  A_T,  a__,  a__,    o_LD,   A_DW, a_BC,  a_s,  /* 00 */

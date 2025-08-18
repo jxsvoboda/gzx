@@ -56,6 +56,7 @@ sources_generic = \
     ui/model.c \
     ui/tapemenu.c \
     ui/teline.c \
+    da_itab.c \
     fileutil.c \
     gzx.c \
     memio.c \
