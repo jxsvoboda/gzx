@@ -1,10 +1,4 @@
-./platform/helenos/gfx.c
-./platform/sdl/gfx_sdl.c
-./platform/sdl/snd_sdl.c
-./platform/sdl/sys_unix.c
 ./platform/win/gfx_win.c
-./platform/win/snd_win.c
-./platform/win/sys_win.c
 ./da_itab.c
 ./disasm.c
 ./fileutil.c

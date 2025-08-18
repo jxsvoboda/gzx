@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * HelenOS graphics
  *
- * Copyright (c) 1999-2017 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -285,8 +285,6 @@ static int init_video(void)
 	pixelmap.height = vh;
 	pixelmap.data = alloc.pixels;
 
-//	sig_connect(&canvas->keyboard_event, NULL, wnd_keyboard_event);
-
 	rc = ui_window_paint(window);
 	if (rc != EOK) {
 		printf("Error painting window.\n");
@@ -300,14 +298,14 @@ static int init_vscr(void)
 {
 	/* set up virtual frame buffer */
 
-	vscr0=calloc(scr_xs*scr_ys, sizeof(uint8_t));
+	vscr0 = calloc(scr_xs * scr_ys, sizeof(uint8_t));
 	if (!vscr0) {
 		printf("malloc failed\n");
 		return -1;
 	}
 
 	if (dbl_ln) {
-		vscr1=calloc(scr_xs*scr_ys, sizeof(uint8_t));
+		vscr1 = calloc(scr_xs * scr_ys, sizeof(uint8_t));
 		if (!vscr1) {
 			printf("malloc failed\n");
 			return -1;
@@ -339,27 +337,28 @@ int mgfx_init(int w, int h)
 	w_initkey();
 
 	/* set up key translation table */
-	txsize=1;
-	for(i=0;ktabsrc[i*2+1]!=-1;i++)
-		if(ktabsrc[i*2]>=txsize) txsize=ktabsrc[i*2]+1;
+	txsize = 1;
+	for (i = 0; ktabsrc[i * 2 + 1] != -1; i++)
+		if (ktabsrc[i * 2] >= txsize)
+			txsize = ktabsrc[i * 2] + 1;
 
-	txkey=calloc(txsize,sizeof(int));
-	if(!txkey) {
+	txkey = calloc(txsize, sizeof(int));
+	if (!txkey) {
 		printf("malloc failed\n");
 		return -1;
 	}
 
-	for(i=0;ktabsrc[i*2+1]!=-1;i++)
-		txkey[ktabsrc[i*2]]=ktabsrc[i*2+1];
+	for (i = 0; ktabsrc[i * 2 + 1] != -1; i++)
+		txkey[ktabsrc[i * 2]] = ktabsrc[i * 2 + 1];
 
 	if (init_vscr() < 0)
 		return -1;
 
 	mgfx_selln(3);
 
-	clip_x0=clip_y0=0;
-	clip_x1=scr_xs-1;
-	clip_y1=scr_ys-1;
+	clip_x0 = clip_y0 = 0;
+	clip_x1 = scr_xs - 1;
+	clip_y1 = scr_ys - 1;
 
 	return 0;
 }
@@ -451,88 +450,94 @@ int mgfx_set_disp_size(int w, int h)
 	if (init_vscr() < 0)
 		return -1;
 
-	clip_x0=clip_y0=0;
-	clip_x1=scr_xs-1;
-	clip_y1=scr_ys-1;
+	clip_x0 = clip_y0 = 0;
+	clip_x1 = scr_xs - 1;
+	clip_y1 = scr_ys - 1;
 
 	return 0;
 }
 
-
 static void render_display_line(int dy, uint8_t *spix)
 {
-  int i, j, k;
-  pixel_t pval;
-  color_t *col;
-  
-    for (j = 0; j < yscale; j++) {
-      for (i = 0; i < scr_xs; i++) {
-        for (k = 0; k < xscale; k++) {
-          col = &color[spix[i]];
-          pval = PIXEL(255, col->r, col->g, col->b);
-          pixelmap_put_pixel(&pixelmap, xscale * i + k, yscale * dy + j, pval);
-        }
-      }
-    }
+	int i, j, k;
+	pixel_t pval;
+	color_t *col;
+
+	for (j = 0; j < yscale; j++) {
+		for (i = 0; i < scr_xs; i++) {
+			for (k = 0; k < xscale; k++) {
+				col = &color[spix[i]];
+				pval = PIXEL(255, col->r, col->g, col->b);
+				pixelmap_put_pixel(&pixelmap, xscale * i + k,
+				    yscale * dy + j, pval);
+			}
+		}
+	}
 }
 
-void mgfx_updscr(void) {
-  unsigned y;
-  
-  if(dbl_ln) {
-    for (y = 0; y < scr_ys; y++) {
-      render_display_line(2 * y, vscr0 + scr_xs * y);
-      render_display_line(2 * y + 1, vscr1 + scr_xs * y);
-    }
-  } else {
-    for (y = 0; y < scr_ys; y++) {
-      render_display_line(y, vscr0 + scr_xs * y);
-    }
-  }
-  (void) gfx_bitmap_render(bitmap, NULL, NULL);
+void mgfx_updscr(void)
+{
+	unsigned y;
+
+	if (dbl_ln) {
+		for (y = 0; y < scr_ys; y++) {
+			render_display_line(2 * y, vscr0 + scr_xs * y);
+			render_display_line(2 * y + 1, vscr1 + scr_xs * y);
+		}
+	} else {
+		for (y = 0; y < scr_ys; y++) {
+			render_display_line(y, vscr0 + scr_xs * y);
+		}
+	}
+	(void) gfx_bitmap_render(bitmap, NULL, NULL);
 }
 
 static unsigned b6to8(unsigned cval)
 {
-  return 255 * cval / 63;
+	return 255 * cval / 63;
 }
 
-void mgfx_setpal(int base, int cnt, int *p) {
-  int i;
-  
-  for (i = 0; i < cnt; i++) {
-    color[i].r = b6to8(p[3*i]);
-    color[i].g = b6to8(p[3*i + 1]);
-    color[i].b = b6to8(p[3*i + 2]);
-  }
+void mgfx_setpal(int base, int cnt, int *p)
+{
+	int i;
+
+	for (i = 0; i < cnt; i++) {
+		color[i].r = b6to8(p[3 * i]);
+		color[i].g = b6to8(p[3 * i + 1]);
+		color[i].b = b6to8(p[3 * i + 2]);
+	}
 }
 
 /* input */
 
-void mgfx_input_update(void) {
+void mgfx_input_update(void)
+{
 	fibril_usleep(10);
 }
 
-int mgfx_toggle_fs(void) {
-  /* Not implemented */
-  return 0;
+int mgfx_toggle_fs(void)
+{
+	/* Not implemented */
+	return 0;
 }
 
-int mgfx_toggle_dbl_ln(void) {
-  fini_vscr();
-  dbl_ln = !dbl_ln;
-  if (dbl_ln) {
-    xscale = 2;
-    yscale = 1;
-  } else {
-    xscale = 2;
-    yscale = 2;
-  }
-  init_vscr();
-  mgfx_selln(3);
-  return 0;
+int mgfx_toggle_dbl_ln(void)
+{
+	fini_vscr();
+	dbl_ln = !dbl_ln;
+	if (dbl_ln) {
+		xscale = 2;
+		yscale = 1;
+	} else {
+		xscale = 2;
+		yscale = 2;
+	}
+	init_vscr();
+	mgfx_selln(3);
+	return 0;
 }
 
-int mgfx_is_fs(void) {
-  return 0;
+int mgfx_is_fs(void)
+{
+	return 0;
 }

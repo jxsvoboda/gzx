@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * PCM playback through windows waveOut
  *
- * Copyright (c) 1999-2018 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,19 +39,19 @@
 #include "../../sndw.h"
 
 /*
-  Latency <= N_BUF * 40 ms
-  Currently: 120 ms
-*/
+ * Latency <= N_BUF * 40 ms
+ * Currently: 120 ms
+ */
 
 //#define N_BUF 3
 #define N_BUF 5
 
-static int sbufn=0;   /* index of the first submitted buffer */
-static int ebufn=0;   /* index of the first empty buffer */
-static int ns,ne;
+static int sbufn = 0;   /* index of the first submitted buffer */
+static int ebufn = 0;   /* index of the first empty buffer */
+static int ns, ne;
 
-static int running=0;
-static int server_on=0;
+static int running = 0;
+static int server_on = 0;
 
 static int buf_size;
 
@@ -60,147 +60,160 @@ static uint8_t *sndbuf[N_BUF];
 static WAVEHDR wavehdr[N_BUF];
 
 /*
-  ring buffer
+ * ring buffer
+ *
+ * playing   empty     playing
+ * ........|.........|.......
+ * e         s
+ */
 
-  playing   empty     playing
-  ........|.........|.......
-          e         s
-*/
+int sndw_init(int bufs)
+{
+	int play_rate;
+	WAVEFORMATEX wfx;
+	MMRESULT errcode;
+	int i;
 
-int sndw_init(int bufs) {
-  int play_rate;
-  WAVEFORMATEX wfx;
-  MMRESULT errcode;
-  int i;
+	buf_size = bufs;
 
-  buf_size=bufs;
+	play_rate = 28000;
 
-  play_rate=28000;
+	wfx.wFormatTag = 1; /* PCM */
+	wfx.nChannels = 1;  /* mono */
+	wfx.nSamplesPerSec = play_rate;
+	wfx.nAvgBytesPerSec = play_rate;
+	wfx.nBlockAlign = 1;
+	wfx.wBitsPerSample = 8;
+	wfx.cbSize = 0;
 
-  wfx.wFormatTag = 1; /* PCM */
-  wfx.nChannels = 1;  /* mono */
-  wfx.nSamplesPerSec = play_rate;
-  wfx.nAvgBytesPerSec = play_rate;
-  wfx.nBlockAlign = 1;
-  wfx.wBitsPerSample = 8;
-  wfx.cbSize = 0;
+	errcode = waveOutOpen(&hwaveout, WAVE_MAPPER, &wfx,
+	    (DWORD_PTR)NULL, (DWORD_PTR)NULL, // User data.
+	    (DWORD)CALLBACK_NULL);
 
-  errcode = waveOutOpen( &hwaveout,WAVE_MAPPER,&wfx,
-    (DWORD_PTR)NULL,(DWORD_PTR)NULL, // User data.
-    (DWORD)CALLBACK_NULL);
+	if (errcode != MMSYSERR_NOERROR)
+		return -1;
 
-  if (errcode != MMSYSERR_NOERROR) return -1;
+	waveOutPause(hwaveout);
 
-  waveOutPause(hwaveout);
+	/* allocate buffers */
 
-  /* allocate buffers */
+	for (i = 0; i < N_BUF; i++) {
+		sndbuf[i] = malloc(buf_size);
+		memset(&wavehdr[i], 0, sizeof(WAVEHDR));
+		wavehdr[i].lpData = (LPSTR)sndbuf[i];
+		wavehdr[i].dwBufferLength = buf_size;
+		waveOutPrepareHeader(hwaveout, &wavehdr[i], sizeof(WAVEHDR));
+	}
 
-  for(i=0;i<N_BUF;i++) {
-    sndbuf[i]=malloc(buf_size);
-    memset(&wavehdr[i],0,sizeof(WAVEHDR));
-    wavehdr[i].lpData=(LPSTR)sndbuf[i];
-    wavehdr[i].dwBufferLength=buf_size;
-    waveOutPrepareHeader(hwaveout,&wavehdr[i],sizeof(WAVEHDR));
-  }
+	/* ... */
 
-  /* ... */
+	server_on = 1;
 
-  server_on=1;
+	sbufn = ebufn = 0;
+	ns = 0;
+	ne = N_BUF;
+	running = 0;
 
-  sbufn=ebufn=0;
-  ns=0;
-  ne=N_BUF;
-  running=0;
-
-  return 0;
+	return 0;
 }
 
-void sndw_done(void) {
-  int i;
+void sndw_done(void)
+{
+	int i;
 
-  printf("wout_close...\n");
-  if(server_on) {
-    waveOutReset(hwaveout);
+	printf("wout_close...\n");
+	if (server_on) {
+		waveOutReset(hwaveout);
 
-    for(i=0;i<N_BUF;i++) {
-      if(wavehdr[i].dwFlags & WHDR_PREPARED) {
-        waveOutUnprepareHeader(hwaveout,&wavehdr[i],sizeof(WAVEHDR));
-        free(sndbuf[i]); sndbuf[i]=NULL;
-      }
-    }
+		for (i = 0; i < N_BUF; i++) {
+			if (wavehdr[i].dwFlags & WHDR_PREPARED) {
+				waveOutUnprepareHeader(hwaveout, &wavehdr[i],
+				    sizeof(WAVEHDR));
+				free(sndbuf[i]);
+				sndbuf[i] = NULL;
+			}
+		}
 
-    waveOutClose(hwaveout);
-    server_on=0;
-  }
+		waveOutClose(hwaveout);
+		server_on = 0;
+	}
 }
 
 /* check whether there are finished sound buffers */
-static void wout_checkfinished(void) {
-  if(!server_on) {
-    printf("called wout_checkfinished with server_on=0!!\n");
-    exit(1);
-  }
-  while(ns>0 && (wavehdr[sbufn].dwFlags & WHDR_DONE)) {
-    if(++sbufn>=N_BUF) sbufn=0;
-    ne++; ns--;
-//    fprintf(stdout,"playing buf finished (%d,%d,%d) (ns=%d,ne=%d)\n",
-//      fbufn,ebufn,sbufn,ns,ne);
+static void wout_checkfinished(void)
+{
+	if (!server_on) {
+		printf("called wout_checkfinished with server_on=0!!\n");
+		exit(1);
+	}
+	while (ns > 0 && (wavehdr[sbufn].dwFlags & WHDR_DONE)) {
+		if (++sbufn >= N_BUF)
+			sbufn = 0;
+		ne++;
+		ns--;
+		// fprintf(stdout,"playing buf finished (%d,%d,%d) (ns=%d,ne=%d)\n",
+		//   fbufn,ebufn,sbufn,ns,ne);
 
-    /* stop playback on underrun */
-    if(ns==0) {
-      fprintf(stdout,"sound buffer underrun - stopping playback\n");
-      waveOutPause(hwaveout);
-      running=0;
-    }
-  }
+		/* stop playback on underrun */
+		if (ns == 0) {
+			fprintf(stdout, "sound buffer underrun - stopping "
+			    "playback\n");
+			waveOutPause(hwaveout);
+			running = 0;
+		}
+	}
 }
 
-/**********************************************/
+/** ******************************************* */
 
-void sndw_write(uint8_t *buf) {
-  int c;
-  
-  c=0;
-  /* possibly wait for a sound buffer to finish playing */
-  while(ne==0) { 
-//    printf("sound: wait for queue to empty\n");
-//    printf("running=%d, ne=%d, ns=%d\n",running,ne,ns);
-    mgfx_input_update();
-    wout_checkfinished();
-    usleep(1000);
-    if(++c>300) {
-      printf("sound lockup?!\n");
-      printf("diagnostic: ns=%d ne=%d\n"
-        "sbufn=%d ebufn=%d\n"
-	"running=%d\n",ns,ne,sbufn,ebufn,running);
-      printf("current buf: dwFlags=%lu\n",wavehdr[sbufn].dwFlags);
-      c=0;
-    }
-  }
+void sndw_write(uint8_t *buf)
+{
+	int c;
 
-  /* insert buffer to our queue */
-  if(ne!=0) {
-    MMRESULT res;
-    
-    memcpy(sndbuf[ebufn],buf,buf_size);
-    res = waveOutWrite(hwaveout,&wavehdr[ebufn],sizeof(WAVEHDR));
-    if(res != MMSYSERR_NOERROR) {
-      printf("waveOutWrite returns error %d\n",res);
-    }
-    
-    if(++ebufn>=N_BUF) ebufn=0;
-    ne--; ns++;
-  } else {
-    fprintf(stdout,"sound buffer overrun (dropped)\n");
-  }
+	c = 0;
+	/* possibly wait for a sound buffer to finish playing */
+	while (ne == 0) {
+		// printf("sound: wait for queue to empty\n");
+		// printf("running=%d, ne=%d, ns=%d\n",running,ne,ns);
+		mgfx_input_update();
+		wout_checkfinished();
+		usleep(1000);
+		if (++c > 300) {
+			printf("sound lockup?!\n");
+			printf("diagnostic: ns=%d ne=%d\n"
+			    "sbufn=%d ebufn=%d\n"
+			    "running=%d\n", ns, ne, sbufn, ebufn, running);
+			printf("current buf: dwFlags=%lu\n",
+			    wavehdr[sbufn].dwFlags);
+			c = 0;
+		}
+	}
 
-  /* start/restart playback */
-  if(!running) {
-    /* only if the queue is full */
-    if(ne==0) {
-      fprintf(stdout,"starting playback\n");
-      running=1;
-      waveOutRestart(hwaveout);
-    }
-  }
+	/* insert buffer to our queue */
+	if (ne != 0) {
+		MMRESULT res;
+
+		memcpy(sndbuf[ebufn], buf, buf_size);
+		res = waveOutWrite(hwaveout, &wavehdr[ebufn], sizeof(WAVEHDR));
+		if (res != MMSYSERR_NOERROR) {
+			printf("waveOutWrite returns error %d\n", res);
+		}
+
+		if (++ebufn >= N_BUF)
+			ebufn = 0;
+		ne--;
+		ns++;
+	} else {
+		fprintf(stdout, "sound buffer overrun (dropped)\n");
+	}
+
+	/* start/restart playback */
+	if (!running) {
+		/* only if the queue is full */
+		if (ne == 0) {
+			fprintf(stdout, "starting playback\n");
+			running = 1;
+			waveOutRestart(hwaveout);
+		}
+	}
 }
