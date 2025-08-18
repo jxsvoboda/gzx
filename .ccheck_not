@@ -3,5 +3,4 @@
 ./snap.c
 ./snap_ay.c
 ./z80.c
-./z80g.c
 ./z80itab.c
