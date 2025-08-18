@@ -118,7 +118,7 @@ Key functions while in the debugger
 
   Key          | Function
   ------------ | --------
-  Esc or Enter | Exit debugger, return to normal emulation
+  Escape       | Exit debugger, return to normal emulation
   Tab          | Switch focus between dissassembly and hex view
   Up Arrow     | Move cursor to previous instruction / row of memory
   Down Arrow   | Move cursor to next instruction / row of memory
@@ -127,6 +127,7 @@ Key functions while in the debugger
   Home         | Move cursor up by 256 bytes
   End          | Move cursor down by 256 bytes
   G            | Enter address to which cursor is then moved
+  Enter        | Modify memory location (when memory dump is focused)
   F7           | Trace into
   F8           | Step over
   F9           | Go to cursor (run until PC = cursor position)

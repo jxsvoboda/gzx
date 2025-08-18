@@ -575,6 +575,38 @@ static void debugger_goto(debugger_t *dbg)
 	}
 
 	dbg->teline.focus = 1;
+	dbg->edit = dbge_goto;
+}
+
+/** Enter key pressed when memory dump is selected.
+ *
+ * @param dbg Debugger
+ */
+static void debugger_enter_memdump(debugger_t *dbg)
+{
+	int x, y;
+
+	x = 6 + ((dbg->mem_off & 0x7) >> 2) + 3 * (dbg->mem_off & 0x7);
+	y = HEX_CY + (dbg->mem_off >> 3);
+
+	teline_init(&dbg->teline, x, y, 2);
+	dbg->teline.focus = 1;
+	dbg->edit = dbge_enter;
+}
+
+/** Enter key pressed in debugger.
+ *
+ * @param dbg Debugger
+ */
+static void debugger_enter(debugger_t *dbg)
+{
+	switch (dbg->focus) {
+	case dbgv_disasm:
+		break;
+	case dbgv_memory:
+		debugger_enter_memdump(dbg);
+		break;
+	}
 }
 
 /** Process debugger key without modifiers.
@@ -590,7 +622,7 @@ static void debugger_key_unmod(debugger_t *dbg, wkey_t k)
 		break;
 
 	case WKEY_ENTER:
-		dbg->exit = true;
+		debugger_enter(dbg);
 		break;
 
 	case WKEY_TAB:
@@ -641,6 +673,45 @@ static void debugger_key_unmod(debugger_t *dbg, wkey_t k)
 	}
 }
 
+/** Write value at current memory address.
+ *
+ * @param dbg Debugger
+ * @param val Value
+ */
+static void debugger_poke(debugger_t *dbg, uint8_t val)
+{
+	zx_memset8(dbg->hex_base + dbg->mem_off, val);
+}
+
+/** Enter key pressed while text edit line is active.
+ *
+ * @param dbg Debugger
+ */
+static void debugger_teline_enter(debugger_t *dbg)
+{
+	uint16_t val;
+	char *eptr;
+	const char *str;
+
+	dbg->teline.focus = 0;
+
+	str = teline_get_text(&dbg->teline);
+	val = (uint16_t)strtoul(str, &eptr, 16);
+	if (str[0] == '\0' || *eptr != '\0') {
+		/* conversion unsuccessful */
+		return;
+	}
+
+	switch (dbg->edit) {
+	case dbge_goto:
+		debugger_curs_to_addr(dbg, val);
+		break;
+	case dbge_enter:
+		debugger_poke(dbg, (uint8_t)val);
+		break;
+	}
+}
+
 /** Process debugger key when text edit line is active.
  *
  * @param dbg Debugger
@@ -648,22 +719,13 @@ static void debugger_key_unmod(debugger_t *dbg, wkey_t k)
  */
 static void debugger_teline_key(debugger_t *dbg, wkey_t k)
 {
-	uint16_t addr;
-	char *eptr;
-	const char *str;
 
 	switch (k.key) {
 	case WKEY_ESC:
 		dbg->teline.focus = 0;
 		break;
 	case WKEY_ENTER:
-		dbg->teline.focus = 0;
-		str = teline_get_text(&dbg->teline);
-		addr = (uint16_t)strtoul(str, &eptr, 16);
-		if (str[0] != '\0' && *eptr == '\0') {
-			/* conversion successful */
-			debugger_curs_to_addr(dbg, addr);
-		}
+		debugger_teline_enter(dbg);
 		break;
 	default:
 		teline_key(&dbg->teline, &k);

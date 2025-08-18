@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Integrated debugger
  *
- * Copyright (c) 1999-2024 Jiri Svoboda
+ * Copyright (c) 1999-2025 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,14 @@ typedef enum {
 	dbgv_memory
 } dbg_view_t;
 
+/** Debugger edit action */
+typedef enum {
+	/** Go to */
+	dbge_goto,
+	/** Enter */
+	dbge_enter
+} dbg_edit_t;
+
 enum {
 	dbgv_first = dbgv_disasm,
 	dbgv_limit = dbgv_memory + 1
@@ -51,6 +59,8 @@ enum {
 typedef struct {
 	/** Which debugger view is focused */
 	dbg_view_t focus;
+	/** Which debugger edit function is active */
+	dbg_edit_t edit;
 
 	uint16_t hex_base;
 	uint16_t instr_base;
