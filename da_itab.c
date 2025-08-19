@@ -32,86 +32,86 @@
 #include "da_itab.h"
 
 unsigned char d_op[1024] = {
-	o_NOP,  A_T,  a__,  a__,    o_LD,   A_DW, a_BC,  a_s,  /* 00 */
+	o_NOP,  A_T,  a__,   a__,   o_LD,   A_DW, a_BC,  a_s,  /* 00 */
 	o_LD,   A_T,  a_iBC, a_A,   o_INC,  A_T,  a_BC,  a__,  /* 02 */
-	o_INC,  A_T,  a_B,  a__,    o_DEC,  A_T,  a_B,   a__,  /* 04 */
-	o_LD,   A_DB, a_B,  a_s,    o_RLCA, A_T,  a__,   a__,  /* 06 */
-	o_EX,   A_T,  a_AF, a_AF_,  o_ADD,  A_T,  a_HL,  a_BC, /* 08 */
-	o_LD,   A_T,  a_A,  a_iBC,  o_DEC,  A_T,  a_BC,  a__,  /* 0A */
-	o_INC,  A_T,  a_C,  a__,    o_DEC,  A_T,  a_C,   a__,  /* 0C */
-	o_LD,   A_DB, a_C,  a_s,    o_RRCA, A_T,  a__,   a__,  /* 0E */
+	o_INC,  A_T,  a_B,   a__,   o_DEC,  A_T,  a_B,   a__,  /* 04 */
+	o_LD,   A_DB, a_B,   a_s,   o_RLCA, A_T,  a__,   a__,  /* 06 */
+	o_EX,   A_T,  a_AF,  a_AF_, o_ADD,  A_T,  a_HL,  a_BC, /* 08 */
+	o_LD,   A_T,  a_A,   a_iBC, o_DEC,  A_T,  a_BC,  a__,  /* 0A */
+	o_INC,  A_T,  a_C,   a__,   o_DEC,  A_T,  a_C,   a__,  /* 0C */
+	o_LD,   A_DB, a_C,   a_s,   o_RRCA, A_T,  a__,   a__,  /* 0E */
 
-	o_DJNZ, A_RA, a_s,  a__,    o_LD,   A_DW, a_DE,  a_s,  /* 10 */
-	o_LD,   A_T,   a_iDE, a_A,  o_INC,  A_T,  a_DE,  a__,  /* 12 */
-	o_INC,  A_T, a_D,  a__,     o_DEC,  A_T,  a_D,   a__,  /* 14 */
-	o_LD,   A_DB, a_D,  a_s,    o_RLA,  A_T,  a__,   a__,  /* 16 */
-	o_JR,   A_RA, a_s,  a__,    o_ADD,  A_T,  a_HL,  a_DE, /* 18 */
-	o_LD,   A_T, a_A,  a_iDE,   o_DEC,  A_T,  a_DE,  a__,  /* 1A */
-	o_INC,  A_T, a_E,  a__,     o_DEC,  A_T,  a_E,   a__,  /* 1C */
-	o_LD,   A_DB, a_E,  a_s,    o_RRA,  A_T,  a__,   a__,  /* 1E */
+	o_DJNZ, A_RA, a_s,   a__,   o_LD,   A_DW, a_DE,  a_s,  /* 10 */
+	o_LD,   A_T,  a_iDE, a_A,   o_INC,  A_T,  a_DE,  a__,  /* 12 */
+	o_INC,  A_T,  a_D,   a__,   o_DEC,  A_T,  a_D,   a__,  /* 14 */
+	o_LD,   A_DB, a_D,   a_s,   o_RLA,  A_T,  a__,   a__,  /* 16 */
+	o_JR,   A_RA, a_s,   a__,   o_ADD,  A_T,  a_HL,  a_DE, /* 18 */
+	o_LD,   A_T,  a_A,   a_iDE, o_DEC,  A_T,  a_DE,  a__,  /* 1A */
+	o_INC,  A_T,  a_E,   a__,   o_DEC,  A_T,  a_E,   a__,  /* 1C */
+	o_LD,   A_DB, a_E,   a_s,   o_RRA,  A_T,  a__,   a__,  /* 1E */
 
-	o_JR,   A_RA, a_NZ, a_s,    o_LD,   A_DW, a_HL,  a_s,  /* 20 */
-	o_LD,   A_A, a_is, a_HL,    o_INC,  A_T,  a_HL,  a__,  /* 22 */
-	o_INC,  A_T, a_H,  a__,     o_DEC,  A_T,  a_H,   a__,  /* 24 */
-	o_LD,   A_DB, a_H,  a_s,    o_DAA,  A_T,  a__,   a__,  /* 26 */
-	o_JR,   A_RA, a_Z,  a_s,    o_ADD,  A_T,  a_HL,  a_HL, /* 28 */
-	o_LD,   A_A, a_HL, a_is,    o_DEC,  A_T,  a_HL,  a__,  /* 2A */
-	o_INC,  A_T, a_L,  a__,     o_DEC,  A_T,  a_L,   a__,  /* 2C */
-	o_LD,   A_DB, a_L,  a_s,    o_CPL,  A_T,  a__,   a__,  /* 2E */
+	o_JR,   A_RA, a_NZ,  a_s,   o_LD,   A_DW, a_HL,  a_s,  /* 20 */
+	o_LD,   A_A,  a_is,  a_HL,  o_INC,  A_T,  a_HL,  a__,  /* 22 */
+	o_INC,  A_T,  a_H,   a__,   o_DEC,  A_T,  a_H,   a__,  /* 24 */
+	o_LD,   A_DB, a_H,   a_s,   o_DAA,  A_T,  a__,   a__,  /* 26 */
+	o_JR,   A_RA, a_Z,   a_s,   o_ADD,  A_T,  a_HL,  a_HL, /* 28 */
+	o_LD,   A_A,  a_HL,  a_is,  o_DEC,  A_T,  a_HL,  a__,  /* 2A */
+	o_INC,  A_T,  a_L,   a__,   o_DEC,  A_T,  a_L,   a__,  /* 2C */
+	o_LD,   A_DB, a_L,   a_s,   o_CPL,  A_T,  a__,   a__,  /* 2E */
 
-	o_JR,   A_RA, a_NC, a_s,    o_LD,   A_DW, a_SP,  a_s,  /* 30 */
-	o_LD,   A_A, a_is, a_A,     o_INC,  A_T,  a_SP,  a__,  /* 32 */
-	o_INC,  A_T, a_iHL, a__,    o_DEC,  A_T,  a_iHL, a__,  /* 34 */
+	o_JR,   A_RA, a_NC,  a_s,   o_LD,   A_DW, a_SP,  a_s,  /* 30 */
+	o_LD,   A_A,  a_is,  a_A,   o_INC,  A_T,  a_SP,  a__,  /* 32 */
+	o_INC,  A_T,  a_iHL, a__,   o_DEC,  A_T,  a_iHL, a__,  /* 34 */
 	o_LD,   A_DB, a_iHL, a_s,   o_SCF,  A_T,  a__,   a__,  /* 36 */
-	o_JR,   A_RA, a_C,  a_s,    o_ADD,  A_T,  a_HL,  a_SP, /* 38 */
-	o_LD,   A_A, a_A,  a_is,    o_DEC,  A_T,  a_SP,  a__,  /* 3A */
-	o_INC,  A_T, a_A,  a__,     o_DEC,  A_T,  a_A,   a__,  /* 3C */
-	o_LD,   A_DB, a_A,  a_s,    o_CCF,  A_T,  a__,   a__,  /* 3E */
+	o_JR,   A_RA, a_C,   a_s,   o_ADD,  A_T,  a_HL,  a_SP, /* 38 */
+	o_LD,   A_A,  a_A,   a_is,  o_DEC,  A_T,  a_SP,  a__,  /* 3A */
+	o_INC,  A_T,  a_A,   a__,   o_DEC,  A_T,  a_A,   a__,  /* 3C */
+	o_LD,   A_DB, a_A,   a_s,   o_CCF,  A_T,  a__,   a__,  /* 3E */
 
-	o_LD,   A_T, a_B,  a_B,     o_LD,   A_T,  a_B,   a_C,  /* 40 */
-	o_LD,   A_T, a_B,  a_D,     o_LD,   A_T,  a_B,   a_E,  /* 42 */
-	o_LD,   A_T, a_B,  a_H,     o_LD,   A_T,  a_B,   a_L,  /* 44 */
-	o_LD,   A_T, a_B,  a_iHL,   o_LD,   A_T,  a_B,   a_A,  /* 46 */
-	o_LD,   A_T, a_C,  a_B,     o_LD,   A_T,  a_C,   a_C,  /* 48 */
-	o_LD,   A_T, a_C,  a_D,     o_LD,   A_T,  a_C,   a_E,  /* 4A */
-	o_LD,   A_T, a_C,  a_H,     o_LD,   A_T,  a_C,   a_L,  /* 4C */
-	o_LD,   A_T, a_C,  a_iHL,   o_LD,   A_T,  a_C,   a_A,  /* 4E */
+	o_LD,   A_T,  a_B,   a_B,   o_LD,   A_T,  a_B,   a_C,  /* 40 */
+	o_LD,   A_T,  a_B,   a_D,   o_LD,   A_T,  a_B,   a_E,  /* 42 */
+	o_LD,   A_T,  a_B,   a_H,   o_LD,   A_T,  a_B,   a_L,  /* 44 */
+	o_LD,   A_T,  a_B,   a_iHL, o_LD,   A_T,  a_B,   a_A,  /* 46 */
+	o_LD,   A_T,  a_C,   a_B,   o_LD,   A_T,  a_C,   a_C,  /* 48 */
+	o_LD,   A_T,  a_C,   a_D,   o_LD,   A_T,  a_C,   a_E,  /* 4A */
+	o_LD,   A_T,  a_C,   a_H,   o_LD,   A_T,  a_C,   a_L,  /* 4C */
+	o_LD,   A_T,  a_C,   a_iHL, o_LD,   A_T,  a_C,   a_A,  /* 4E */
 
-	o_LD,   A_T, a_D,  a_B,     o_LD,   A_T,  a_D,   a_C,  /* 50 */
-	o_LD,   A_T, a_D,  a_D,     o_LD,   A_T,  a_D,   a_E,  /* 52 */
-	o_LD,   A_T, a_D,  a_H,     o_LD,   A_T,  a_D,   a_L,  /* 54 */
-	o_LD,   A_T, a_D,  a_iHL,   o_LD,   A_T,  a_D,   a_A,  /* 56 */
-	o_LD,   A_T, a_E,  a_B,     o_LD,   A_T,  a_E,   a_C,  /* 58 */
-	o_LD,   A_T, a_E,  a_D,     o_LD,   A_T,  a_E,   a_E,  /* 5A */
-	o_LD,   A_T, a_E,  a_H,     o_LD,   A_T,  a_E,   a_L,  /* 5C */
-	o_LD,   A_T, a_E,  a_iHL,   o_LD,   A_T,  a_E,   a_A,  /* 5E */
+	o_LD,   A_T,  a_D,   a_B,   o_LD,   A_T,  a_D,   a_C,  /* 50 */
+	o_LD,   A_T,  a_D,   a_D,   o_LD,   A_T,  a_D,   a_E,  /* 52 */
+	o_LD,   A_T,  a_D,   a_H,   o_LD,   A_T,  a_D,   a_L,  /* 54 */
+	o_LD,   A_T,  a_D,   a_iHL, o_LD,   A_T,  a_D,   a_A,  /* 56 */
+	o_LD,   A_T,  a_E,   a_B,   o_LD,   A_T,  a_E,   a_C,  /* 58 */
+	o_LD,   A_T,  a_E,   a_D,   o_LD,   A_T,  a_E,   a_E,  /* 5A */
+	o_LD,   A_T,  a_E,   a_H,   o_LD,   A_T,  a_E,   a_L,  /* 5C */
+	o_LD,   A_T,  a_E,   a_iHL, o_LD,   A_T,  a_E,   a_A,  /* 5E */
 
-	o_LD,   A_T, a_H,  a_B,     o_LD,   A_T,  a_H,   a_C,  /* 60 */
-	o_LD,   A_T, a_H,  a_D,     o_LD,   A_T,  a_H,   a_E,  /* 62 */
-	o_LD,   A_T, a_H,  a_H,     o_LD,   A_T,  a_H,   a_L,  /* 64 */
-	o_LD,   A_T, a_H,  a_iHL,   o_LD,   A_T,  a_H,   a_A,  /* 66 */
-	o_LD,   A_T, a_L,  a_B,     o_LD,   A_T,  a_L,   a_C,  /* 68 */
-	o_LD,   A_T, a_L,  a_D,     o_LD,   A_T,  a_L,   a_E,  /* 6A */
-	o_LD,   A_T, a_L,  a_H,     o_LD,   A_T,  a_L,   a_L,  /* 5C */
-	o_LD,   A_T, a_L,  a_iHL,   o_LD,   A_T,  a_L,   a_A,  /* 6E */
+	o_LD,   A_T,  a_H,   a_B,   o_LD,   A_T,  a_H,   a_C,  /* 60 */
+	o_LD,   A_T,  a_H,   a_D,   o_LD,   A_T,  a_H,   a_E,  /* 62 */
+	o_LD,   A_T,  a_H,   a_H,   o_LD,   A_T,  a_H,   a_L,  /* 64 */
+	o_LD,   A_T,  a_H,   a_iHL, o_LD,   A_T,  a_H,   a_A,  /* 66 */
+	o_LD,   A_T,  a_L,   a_B,   o_LD,   A_T,  a_L,   a_C,  /* 68 */
+	o_LD,   A_T,  a_L,   a_D,   o_LD,   A_T,  a_L,   a_E,  /* 6A */
+	o_LD,   A_T,  a_L,   a_H,   o_LD,   A_T,  a_L,   a_L,  /* 5C */
+	o_LD,   A_T,  a_L,   a_iHL, o_LD,   A_T,  a_L,   a_A,  /* 6E */
 
-	o_LD,   A_T, a_iHL, a_B,    o_LD,   A_T,  a_iHL, a_C,  /* 70 */
-	o_LD,   A_T, a_iHL, a_D,    o_LD,   A_T,  a_iHL, a_E,  /* 72 */
-	o_LD,   A_T, a_iHL, a_H,    o_LD,   A_T,  a_iHL, a_L,  /* 74 */
-	o_HALT, A_T, a__,  a__,     o_LD,   A_T,  a_iHL, a_A,  /* 76 */
-	o_LD,   A_T, a_A,  a_B,     o_LD,   A_T,  a_A,   a_C,  /* 78 */
-	o_LD,   A_T, a_A,  a_D,     o_LD,   A_T,  a_A,   a_E,  /* 7A */
-	o_LD,   A_T, a_A,  a_H,     o_LD,   A_T,  a_A,   a_L,  /* 7C */
-	o_LD,   A_T, a_A,  a_iHL,   o_LD,   A_T,  a_A,   a_A,  /* 7E */
+	o_LD,   A_T,  a_iHL, a_B,   o_LD,   A_T,  a_iHL, a_C,  /* 70 */
+	o_LD,   A_T,  a_iHL, a_D,   o_LD,   A_T,  a_iHL, a_E,  /* 72 */
+	o_LD,   A_T,  a_iHL, a_H,   o_LD,   A_T,  a_iHL, a_L,  /* 74 */
+	o_HALT, A_T,  a__,   a__,   o_LD,   A_T,  a_iHL, a_A,  /* 76 */
+	o_LD,   A_T,  a_A,   a_B,   o_LD,   A_T,  a_A,   a_C,  /* 78 */
+	o_LD,   A_T,  a_A,   a_D,   o_LD,   A_T,  a_A,   a_E,  /* 7A */
+	o_LD,   A_T,  a_A,   a_H,   o_LD,   A_T,  a_A,   a_L,  /* 7C */
+	o_LD,   A_T,  a_A,   a_iHL, o_LD,   A_T,  a_A,   a_A,  /* 7E */
 
-	o_ADD,  A_T, a_A,  a_B,     o_ADD,  A_T,  a_A,   a_C,  /* 80 */
-	o_ADD,  A_T, a_A,  a_D,     o_ADD,  A_T,  a_A,   a_E,  /* 82 */
-	o_ADD,  A_T, a_A,  a_H,     o_ADD,  A_T,  a_A,   a_L,  /* 84 */
-	o_ADD,  A_T, a_A,  a_iHL,   o_ADD,  A_T,  a_A,   a_A,  /* 86 */
-	o_ADC,  A_T, a_A,  a_B,     o_ADC,  A_T,  a_A,   a_C,  /* 88 */
-	o_ADC,  A_T, a_A,  a_D,     o_ADC,  A_T,  a_A,   a_E,  /* 8A */
-	o_ADC,  A_T, a_A,  a_H,     o_ADC,  A_T,  a_A,   a_L,  /* 8C */
-	o_ADC,  A_T, a_A,  a_iHL,   o_ADC,  A_T,  a_A,   a_A,  /* 8E */
+	o_ADD,  A_T,  a_A,   a_B,   o_ADD,  A_T,  a_A,   a_C,  /* 80 */
+	o_ADD,  A_T,  a_A,   a_D,   o_ADD,  A_T,  a_A,   a_E,  /* 82 */
+	o_ADD,  A_T,  a_A,   a_H,   o_ADD,  A_T,  a_A,   a_L,  /* 84 */
+	o_ADD,  A_T,  a_A,   a_iHL, o_ADD,  A_T,  a_A,   a_A,  /* 86 */
+	o_ADC,  A_T,  a_A,   a_B,   o_ADC,  A_T,  a_A,   a_C,  /* 88 */
+	o_ADC,  A_T,  a_A,   a_D,   o_ADC,  A_T,  a_A,   a_E,  /* 8A */
+	o_ADC,  A_T,  a_A,   a_H,   o_ADC,  A_T,  a_A,   a_L,  /* 8C */
+	o_ADC,  A_T,  a_A,   a_iHL, o_ADC,  A_T,  a_A,   a_A,  /* 8E */
 
 	o_SUB,  A_T,  a_B,   a__,   o_SUB,  A_T,  a_C,   a__,  /* 90 */
 	o_SUB,  A_T,  a_D,   a__,   o_SUB,  A_T,  a_E,   a__,  /* 92 */
