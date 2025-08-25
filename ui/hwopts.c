@@ -39,6 +39,7 @@
 #include "../zx.h"
 #include "../zx_scr.h"
 #include "menu.h"
+#include "model.h"
 #include "hwopts.h"
 
 static void hwopts_next_opt(int l);
@@ -59,7 +60,14 @@ static int hwopts_keys[HWOPTS_NENT] = {
 
 static void hwopts_run_line(int l)
 {
-	hwopts_next_opt(l);
+	switch (l) {
+	case 0:
+		model_menu();
+		break;
+	default:
+		hwopts_next_opt(l);
+		break;
+	}
 }
 
 static void hwopts_prev_opt(int l)
