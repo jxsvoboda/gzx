@@ -102,6 +102,8 @@
 #define o_SUB	66
 #define o_XOR	67
 
+#define o_max	68
+
 #define o_sp	68
 #define o_ui   128
 
@@ -175,6 +177,10 @@
 #define a_SP	41
 #define a_AF_	42
 
+#define a_max	43
+
+extern char *op_n[o_max];
+extern char *a_n[a_max];
 extern unsigned char d_op[1024];
 extern unsigned char d_ddop[1024];
 extern unsigned char d_fdop[1024];

@@ -61,6 +61,7 @@ sources_generic = \
     gzx.c \
     memio.c \
     midi.c \
+    reasm.c \
     z80.c \
     z80g.c \
     z80dep.c \

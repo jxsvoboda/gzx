@@ -43,35 +43,6 @@ static char hexc[] = {
 	'8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
 };
 
-static char *op_n[] = {
-	"ADC",  "ADD",  "AND",  "BIT",  "CALL", "CCF", "CP",   "CPD",
-	"CPDR", "CPI",  "CPIR", "CPL",  "DAA",  "DEC", "DI",   "DJNZ",
-	"EI",   "EX",   "EXX",  "HALT", "IM",   "IN",  "INC",  "IND",
-	"INDR", "INI",  "INIR", "JP",   "JR",   "LD",  "LDD",  "LDDR",
-	"LDI",  "LDIR", "NEG",  "NOP",  "OR",   "OUT", "OUTD", "OTDR",
-	"OUTI", "OTIR", "POP",  "PUSH", "RES",  "RET", "RETI", "RETN",
-	"RLA",  "RL",   "RLCA", "RLC",  "RLD",  "RRA", "RR",   "RRCA",
-	"RRC",  "RRD",  "RST",  "SBC",  "SCF",  "SET", "SLA",  "SRA",
-	"SLL",  "SRL",  "SUB",  "XOR"
-};
-
-/* operand format strings */
-static char *a_n[] = {
-	"",  "A", "B", "C",
-	"D", "E", "H", "L",
-	"I", "R", "$", "($)",
-	"AF", "BC", "DE", "HL",
-
-	"IX",   "IY",   "(IX$)", "(IY$)",
-	"C",    "NC",   "M",     "P",
-	"Z",    "NZ",   "PE",    "PO",
-	"(BC)", "(DE)", "(HL)",  "(SP)",
-
-	"(C)", "0",  "1",  "2",
-	"3",   "4",  "5",  "6",
-	"7",   "SP", "AF'",
-};
-
 #define BUF_SIZE 64
 
 static unsigned char *d_tab[3][3] = {
@@ -205,7 +176,7 @@ static void da_ra(void)
 
 	adr = da_getc();
 	if (adr & 0x80)
-		adr |= ~0xff; /* znamenk. rozsireni */
+		adr |= ~0xff; /* sign extension */
 	adr += disasm_org;
 	da_prnw(adr);
 }

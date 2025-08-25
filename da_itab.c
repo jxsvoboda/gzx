@@ -31,6 +31,35 @@
 
 #include "da_itab.h"
 
+char *op_n[o_max] = {
+	"ADC",  "ADD",  "AND",  "BIT",  "CALL", "CCF", "CP",   "CPD",
+	"CPDR", "CPI",  "CPIR", "CPL",  "DAA",  "DEC", "DI",   "DJNZ",
+	"EI",   "EX",   "EXX",  "HALT", "IM",   "IN",  "INC",  "IND",
+	"INDR", "INI",  "INIR", "JP",   "JR",   "LD",  "LDD",  "LDDR",
+	"LDI",  "LDIR", "NEG",  "NOP",  "OR",   "OUT", "OUTD", "OTDR",
+	"OUTI", "OTIR", "POP",  "PUSH", "RES",  "RET", "RETI", "RETN",
+	"RLA",  "RL",   "RLCA", "RLC",  "RLD",  "RRA", "RR",   "RRCA",
+	"RRC",  "RRD",  "RST",  "SBC",  "SCF",  "SET", "SLA",  "SRA",
+	"SLL",  "SRL",  "SUB",  "XOR"
+};
+
+/* operand format strings */
+char *a_n[a_max] = {
+	"",  "A", "B", "C",
+	"D", "E", "H", "L",
+	"I", "R", "$", "($)",
+	"AF", "BC", "DE", "HL",
+
+	"IX",   "IY",   "(IX$)", "(IY$)",
+	"C",    "NC",   "M",     "P",
+	"Z",    "NZ",   "PE",    "PO",
+	"(BC)", "(DE)", "(HL)",  "(SP)",
+
+	"(C)", "0",  "1",  "2",
+	"3",   "4",  "5",  "6",
+	"7",   "SP", "AF'",
+};
+
 unsigned char d_op[1024] = {
 	o_NOP,  A_T,  a__,   a__,   o_LD,   A_DW, a_BC,  a_s,  /* 00 */
 	o_LD,   A_T,  a_iBC, a_A,   o_INC,  A_T,  a_BC,  a__,  /* 02 */

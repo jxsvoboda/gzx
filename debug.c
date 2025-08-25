@@ -40,6 +40,7 @@
 #include "zx_scr.h"
 #include "z80.h"
 #include "disasm.h"
+#include "reasm.h"
 #include "sys_all.h"
 
 #define MK_PAIR(hi,lo) ( (((uint16_t)(hi)) << 8) | (lo) )
@@ -310,6 +311,22 @@ static void instr_prev(debugger_t *dbg)
 	dbg->instr_base = last;
 }
 
+/** Get address of currently selected instruction.
+ *
+ * @param dbg Debugger
+ * @return Address of currently selected instruction
+ */
+static uint16_t debugger_get_cursor_addr(debugger_t *dbg)
+{
+	int i;
+
+	disasm_org = dbg->instr_base;
+	for (i = 0; i < dbg->ic_ln; i++)
+		disasm_instr();
+
+	return disasm_org;
+}
+
 /** Trace into (i.e. single step instructions)
  *
  * @param dbg Debugger
@@ -359,13 +376,10 @@ static void debugger_stepover(debugger_t *dbg)
  */
 static void debugger_to_cursor(debugger_t *dbg)
 {
-	int i;
+	uint16_t addr;
 
-	disasm_org = dbg->instr_base;
-	for (i = 0; i < dbg->ic_ln; i++)
-		disasm_instr();
-
-	debugger_run_upto(dbg, disasm_org);
+	addr = debugger_get_cursor_addr(dbg);
+	debugger_run_upto(dbg, addr);
 }
 
 /** View spectrum screen without quitting the debugger. */
@@ -578,6 +592,22 @@ static void debugger_goto(debugger_t *dbg)
 	dbg->edit = dbge_goto;
 }
 
+/** Enter key pressed when disassembly is selected.
+ *
+ * @param dbg Debugger
+ */
+static void debugger_enter_disasm(debugger_t *dbg)
+{
+	int x, y;
+
+	x = 15;
+	y = INSTR_CY + dbg->ic_ln;
+
+	teline_init(&dbg->teline, x, y, 17);
+	dbg->teline.focus = 1;
+	dbg->edit = dbge_enter;
+}
+
 /** Enter key pressed when memory dump is selected.
  *
  * @param dbg Debugger
@@ -602,6 +632,7 @@ static void debugger_enter(debugger_t *dbg)
 {
 	switch (dbg->focus) {
 	case dbgv_disasm:
+		debugger_enter_disasm(dbg);
 		break;
 	case dbgv_memory:
 		debugger_enter_memdump(dbg);
@@ -673,14 +704,36 @@ static void debugger_key_unmod(debugger_t *dbg, wkey_t k)
 	}
 }
 
-/** Write value at current memory address.
+/** Enter the specified string in debugger (from text edit line).
  *
  * @param dbg Debugger
  * @param val Value
  */
-static void debugger_poke(debugger_t *dbg, uint8_t val)
+static void debugger_enter_str(debugger_t *dbg, const char *str)
 {
-	zx_memset8(dbg->hex_base + dbg->mem_off, val);
+	uint16_t val;
+	uint16_t addr;
+	uint8_t buf[8];
+	int rc;
+	int i;
+	char *eptr;
+
+	switch (dbg->focus) {
+	case dbgv_disasm:
+		addr = debugger_get_cursor_addr(dbg);
+		rc = reasm_instr(addr, str, buf, sizeof(buf));
+		for (i = 0; i < rc; i++) {
+			zx_memset8(addr + i, buf[i]);
+		}
+		break;
+	case dbgv_memory:
+		val = (uint16_t)strtoul(str, &eptr, 16);
+		if (str[0] != '\0' && *eptr == '\0') {
+			/* conversion successful */
+			zx_memset8(dbg->hex_base + dbg->mem_off, val);
+		}
+		break;
+	}
 }
 
 /** Enter key pressed while text edit line is active.
@@ -694,20 +747,18 @@ static void debugger_teline_enter(debugger_t *dbg)
 	const char *str;
 
 	dbg->teline.focus = 0;
-
 	str = teline_get_text(&dbg->teline);
-	val = (uint16_t)strtoul(str, &eptr, 16);
-	if (str[0] == '\0' || *eptr != '\0') {
-		/* conversion unsuccessful */
-		return;
-	}
 
 	switch (dbg->edit) {
 	case dbge_goto:
-		debugger_curs_to_addr(dbg, val);
+		val = (uint16_t)strtoul(str, &eptr, 16);
+		if (str[0] != '\0' && *eptr == '\0') {
+			/* conversion successful */
+			debugger_curs_to_addr(dbg, val);
+		}
 		break;
 	case dbge_enter:
-		debugger_poke(dbg, (uint8_t)val);
+		debugger_enter_str(dbg, str);
 		break;
 	}
 }

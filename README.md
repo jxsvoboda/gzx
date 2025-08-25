@@ -127,7 +127,7 @@ Key functions while in the debugger
   Home         | Move cursor up by 256 bytes
   End          | Move cursor down by 256 bytes
   G            | Enter address to which cursor is then moved
-  Enter        | Modify memory location (when memory dump is focused)
+  Enter        | Edit instruction mnemonic or hex value in memory
   F7           | Trace into
   F8           | Step over
   F9           | Go to cursor (run until PC = cursor position)
