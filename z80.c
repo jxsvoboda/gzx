@@ -52,7 +52,7 @@
 #include "z80.h"
 #include "z80dep.h"
 
-static int z80_readinstr(void);
+static void z80_readinstr(void);
 static void z80_check_nmi(void);
 static void z80_check_int(void);
 
@@ -100,14 +100,14 @@ static inline void z80_clock_inc(uint8_t inc)
 
 /* returns the signed value of the byte: 0..127 ->0..127
                                          128..255 ->-128..-1 */
-static int u8sval(uint8_t u) {
+static int16_t u8sval(uint8_t u) {
   if(u<0x80) return u;
-    else return (int)(u&0x7f)-128;
+    else return (int16_t)(u&0x7f)-128;
 }
 
-static int u16sval(uint16_t u) {
-  if(u<0x8000) return u;
-    else return (int)(u&0x7fff)-32768;
+static int32_t u16sval(uint16_t u) {
+  if(u<0x8000u) return (int)u;
+    else return (int32_t)(u&0x7fff)-0x8000u;
 }
 
 /********************** flags calculation ****************************/
@@ -116,39 +116,39 @@ static int u16sval(uint16_t u) {
 /*  (the result would be >127 or <-128) */
 
 static int add_v8(uint8_t a, uint8_t b) {
-  int sign_r;
+  int16_t sign_r;
   sign_r=u8sval(a)+u8sval(b);
-  return sign_r<-128 || sign_r>127;
+  return (sign_r<-128 || sign_r>127) ? 1 : 0;
 }
 
 static int sub_v8(uint8_t a, uint8_t b) {
-  int sign_r;
+  int16_t sign_r;
   sign_r=u8sval(a)-u8sval(b);
-  return sign_r<-128 || sign_r>127;
+  return (sign_r<-128 || sign_r>127) ? 1 : 0;
 }
 
 static int adc_v8(uint8_t a, uint8_t b, uint8_t c) {
-  int sign_r;
+  int16_t sign_r;
   sign_r=u8sval(a)+u8sval(b)+u8sval(c);
-  return sign_r<-128 || sign_r>127;
+  return (sign_r<-128 || sign_r>127) ? 1 : 0;
 }
 
 static int sbc_v8(uint8_t a, uint8_t b, uint8_t c) {
-  int sign_r;
+  int16_t sign_r;
   sign_r=u8sval(a)-u8sval(b)-c;
-  return sign_r<-128 || sign_r>127;
+  return (sign_r<-128 || sign_r>127) ? 1 : 0;
 }
 
 static int adc_v16(uint16_t a, uint16_t b, uint16_t c) {
-  int sign_r;
+  int32_t sign_r;
   sign_r=u16sval(a)+u16sval(b)+u16sval(c);
-  return sign_r<-32768 || sign_r>32767;
+  return (sign_r<-32768l || sign_r>32767l) ? 1 : 0;
 }
 
 static int sbc_v16(uint16_t a, uint16_t b, uint16_t c) {
-  int sign_r;
+  int32_t sign_r;
   sign_r=u16sval(a)-u16sval(b)-c;
-  return sign_r<-32768 || sign_r>32767;
+  return (sign_r<-32768l || sign_r>32767l) ? 1 : 0;
 }
 
 /* calculates an even parity for the given 8-bit number */
@@ -158,16 +158,16 @@ static int oddp8(uint8_t x) {
   x^=x>>1;
   x^=1;
   
-  return x&1;
+  return (int)(x&1);
 }
 
 static void setflags(int s, int z, int hc, int pv, int n, int c) {
-  if(s>=0) cpus.F = (cpus.F & (fS^0xff)) | (s?fS:0);
-  if(z>=0) cpus.F = (cpus.F & (fZ^0xff)) | (z?fZ:0);
-  if(hc>=0) cpus.F = (cpus.F & (fHC^0xff)) | (hc?fHC:0);
-  if(pv>=0) cpus.F = (cpus.F & (fPV^0xff)) | (pv?fPV:0);
-  if(n>=0) cpus.F = (cpus.F & (fN^0xff)) | (n?fN:0);
-  if(c>=0) cpus.F = (cpus.F & (fC^0xff)) | (c?fC:0);
+  if(s>=0) cpus.F = (cpus.F & (fS^0xff)) | (s!=0 ? fS : 0);
+  if(z>=0) cpus.F = (cpus.F & (fZ^0xff)) | (z!=0 ? fZ : 0);
+  if(hc>=0) cpus.F = (cpus.F & (fHC^0xff)) | (hc!=0 ? fHC : 0);
+  if(pv>=0) cpus.F = (cpus.F & (fPV^0xff)) | (pv!=0 ? fPV : 0);
+  if(n>=0) cpus.F = (cpus.F & (fN^0xff)) | (n!=0 ? fN : 0);
+  if(c>=0) cpus.F = (cpus.F & (fC^0xff)) | (c!=0 ? fC : 0);
   cpus.flags_aff = 1;
 }
 
@@ -243,7 +243,7 @@ static uint8_t _iDE8(void) {
 }
 
 /* returns (IX+N) */
-static uint8_t _iIXN8(uint16_t N) {
+static uint8_t _iIXN8(uint8_t N) {
   uint16_t a16;
 
   a16 = get_addrIX()+u8sval(N);
@@ -252,7 +252,7 @@ static uint8_t _iIXN8(uint16_t N) {
 }
 
 /* returns (IY+N) */
-static uint8_t _iIYN8(uint16_t N) {
+static uint8_t _iIYN8(uint8_t N) {
   uint16_t a16;
 
   a16 = get_addrIY()+u8sval(N);
@@ -261,7 +261,7 @@ static uint8_t _iIYN8(uint16_t N) {
 }
 
 /* (IX+N) <- val*/
-static void s_iIXN8(uint16_t N, uint8_t val) {
+static void s_iIXN8(uint8_t N, uint8_t val) {
   uint16_t a16;
 
   a16 = get_addrIX()+u8sval(N);
@@ -270,7 +270,7 @@ static void s_iIXN8(uint16_t N, uint8_t val) {
 }
 
 /* (IY+N) <- val*/
-static void s_iIYN8(uint16_t N, uint8_t val) {
+static void s_iIYN8(uint8_t N, uint8_t val) {
   uint16_t a16;
 
   a16 = get_addrIY()+u8sval(N);
@@ -417,19 +417,19 @@ static uint16_t z80_iget16(void) {
 #ifndef NO_Z80UNDOC
 
 static void setIXh(uint8_t val) {
-  cpus.IX = (cpus.IX & 0x00ff) | ((uint16_t)val<<8);
+  cpus.IX = (cpus.IX & 0x00ffu) | ((uint16_t)val<<8);
 }
 
 static void setIYh(uint8_t val) {
-  cpus.IY = (cpus.IY & 0x00ff) | ((uint16_t)val<<8);
+  cpus.IY = (cpus.IY & 0x00ffu) | ((uint16_t)val<<8);
 }
 
 static void setIXl(uint8_t val) {
-  cpus.IX = (cpus.IX & 0xff00) | (uint16_t)val;
+  cpus.IX = (cpus.IX & 0xff00u) | (uint16_t)val;
 }
 
 static void setIYl(uint8_t val) {
-  cpus.IY = (cpus.IY & 0xff00) | (uint16_t)val;
+  cpus.IY = (cpus.IY & 0xff00u) | (uint16_t)val;
 }
 
 static uint8_t getIXh(void) {
@@ -456,11 +456,11 @@ static void _push16(uint16_t val);
 
 
 void z80_init_tables(void) {
-  unsigned u;
+  uint16_t u;
   
   for(u=0;u<256;u++) {
     ox_tab[u] = u & (fS | fU1 | fU2);
-    if(oddp8(u)) ox_tab[u] |= fPV;
+    if(oddp8((uint8_t)u) != 0) ox_tab[u] |= fPV;
   }
   ox_tab[0] |= fZ;
 }
@@ -471,34 +471,37 @@ static uint8_t _adc8(uint16_t a, uint16_t b) {
   uint16_t res;
   uint16_t c;
   
-  c=(cpus.F&fC)?1:0;
+  c = (cpus.F&fC) != 0 ? 1 : 0;
 
   res=a+b+c;
   setflags((res>>7)&1,
-	   (res&0xff)==0,
-	   (a&0x0f)+(b&0x0f)+c > 0x0f,
-	   adc_v8(a,b,c),
+	   (res&0xff)==0 ? 1 : 0,
+	   (a&0x0f)+(b&0x0f)+c > 0x0f ? 1 : 0,
+	   adc_v8(a&0xff,b&0xff,c&0xff),
 	   0,
-	   res>0xff);
-  setundocflags8(res);
+	   res>0xff ? 1 : 0);
+  setundocflags8(res&0xff);
   return res & 0xff;
 }
 
 static uint16_t _adc16(uint16_t a, uint16_t b) {
   uint16_t res0,res1,a1,b1,c,c1;
   
-  c=((cpus.F&fC)?1:0);
+  c = (cpus.F&fC) != 0 ? 1 : 0;
 
   res0=(a&0xff)+(b&0xff)+ c;
-  a1=a>>8; b1=b>>8; c1=((res0>0xff)?1:0);
+  a1=a>>8;
+  b1=b>>8;
+  c1 = (res0>0xff) != 0 ? 1 : 0;
+
   res1=a1+b1+c1;
-  setflags(res1&0x80,
-	   !((res0&0xff)|(res1&0xff)),
-	   (a1&0x0f) + (b1&0x0f)>0x0f,
+  setflags((int)(res1&0x80),
+	   ((res0&0xff)|(res1&0xff)) == 0 ? 1 : 0,
+	   ((a1&0x0f) + (b1&0x0f)>0x0f) ? 1 : 0,
 	   adc_v16(a,b,c),
 	   0,
-	   res1>0xff);
-  setundocflags8(res1);
+	   res1>0xff ? 1 : 0);
+  setundocflags8(res1&0xff);
   return (res0&0xff)|((res1&0xff)<<8);
 }
 
@@ -509,12 +512,12 @@ static uint8_t _add8(uint16_t a, uint16_t b) {
 
   res=a+b;
   setflags((res>>7)&1,
-	   (res&0xff)==0,
-	   (a&0x0f)+(b&0x0f) > 0x0f,
-	   add_v8(a,b),
+	   (res&0xff)==0 ? 1 : 0,
+	   (a&0x0f)+(b&0x0f) > 0x0f ? 1 : 0,
+	   add_v8(a&0xff,b&0xff),
 	   0,
-	   res>0xff);
-  setundocflags8(res);
+	   res>0xff ? 1 : 0);
+  setundocflags8(res&0xff);
   return res & 0xff;
 }
 
@@ -526,11 +529,11 @@ static uint16_t _add16(uint16_t a, uint16_t b) {
   res1=a1+b1+((res0>0xff)?1:0);
   setflags(-1,
 	   -1,
-	   (a1&0x0f) + (b1&0x0f)>0x0f,
+	   (a1&0x0f) + (b1&0x0f)>0x0f ? 1 : 0,
 	   -1,
 	   0,
-	   res1>0xff);
-  setundocflags8(res1);
+	   res1>0xff ? 1 : 0);
+  setundocflags8(res1&0xff);
   return (res0&0xff)|((res1&0xff)<<8);
 }
 
@@ -578,13 +581,13 @@ static uint8_t _cp8(uint16_t a, uint16_t b) {
   uint16_t res;
 
   res=a-b;
-  setflags((res>>7)&1,
-	   (res&0xff)==0,
-	   (a&0x0f)-(b&0x0f) < 0, /* I hope */
-	   sub_v8(a,b),
+  setflags((int)((res>>7)&1),
+	   (res&0xff)==0 ? 1 : 0,
+	   (a&0x0f)-(b&0x0f) < 0 ? 1 : 0, /* I hope */
+	   sub_v8(a&0xff,b&0xff),
 	   1,
-	   res>0xff);
-  setundocflags8(b); /* not from the result! */
+	   res>0xff ? 1 : 0);
+  setundocflags8(b&0xff); /* not from the result! */
   return res & 0xff;
 }
 
@@ -594,13 +597,13 @@ static uint8_t _dec8(uint16_t a) {
   uint16_t res;
 
   res=(a-1)&0xff;
-  setflags(res>>7,
-	   res==0,
-	   (a&0x0f)-1<0, /* I hope */
-	   sub_v8(a,1),
+  setflags((int)(res>>7),
+	   res==0 ? 1 : 0,
+	   (a&0x0f)-1<0 ? 1 : 0, /* I hope */
+	   sub_v8(a&0xff,1),
 	   1,    /* !spemu */
 	   -1);
-  setundocflags8(res);
+  setundocflags8(res&0xff);
   return res;
 }
 
@@ -614,14 +617,14 @@ static uint8_t _in8(uint16_t a) {
   uint16_t res;
 
   res=_in8pf(a)&0xff;
-  setflags(res>>7,
-	   res==0,
+  setflags((int)(res>>7),
+	   res==0 ? 1 : 0,
 	   0,
-	   oddp8(res),
+	   oddp8(res&0xff),
 	   0,
 	   -1);
-  setundocflags8(res);
-  return res;
+  setundocflags8(res&0xff);
+  return res&0xff;
 }
 
 /************************************************************************/
@@ -630,14 +633,14 @@ static uint8_t _inc8(uint16_t a) {
   uint16_t res;
 
   res=(a+1)&0xff;
-  setflags(res>>7,
-	   res==0,
-	   (a&0x0f)+1>0x0f,
-	   add_v8(a,1),
+  setflags((int)(res>>7),
+	   res==0 ? 1 : 0,
+	   (a&0x0f)+1>0x0f ? 1 : 0,
+	   add_v8(a&0xff,1),
 	   0,		/* !spemu */
 	   -1);
-  setundocflags8(res);
-  return res;
+  setundocflags8(res&0xff);
+  return res&0xff;
 }
 
 /************************************************************************/
@@ -703,7 +706,7 @@ static uint8_t _rla8(uint8_t a) {
   uint8_t nC,oC;
 
   nC=a>>7;
-  oC=(cpus.F & fC)?1:0;
+  oC=(cpus.F & fC) != 0 ? 1 : 0;
   a=(a<<1)|oC;
   cpus.F = (cpus.F & ~(fU1|fHC|fU2|fN|fC)) | (a&(fU1|fU2)) | nC;
   cpus.flags_aff=1;
@@ -714,7 +717,7 @@ static uint8_t _rl8(uint8_t a) {
   uint8_t nC,oC;
 
   nC=a>>7;
-  oC=(cpus.F & fC)?1:0;
+  oC=(cpus.F & fC) != 0 ? 1 : 0;
   a=(a<<1)|oC;
   cpus.F=ox_tab[a]|nC;
   cpus.flags_aff=1;
@@ -822,8 +825,8 @@ static uint8_t _sll8(uint8_t a) {
 
 #endif
 
-static uint8_t _srl8(uint16_t a) {
-  uint16_t nC;
+static uint8_t _srl8(uint8_t a) {
+  uint8_t nC;
 
   nC=a&1;
   a>>=1;
@@ -838,15 +841,15 @@ static uint8_t _sbc8(uint16_t a, uint16_t b) {
   uint16_t res;
   uint16_t c;
   
-  c=((cpus.F&fC)!=0);
+  c=((cpus.F&fC)!=0) ? 1 : 0;
 
   res=a-b-c;
-  setflags((res>>7)&1,
-	   (res&0xff)==0,
-	   (a&0x0f)-(b&0x0f)-c < 0, /* I hope */
-	   sbc_v8(a,b,c),
+  setflags((int)((res>>7)&1),
+	   (res&0xff)==0 ? 1 : 0,
+	   (a&0x0f)-(b&0x0f)-c < 0 ? 1 : 0, /* I hope */
+	   sbc_v8(a&0xff,b&0xff,c&0xff),
 	   1,
-	   res>0xff);
+	   res>0xff ? 1 : 0);
   setundocflags8(res);
   return res & 0xff;
 }
@@ -854,25 +857,25 @@ static uint8_t _sbc8(uint16_t a, uint16_t b) {
 static uint16_t _sbc16(uint16_t a, uint16_t b) {
   uint16_t res0,res1,a1,b1,c,c1;
   
-  c=((cpus.F&fC)?1:0);
+  c= (cpus.F&fC) != 0 ? 1 : 0;
 
   res0=(a&0xff)-(b&0xff)- c;
-  a1=a>>8; b1=b>>8; c1=((res0>0xff)?1:0);
+  a1=a>>8; b1=b>>8; c1 = (res0>0xff) != 0 ? 1 : 0;
   res1=a1-b1-c1;
-  setflags(res1&0x80,
-	   !((res0&0xff)|(res1&0xff)),
+  setflags((int)(res1&0x80),
+	   ((res0&0xff)|(res1&0xff)) == 0 ? 1 : 0,
 	   (a1&0x0f) < (b1&0x0f)+c1,
 	   sbc_v16(a,b,c),
 	   1,
-	   res1>0xff);
-  setundocflags8(res1);
+	   res1>0xff ? 1 : 0);
+  setundocflags8(res1&0xff);
   return (res0&0xff)|((res1&0xff)<<8);
 }
 
 /************************************************************************/
 
 static uint8_t _set8(uint16_t a, uint16_t b) {
-  uint16_t res;
+  uint8_t res;
 
   res=b | (1<<a);
   return res;
@@ -885,10 +888,10 @@ static uint8_t _sub8(uint16_t a, uint16_t b) {
   uint16_t res;
 
   res=a-b;
-  setflags((res>>7)&1,
-	   (res&0xff)==0,
-	   (a&0x0f)-(b&0x0f) < 0, /* I hope */
-	   sub_v8(a,b),
+  setflags((int)((res>>7)&1),
+	   (res&0xff)==0 ? 1 : 0,
+	   (a&0x0f)-(b&0x0f) < 0 ? 1 : 0, /* I hope */
+	   sub_v8(a&0xff,b&0xff),
 	   1,
 	   res>0xff);
   setundocflags8(res);
@@ -1232,21 +1235,21 @@ static void ei_and_iIYN(void) {
 /************************************************************************/
 
 static void ei_bit_b_r(void) {
-  _bit8((opcode>>3)&0x07,cpus.r[opcode & 0x07]);
+  (void)_bit8((opcode>>3)&0x07,cpus.r[opcode & 0x07]);
   /* Note that undoc flags are set from source operand, not from result! */
   setundocflags8(cpus.r[opcode & 0x07]);
   z80_clock_inc(8);
 }
 
 static void ei_bit_b_iHL(void) {
-  _bit8((opcode>>3)&0x07,_iHL8());
+  (void)_bit8((opcode>>3)&0x07,_iHL8());
   setundocflags8(cpus.W);
   z80_clock_inc(12);
 }
 
 /* DDCB ! */
 static void ei_bit_b_iIXN(void) {
-  _bit8((opcode>>3)&0x07,_iIXN8(cbop));
+  (void)_bit8((opcode>>3)&0x07,_iIXN8(cbop));
   setundocflags8(cpus.W);
 
   z80_clock_inc(16);
@@ -1255,7 +1258,7 @@ static void ei_bit_b_iIXN(void) {
 /* FDCB ! */
 static void ei_bit_b_iIYN(void) {
 
-  _bit8((opcode>>3)&0x07,_iIYN8(cbop));
+  (void)_bit8((opcode>>3)&0x07,_iIYN8(cbop));
   setundocflags8(cpus.W);
 
   z80_clock_inc(16);
@@ -1275,7 +1278,7 @@ static void ei_call_C_NN(void) {
   uint16_t addr;
 
   addr=z80_iget16();
-  if(cpus.F & fC) {
+  if((cpus.F & fC) != 0) {
     _call16(addr);
     z80_clock_inc(17);
   } else z80_clock_inc(10);
@@ -1285,7 +1288,7 @@ static void ei_call_NC_NN(void) {
   uint16_t addr;
 
   addr=z80_iget16();
-  if(!(cpus.F & fC)) {
+  if((cpus.F & fC) == 0) {
     _call16(addr);
     z80_clock_inc(17);
   } else z80_clock_inc(10);
@@ -1295,7 +1298,7 @@ static void ei_call_M_NN(void) {
   uint16_t addr;
 
   addr=z80_iget16();
-  if(cpus.F & fS) {
+  if((cpus.F & fS) != 0) {
     _call16(addr);
     z80_clock_inc(17);
   } else z80_clock_inc(10);
@@ -1305,7 +1308,7 @@ static void ei_call_P_NN(void) {
   uint16_t addr;
 
   addr=z80_iget16();
-  if(!(cpus.F & fS)) {
+  if((cpus.F & fS) == 0) {
     _call16(addr);
     z80_clock_inc(17);
   } else z80_clock_inc(10);
@@ -1315,7 +1318,7 @@ static void ei_call_Z_NN(void) {
   uint16_t addr;
 
   addr=z80_iget16();
-  if(cpus.F & fZ) {
+  if((cpus.F & fZ) != 0) {
     _call16(addr);
     z80_clock_inc(17);
   } else z80_clock_inc(10);
@@ -1325,7 +1328,7 @@ static void ei_call_NZ_NN(void) {
   uint16_t addr;
 
   addr=z80_iget16();
-  if(!(cpus.F & fZ)) {
+  if((cpus.F & fZ) == 0) {
     _call16(addr);
     z80_clock_inc(17);
   } else z80_clock_inc(10);
@@ -1335,7 +1338,7 @@ static void ei_call_PE_NN(void) {
   uint16_t addr;
 
   addr=z80_iget16();
-  if(cpus.F & fPV) {
+  if((cpus.F & fPV) != 0) {
     _call16(addr);
     z80_clock_inc(17);
   } else z80_clock_inc(10);
@@ -1345,7 +1348,7 @@ static void ei_call_PO_NN(void) {
   uint16_t addr;
 
   addr=z80_iget16();
-  if(!(cpus.F & fPV)) {
+  if((cpus.F & fPV) == 0) {
     _call16(addr);
     z80_clock_inc(17);
   } else z80_clock_inc(10);
@@ -1363,7 +1366,7 @@ static void ei_ccf(void) { /* complement carry flag */
    * flags, then SCF/CCF moves flags 3,5 from A. If it did not affect flags,
    * it ORs F with bits 3,5 from A.
    */
-  if (cpus.pflags_aff)
+  if (cpus.pflags_aff != 0)
     cpus.F &= ~fU;
 
   cpus.F= ((cpus.F ^ fC) & ~(fHC|fN)) | nHC | (cpus.r[rA]&(fU1|fU2));
@@ -1374,7 +1377,7 @@ static void ei_ccf(void) { /* complement carry flag */
 /************************************************************************/
 
 static void ei_cp_r(void) {
-  _cp8(cpus.r[rA],cpus.r[opcode & 0x07]);
+  (void)_cp8(cpus.r[rA],cpus.r[opcode & 0x07]);
   z80_clock_inc(4);
 }
 
@@ -1383,12 +1386,12 @@ static void ei_cp_N(void) {
 
   op=z80_iget8();
 
-  _cp8(cpus.r[rA],op);
+  (void)_cp8(cpus.r[rA],op);
   z80_clock_inc(7);
 }
 
 static void ei_cp_iHL(void) {
-  _cp8(cpus.r[rA],_iHL8());
+  (void)_cp8(cpus.r[rA],_iHL8());
   z80_clock_inc(7);
 }
 
@@ -1397,7 +1400,7 @@ static void ei_cp_iIXN(void) {
 
   op=z80_iget8();
 
-  _cp8(cpus.r[rA],_iIXN8(op));
+  (void)_cp8(cpus.r[rA],_iIXN8(op));
   z80_clock_inc(15);
 }
 
@@ -1406,7 +1409,7 @@ static void ei_cp_iIYN(void) {
 
   op=z80_iget8();
 
-  _cp8(cpus.r[rA],_iIYN8(op));
+  (void)_cp8(cpus.r[rA],_iIYN8(op));
   z80_clock_inc(15);
 }
 
@@ -1421,12 +1424,12 @@ static void ei_cpd(void) {
   cpus.W = cpus.r[rB];
   setHL(getHL()-1);
   newBC=getBC()-1; setBC(newBC);
-  hf=(a&0x0f)-(b&0x0f) < 0;
+  hf=(a&0x0f)-(b&0x0f) < 0 ? 1 : 0;
   
-  setflags((res>>7)&1,
-	   (res&0xff)==0,
+  setflags((int)((res>>7)&1),
+	   (res&0xff)==0 ? 1 : 0,
 	   hf,
-	   newBC!=0,
+	   newBC!=0 ? 1 : 0,
 	   1,
 	   -1);
 
@@ -1448,12 +1451,12 @@ static void ei_cpdr(void) {
   cpus.W = cpus.r[rB];
   setHL(getHL()-1);
   newBC=getBC()-1; setBC(newBC);
-  hf=(a&0x0f)-(b&0x0f) < 0;
+  hf=(a&0x0f)-(b&0x0f) < 0 ? 1 : 0;
 
-  setflags((res>>7)&1,
-	   (res&0xff)==0,
+  setflags((int)((res>>7)&1),
+	   (res&0xff)==0 ? 1 : 0,
 	   hf,
-	   newBC!=0,
+	   newBC!=0 ? 1 : 0,
 	   1,
 	   -1);
 
@@ -1461,7 +1464,7 @@ static void ei_cpdr(void) {
   if(hf!=0) ufr--;  /* if we turned H flag on, decrease by 1 */
   setundocflags8(((ufr&0x02)<<4)|(ufr&0x08));
 
-  if(newBC==0 || (cpus.F & fZ)) {
+  if(newBC==0 || (cpus.F & fZ) != 0) {
     z80_clock_inc(16);
   } else {
     z80_clock_inc(21);
@@ -1480,12 +1483,12 @@ static void ei_cpi(void) {
   cpus.W = cpus.r[rB];
   setHL(getHL()+1);
   newBC=getBC()-1; setBC(newBC);
-  hf=(a&0x0f)-(b&0x0f) < 0;
+  hf=(a&0x0f)-(b&0x0f) < 0 ? 1 : 0;
   
-  setflags((res>>7)&1,
-	   (res&0xff)==0,
+  setflags((int)((res>>7)&1),
+	   (res&0xff)==0 ? 1 : 0,
 	   hf,
-	   newBC!=0,
+	   newBC!=0 ? 1 : 0,
 	   1,
 	   -1);
 
@@ -1507,12 +1510,12 @@ static void ei_cpir(void) {
   cpus.W = cpus.r[rB];
   setHL(getHL()+1);
   newBC=getBC()-1; setBC(newBC);
-  hf=(a&0x0f)-(b&0x0f) < 0;
+  hf=(a&0x0f)-(b&0x0f) < 0 ? 1 : 0;
   
-  setflags((res>>7)&1,
-	   (res&0xff)==0,
+  setflags((int)((res>>7)&1),
+	   (res&0xff)==0 ? 1 : 0,
 	  hf,
-	   newBC!=0,
+	   newBC!=0 ? 1 : 0,
 	   1,
 	   -1);
 
@@ -1520,7 +1523,7 @@ static void ei_cpir(void) {
   if(hf!=0) ufr--;  /* if we turned H flag on, decrease by 1 */
   setundocflags8(((ufr&0x02)<<4)|(ufr&0x08));
 
-  if(newBC==0 || (cpus.F & fZ)) {
+  if(newBC==0 || (cpus.F & fZ) != 0) {
     z80_clock_inc(16);
   } else {
     z80_clock_inc(21);
@@ -1551,25 +1554,25 @@ static void ei_daa(void) {
   res=cpus.r[rA];
   
   if((cpus.F & fN)==0) {
-    if(cpus.F & fC) res += 0x60;
+    if((cpus.F & fC) != 0) res += 0x60;
       else if(res>0x99) { res += 0x60; cpus.F|=fC; }
       
-    if(cpus.F & fHC) { if ((res & 0x0f) <= 0x09) cpus.F &= ~fHC; res += 0x06; }
+    if((cpus.F & fHC) != 0) { if ((res & 0x0f) <= 0x09) cpus.F &= ~fHC; res += 0x06; }
       else if((res&0x0f)>0x09) { res += 0x06; cpus.F|=fHC; }
   } else {
-    if(cpus.F & fC) res -= 0x60;
+    if((cpus.F & fC) != 0) res -= 0x60;
       else if(res>0x99) { res -= 0x60; cpus.F|=fC; }
       
-    if(cpus.F & fHC) { if ((res & 0x0f) >= 0x06) cpus.F &= ~fHC; res -= 0x06; }
+    if((cpus.F & fHC) != 0) { if ((res & 0x0f) >= 0x06) cpus.F &= ~fHC; res -= 0x06; }
       else if((res&0x0f)>0x09) { res -= 0x06; }
   }
-  setflags((res>>7)&1,
-	   (res&0xff)==0,
+  setflags((int)((res>>7)&1),
+	   (res&0xff)==0 ? 1 : 0,
 	   -1,
 	   oddp8(res&0xff),
 	   -1,
 	   -1);
-  setundocflags8(res);
+  setundocflags8(res&0xff);
   
   cpus.r[rA] = res & 0xff;
   
@@ -2066,12 +2069,12 @@ static void ei_ind(void) {
   res=(cpus.r[rB]-1)&0xff;
   
   cpus.F = res & (fU1 | fU2);
-  setflags(res>>7,
-           res==0,
-	   ((uint16_t)val+(uint8_t)(cpus.r[rC]-1))>0xff,
+  setflags((int)(res>>7),
+           res==0 ? 1 : 0,
+	   ((uint16_t)val+(uint8_t)(cpus.r[rC]-1))>0xff ? 1 : 0,
 	   oddp8(((val+(uint8_t)(cpus.r[rC]-1))&7)^res),
 	   val>>7,
-	   ((uint16_t)val+(uint8_t)(cpus.r[rC]-1))>0xff);
+	   ((uint16_t)val+(uint8_t)(cpus.r[rC]-1))>0xff ? 1 : 0);
   
   cpus.r[rB]=res;
   z80_clock_inc(16);
@@ -2087,12 +2090,12 @@ static void ei_indr(void) {
   res=(cpus.r[rB]-1)&0xff;
   
   cpus.F = res & (fU1 | fU2);
-  setflags(res>>7,
-           res==0,
-	   ((uint16_t)val+(uint8_t)(cpus.r[rC]-1))>0xff,
+  setflags((int)(res>>7),
+           res==0 ? 1 : 0,
+	   ((uint16_t)val+(uint8_t)(cpus.r[rC]-1))>0xff ? 1 : 0,
 	   oddp8(((val+(uint8_t)(cpus.r[rC]-1))&7)^res),
 	   val>>7,
-	   ((uint16_t)val+(uint8_t)(cpus.r[rC]-1))>0xff);
+	   ((uint16_t)val+(uint8_t)(cpus.r[rC]-1))>0xff ? 1 : 0);
   
   cpus.r[rB]=res;
   
@@ -2114,12 +2117,12 @@ static void ei_ini(void) {
   res=(cpus.r[rB]-1)&0xff;
   
   cpus.F = res & (fU1 | fU2);
-  setflags(res>>7,
-           res==0,
-	   ((uint16_t)val+(uint8_t)(cpus.r[rC]+1))>0xff,
+  setflags((int)(res>>7),
+           res==0 ? 1 : 0,
+	   ((uint16_t)val+(uint8_t)(cpus.r[rC]+1))>0xff ? 1 : 0,
 	   oddp8(((val+(uint8_t)(cpus.r[rC]+1))&7)^res),
 	   val>>7,
-	   ((uint16_t)val+(uint8_t)(cpus.r[rC]+1))>0xff);
+	   ((uint16_t)val+(uint8_t)(cpus.r[rC]+1))>0xff ? 1 : 0);
   
   cpus.r[rB]=res;
   z80_clock_inc(16);
@@ -2135,12 +2138,12 @@ static void ei_inir(void) {
   res=(cpus.r[rB]-1)&0xff;
   
   cpus.F = res & (fU1 | fU2);
-  setflags(res>>7,
-           res==0,
-	   ((uint16_t)val+(uint8_t)(cpus.r[rC]+1))>0xff,
+  setflags((int)(res>>7),
+           res==0 ? 1 : 0,
+	   ((uint16_t)val+(uint8_t)(cpus.r[rC]+1))>0xff ? 1 : 0,
 	   oddp8(((val+(uint8_t)(cpus.r[rC]+1))&7)^res),
 	   val>>7,
-	   ((uint16_t)val+(uint8_t)(cpus.r[rC]+1))>0xff);
+	   ((uint16_t)val+(uint8_t)(cpus.r[rC]+1))>0xff ? 1 : 0);
   
   cpus.r[rB]=res;
   
@@ -2194,7 +2197,7 @@ static void ei_jp_C_NN(void) {
 
   addr=z80_iget16();
   cpus.W=addr>>8;
-  if(cpus.F & fC) {
+  if((cpus.F & fC) != 0) {
     _jp16(addr);
   }
   z80_clock_inc(10);
@@ -2205,7 +2208,7 @@ static void ei_jp_NC_NN(void) {
 
   addr=z80_iget16();
   cpus.W=addr>>8;
-  if(!(cpus.F & fC)) {
+  if((cpus.F & fC) == 0) {
     _jp16(addr);
   }
   z80_clock_inc(10);
@@ -2216,7 +2219,7 @@ static void ei_jp_M_NN(void) {
 
   addr=z80_iget16();
   cpus.W=addr>>8;
-  if(cpus.F & fS) {
+  if((cpus.F & fS) != 0) {
     _jp16(addr);
   }
   z80_clock_inc(10);
@@ -2227,7 +2230,7 @@ static void ei_jp_P_NN(void) {
 
   addr=z80_iget16();
   cpus.W=addr>>8;
-  if(!(cpus.F & fS)) {
+  if((cpus.F & fS) == 0) {
     _jp16(addr);
   }
   z80_clock_inc(10);
@@ -2238,7 +2241,7 @@ static void ei_jp_Z_NN(void) {
 
   addr=z80_iget16();
   cpus.W=addr>>8;
-  if(cpus.F & fZ) {
+  if((cpus.F & fZ) != 0) {
     _jp16(addr);
   }
   z80_clock_inc(10);
@@ -2249,7 +2252,7 @@ static void ei_jp_NZ_NN(void) {
 
   addr=z80_iget16();
   cpus.W=addr>>8;
-  if(!(cpus.F & fZ)) {
+  if((cpus.F & fZ) == 0) {
     _jp16(addr);
   }
   z80_clock_inc(10);
@@ -2260,7 +2263,7 @@ static void ei_jp_PE_NN(void) {
 
   addr=z80_iget16();
   cpus.W=addr>>8;
-  if(cpus.F & fPV) {
+  if((cpus.F & fPV) != 0) {
     _jp16(addr);
   }
   z80_clock_inc(10);
@@ -2271,7 +2274,7 @@ static void ei_jp_PO_NN(void) {
 
   addr=z80_iget16();
   cpus.W=addr>>8;
-  if(!(cpus.F & fPV)) {
+  if((cpus.F & fPV) == 0) {
     _jp16(addr);
   }
   z80_clock_inc(10);
@@ -2291,7 +2294,7 @@ static void ei_jr_C_N(void) {
   uint8_t ofs;
 
   ofs=z80_iget8();
-  if(cpus.F & fC) {
+  if((cpus.F & fC) != 0) {
     _jr8(ofs);
     z80_clock_inc(12);
   } else z80_clock_inc(7);
@@ -2301,7 +2304,7 @@ static void ei_jr_NC_N(void) {
   uint8_t ofs;
 
   ofs=z80_iget8();
-  if(!(cpus.F & fC)) {
+  if((cpus.F & fC) == 0) {
     _jr8(ofs);
     z80_clock_inc(12);
   } else z80_clock_inc(7);
@@ -2311,7 +2314,7 @@ static void ei_jr_Z_N(void) {
   uint8_t ofs;
 
   ofs=z80_iget8();
-  if(cpus.F & fZ) {
+  if((cpus.F & fZ) != 0) {
     _jr8(ofs);
     z80_clock_inc(12);
   } else z80_clock_inc(7);
@@ -2321,7 +2324,7 @@ static void ei_jr_NZ_N(void) {
   uint8_t ofs;
 
   ofs=z80_iget8();
-  if(!(cpus.F & fZ)) {
+  if((cpus.F & fZ) == 0) {
     _jr8(ofs);
     z80_clock_inc(12);
   } else z80_clock_inc(7);
@@ -2344,8 +2347,8 @@ static void ei_ld_R_A(void) {
 static void ei_ld_A_I(void) {
 
   cpus.r[rA]=cpus.I;
-  setflags(cpus.r[rA]>>7,
-	   cpus.r[rA]==0,
+  setflags((int)(cpus.r[rA]>>7),
+	   cpus.r[rA]==0 ? 1 : 0,
 	   0,
 	   cpus.IFF2,
 	   0,
@@ -2357,8 +2360,8 @@ static void ei_ld_A_I(void) {
 static void ei_ld_A_R(void) {
 
   cpus.r[rA]=cpus.R;
-  setflags(cpus.r[rA]>>7,
-	   cpus.r[rA]==0,
+  setflags((int)(cpus.r[rA]>>7),
+	   cpus.r[rA]==0 ? 1 : 0,
 	   0,
 	   cpus.IFF2,
 	   0,
@@ -2903,7 +2906,7 @@ static void ei_ldd(void) {
   setflags(-1,
 	   -1,
 	   0,
-	   newBC!=0,
+	   newBC!=0 ? 1 : 0,
 	   0,
 	   -1);
   ufr=res+cpus.r[rA];
@@ -2925,7 +2928,7 @@ static void ei_lddr(void) {
   setflags(-1,
 	   -1,
 	   0,
-	   newBC!=0,
+	   newBC!=0 ? 1 : 0,
 	   0,
 	   -1);
   ufr=res+cpus.r[rA];
@@ -2953,7 +2956,7 @@ static void ei_ldi(void) {
   setflags(-1,
 	   -1,
 	   0,
-	   newBC!=0,
+	   newBC!=0 ? 1 : 0,
 	   0,
 	   -1);
   ufr=res+cpus.r[rA];
@@ -2974,7 +2977,7 @@ static void ei_ldir(void) {
   setflags(-1,
 	   -1,
 	   0,
-	   newBC!=0,
+	   newBC!=0 ? 1 : 0,
 	   0,
 	   -1);
   ufr=res+cpus.r[rA];
@@ -2998,12 +3001,12 @@ static void ei_neg(void) {               /* A <- neg(A) .. two's complement */
   oldA = cpus.r[rA];
   res = (oldA ^ 0xff)+1;
 
-  setflags(res>>7,
-	   res==0,
-	   (oldA&0x0f)!=0,
-	   oldA==0x80,     /* 127 -> -128 */
+  setflags((int)(res>>7),
+	   res==0 ? 1 : 0,
+	   (oldA&0x0f)!=0 ? 1 : 0,
+	   oldA==0x80 ? 1 : 0,     /* 127 -> -128 */
 	   1,
-	   oldA != 0x00);
+	   oldA != 0x00 ? 1 : 0);
 
   cpus.r[rA] = res;
   setundocflags8(res);
@@ -3156,12 +3159,12 @@ static void ei_outd(void) {
   setHL(getHL()-1);
   
   cpus.F = res & (fU1 | fU2);
-  setflags(res>>7,
-           res==0,
-	   ((uint16_t)val+cpus.r[rL])>0xff,
+  setflags((int)(res>>7),
+           res==0 ? 1 : 0,
+	   ((uint16_t)val+cpus.r[rL])>0xff ? 1 : 0,
 	   oddp8(((val+cpus.r[rL])&7)^res),
 	   val>>7,
-	   ((uint16_t)val+cpus.r[rL])>0xff);
+	   ((uint16_t)val+cpus.r[rL])>0xff ? 1 : 0);
    
   cpus.r[rB]=res;
   z80_clock_inc(16);
@@ -3180,12 +3183,12 @@ static void ei_otdr(void) {
   setHL(getHL()-1);
   
   cpus.F = res & (fU1 | fU2);
-  setflags(res>>7,
-           res==0,
-	   ((uint16_t)val+cpus.r[rL])>0xff,
+  setflags((int)(res>>7),
+           res==0 ? 1 : 0,
+	   ((uint16_t)val+cpus.r[rL])>0xff ? 1 : 0,
 	   oddp8(((val+cpus.r[rL])&7)^res),
 	   val>>7,
-	   ((uint16_t)val+cpus.r[rL])>0xff);
+	   ((uint16_t)val+cpus.r[rL])>0xff ? 1 : 0);
   
   cpus.r[rB]=res;
   if(res==0) {
@@ -3209,12 +3212,12 @@ static void ei_outi(void) {
   setHL(getHL()+1);
   
   cpus.F = res & (fU1 | fU2);
-  setflags(res>>7,
-           res==0,
-	   ((uint16_t)val+cpus.r[rL])>0xff,
+  setflags((int)(res>>7),
+           res==0 ? 1 : 0,
+	   ((uint16_t)val+cpus.r[rL])>0xff ? 1 : 0,
 	   oddp8(((val+cpus.r[rL])&7)^res),
 	   val>>7,
-	   ((uint16_t)val+cpus.r[rL])>0xff);
+	   ((uint16_t)val+cpus.r[rL])>0xff ? 1 : 0);
    
   cpus.r[rB]=res;
   z80_clock_inc(16);
@@ -3233,12 +3236,12 @@ static void ei_otir(void) {
   setHL(getHL()+1);
   
   cpus.F = res & (fU1 | fU2);
-  setflags(res>>7,
-           res==0,
-	   ((uint16_t)val+cpus.r[rL])>0xff,
+  setflags((int)(res>>7),
+           res==0 ? 1 : 0,
+	   ((uint16_t)val+cpus.r[rL])>0xff ? 1 : 0,
 	   oddp8(((val+cpus.r[rL])&7)^res),
 	   val>>7,
-	   ((uint16_t)val+cpus.r[rL])>0xff);
+	   ((uint16_t)val+cpus.r[rL])>0xff ? 1 : 0);
   
   cpus.r[rB]=res;
   if(res==0) {
@@ -3361,28 +3364,28 @@ static void ei_ret(void) {
 }
 
 static void ei_ret_C(void) {
-  if(cpus.F & fC) {
+  if((cpus.F & fC) != 0) {
     cpus.PC=_pop16();
     z80_clock_inc(11);
   } else z80_clock_inc(5);
 }
 
 static void ei_ret_NC(void) {
-  if(!(cpus.F & fC)) {
+  if((cpus.F & fC) == 0) {
     cpus.PC=_pop16();
     z80_clock_inc(11);
   } else z80_clock_inc(5);
 }
 
 static void ei_ret_M(void) {
-  if(cpus.F & fS) {
+  if((cpus.F & fS) != 0) {
     cpus.PC=_pop16();
     z80_clock_inc(11);
   } else z80_clock_inc(5);
 }
 
 static void ei_ret_P(void) {
-  if(!(cpus.F & fS)) {
+  if((cpus.F & fS) == 0) {
     cpus.PC=_pop16();
     z80_clock_inc(11);
   } else z80_clock_inc(5);
@@ -3390,28 +3393,28 @@ static void ei_ret_P(void) {
 
 
 static void ei_ret_Z(void) {
-  if(cpus.F & fZ) {
+  if((cpus.F & fZ) != 0) {
     cpus.PC=_pop16();
     z80_clock_inc(11);
   } else z80_clock_inc(5);
 }
 
 static void ei_ret_NZ(void) {
-  if(!(cpus.F & fZ)) {
+  if((cpus.F & fZ) == 0) {
     cpus.PC=_pop16();
     z80_clock_inc(11);
   } else z80_clock_inc(5);
 }
 
 static void ei_ret_PE(void) {
-  if(cpus.F & fPV) {
+  if((cpus.F & fPV) != 0) {
     cpus.PC=_pop16();
     z80_clock_inc(11);
   } else z80_clock_inc(5);
 }
 
 static void ei_ret_PO(void) {
-  if(!(cpus.F & fPV)) {
+  if((cpus.F & fPV) == 0) {
     cpus.PC=_pop16();
     z80_clock_inc(11);
   } else z80_clock_inc(5);
@@ -3801,7 +3804,7 @@ static void ei_scf(void) {
    * flags, then SCF/CCF moves flags 3,5 from A. If it did not affect flags,
    * it ORs F with bits 3,5 from A.
    */
-  if (cpus.pflags_aff)
+  if (cpus.pflags_aff != 0)
     cpus.F &= ~fU;
   setundocflags8(cpus.r[rA] | cpus.F);
   z80_clock_inc(4);
@@ -4974,12 +4977,12 @@ static void Ui_neg(void) {               /* A <- neg(A) .. two's complement */
   oldA = cpus.r[rA];
   res = (oldA ^ 0xff)+1;
 
-  setflags(res>>7,
-	   res==0,
-	   (oldA&0x0f)!=0,
-	   oldA==0x80,     /* 127 -> -128 */
+  setflags((int)(res>>7),
+	   res==0 ? 1 : 0,
+	   (oldA&0x0f)!=0 ? 1 : 0,
+	   oldA==0x80 ? 1 : 0,     /* 127 -> -128 */
 	   1,
-	   oldA != 0x00);
+	   oldA != 0x00 ? 1 : 0);
 
   cpus.r[rA] = res;
   setundocflags8(res);
@@ -5118,7 +5121,7 @@ static void Ui_ld_r_srl_iIXN(void) {
 
 static void Ui_bit_b_iIXN(void) {
 
-  _bit8((opcode>>3)&0x07,_iIXN8(cbop));
+  (void)_bit8((opcode>>3)&0x07,_iIXN8(cbop));
   setundocflags8(cpus.W);
 
   z80_clock_inc(16); /* timing&flags taken from ei_bit_b_iIXN */
@@ -5241,7 +5244,7 @@ static void Ui_ld_r_srl_iIYN(void) {
 
 static void Ui_bit_b_iIYN(void) {
 
-  _bit8((opcode>>3)&0x07,_iIYN8(cbop));
+  (void)_bit8((opcode>>3)&0x07,_iIYN8(cbop));
   setundocflags8(cpus.W);
 
   z80_clock_inc(16); /* timing&flags taken from ei_bit_b_iIYN */
@@ -5437,16 +5440,16 @@ void z80_resetstat(void) {
 #endif
 }
 
-unsigned z80_getstat(int tab, uint8_t opcode)
+unsigned z80_getstat(int tab, uint8_t opc)
 {
 #ifndef NO_Z80STAT
-	return stat_tab[tab][opcode];
+	return stat_tab[tab][opc];
 #else
 	return 0;
 #endif
 }
 
-int z80_readinstr(void) {
+static void z80_readinstr(void) {
 
   opcode=z80_iget8();
 
@@ -5458,7 +5461,7 @@ int z80_readinstr(void) {
     stat_i=6;
 #endif
 //    prefix2=0xed;    
-    return 0;
+    return;
   }
 
   if(opcode==0xcb) {
@@ -5473,7 +5476,7 @@ int z80_readinstr(void) {
     stat_i=cpus.modifier+3;
 #endif
 //    prefix2=0xcb;
-    return 0;
+    return;
   }
 
   /* one-byte opcode */
@@ -5482,11 +5485,11 @@ int z80_readinstr(void) {
 #ifndef NO_Z80STAT
   stat_i=cpus.modifier;
 #endif
-  return 0;
+  return;
 }
 
 void z80_execinstr(void) {
-  int lastuoc;
+  unsigned long lastuoc;
 
   cpus.pflags_aff=cpus.flags_aff;
   cpus.flags_aff=0;
@@ -5497,7 +5500,7 @@ void z80_execinstr(void) {
 
   cpus.int_lock=0;
 
-  if(cpus.halted) { /* NOP */
+  if(cpus.halted != 0) { /* NOP */
     z80_clock_inc(4);
     incr_R(1);
   } else {
@@ -5537,14 +5540,14 @@ static void z80_check_int(void) {
   uint8_t data;
 //  printf("interrupt->DI\n");
 
-  if(!cpus.int_pending) return;
-  if(cpus.int_lock) return; /* after EI or DI or inside an instruction */
+  if(cpus.int_pending == 0) return;
+  if(cpus.int_lock != 0) return; /* after EI or DI or inside an instruction */
 
   /* Clear interrupt pending flag */
   cpus.int_pending=0;
 
   /* If interrupts are disabled, just drop the interrupt */
-  if(!cpus.IFF1) return; /* IFF2 just tells the NMI service routine
+  if(cpus.IFF1 == 0) return; /* IFF2 just tells the NMI service routine
                                whether the interrupted program disabled
 			       maskable interrupts */
   cpus.halted=0;
@@ -5579,8 +5582,8 @@ static void z80_check_int(void) {
 
 static void z80_check_nmi(void) {
 
-  if(!cpus.nmi_pending) return;
-  if(cpus.int_lock) return;
+  if(cpus.nmi_pending == 0) return;
+  if(cpus.int_lock != 0) return;
 //  printf("NMI!\n");
   
   cpus.nmi_pending=0;
@@ -5604,7 +5607,7 @@ void z80_nmi(void)
   cpus.nmi_pending = 1;
 }
 
-int z80_reset(void) {
+void z80_reset(void) {
   cpus.IFF1=cpus.IFF2=0;
   cpus.int_mode=0;
   cpus.int_pending=0;
@@ -5631,6 +5634,4 @@ int z80_reset(void) {
   cpus.r_[rB]=0; cpus.r_[rC]=0;
   cpus.r_[rD]=0; cpus.r_[rE]=0;
   cpus.r_[rH]=0; cpus.r_[rL]=0;
-
-  return 0;
 }

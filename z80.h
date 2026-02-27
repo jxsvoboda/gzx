@@ -111,7 +111,7 @@ extern unsigned long smc;
 
 void z80_init_tables(void);
 void z80_execinstr(void);
-int z80_reset(void);
+void z80_reset(void);
 void z80_nmi(void);
 void z80_int(void);
 

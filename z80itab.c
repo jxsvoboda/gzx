@@ -84,7 +84,7 @@ void (*const ei_op[256])(void) PROGMEM = {
   ei_cp_r,	ei_cp_r,	ei_cp_iHL,	ei_cp_r, 	/* 0xBC */
   ei_ret_NZ,	ei_pop_BC,	ei_jp_NZ_NN,	ei_jp_NN, 	/* 0xC0 */
   ei_call_NZ_NN,ei_push_BC,	ei_add_A_N,	ei_rst_0, 	/* 0xC4 */
-  ei_ret_Z,	ei_ret, 	ei_jp_Z_NN,	0,	 	/* 0xC8 */
+  ei_ret_Z,	ei_ret, 	ei_jp_Z_NN,	NULL,	 	/* 0xC8 */
   ei_call_Z_NN,	ei_call_NN,	ei_adc_A_N,	ei_rst_8, 	/* 0xCC */
   ei_ret_NC,	ei_pop_DE,	ei_jp_NC_NN,	ei_out_iN_A, 	/* 0xD0 */
   ei_call_NC_NN,ei_push_DE,	ei_sub_N,	ei_rst_10, 	/* 0xD4 */
@@ -93,7 +93,7 @@ void (*const ei_op[256])(void) PROGMEM = {
   ei_ret_PO,	ei_pop_HL,	ei_jp_PO_NN,	ei_ex_iSP_HL, 	/* 0xE0 */
   ei_call_PO_NN,ei_push_HL,	ei_and_N,	ei_rst_20, 	/* 0xE4 */
   ei_ret_PE,	ei_jp_HL,	ei_jp_PE_NN,	ei_ex_DE_HL, 	/* 0xE8 */
-  ei_call_PE_NN,0,		ei_xor_N,	ei_rst_28, 	/* 0xEC */
+  ei_call_PE_NN,NULL,		ei_xor_N,	ei_rst_28, 	/* 0xEC */
   ei_ret_P,	ei_pop_AF,	ei_jp_P_NN,	ei_di,   	/* 0xF0 */
   ei_call_P_NN,	ei_push_AF,	ei_or_N,	ei_rst_30, 	/* 0xF4 */
   ei_ret_M,	ei_ld_SP_HL,	ei_jp_M_NN,	ei_ei,		/* 0xF8 */
@@ -152,7 +152,7 @@ void (*const ei_ddop[256])(void) PROGMEM = {
   Ui_cp_IXh,	Ui_cp_IXl,	ei_cp_iIXN,	Si_stray, 	/* 0xBC */
   Si_stray,	Si_stray,	Si_stray,	Si_stray, 	/* 0xC0 */
   Si_stray,	Si_stray,	Si_stray,	Si_stray, 	/* 0xC4 */
-  Si_stray,	Si_stray,	Si_stray,	0,	 	/* 0xC8 */
+  Si_stray,	Si_stray,	Si_stray,	NULL,	 	/* 0xC8 */
   Si_stray,	Si_stray,	Si_stray,	Si_stray, 	/* 0xCC */
   Si_stray,	Si_stray,	Si_stray,	Si_stray, 	/* 0xD0 */
   Si_stray,	Si_stray,	Si_stray,	Si_stray, 	/* 0xD4 */
@@ -288,7 +288,7 @@ void (*const ei_fdop[256])(void) PROGMEM = {
   Ui_cp_IYh,	Ui_cp_IYl,	ei_cp_iIYN,	Si_stray, 	/* 0xBC */
   Si_stray,	Si_stray,	Si_stray,	Si_stray, 	/* 0xC0 */
   Si_stray,	Si_stray,	Si_stray,	Si_stray, 	/* 0xC4 */
-  Si_stray,	Si_stray,	Si_stray,	0,	  	/* 0xC8 */
+  Si_stray,	Si_stray,	Si_stray,	NULL,	  	/* 0xC8 */
   Si_stray,	Si_stray,	Si_stray,	Si_stray, 	/* 0xCC */
   Si_stray,	Si_stray,	Si_stray,	Si_stray, 	/* 0xD0 */
   Si_stray,	Si_stray,	Si_stray,	Si_stray, 	/* 0xD4 */
