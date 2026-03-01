@@ -135,7 +135,7 @@ static int adc_v8(uint8_t a, uint8_t b, uint8_t c) {
 
 static int sbc_v8(uint8_t a, uint8_t b, uint8_t c) {
   int16_t sign_r;
-  sign_r=u8sval(a)-u8sval(b)-c;
+  sign_r=u8sval(a)-u8sval(b)-(int16_t)c;
   return (sign_r<-128 || sign_r>127) ? 1 : 0;
 }
 
@@ -474,7 +474,7 @@ static uint8_t _adc8(uint16_t a, uint16_t b) {
   c = (cpus.F&fC) != 0 ? 1 : 0;
 
   res=a+b+c;
-  setflags((res>>7)&1,
+  setflags((int)((res>>7)&1),
 	   (res&0xff)==0 ? 1 : 0,
 	   (a&0x0f)+(b&0x0f)+c > 0x0f ? 1 : 0,
 	   adc_v8(a&0xff,b&0xff,c&0xff),
@@ -492,7 +492,7 @@ static uint16_t _adc16(uint16_t a, uint16_t b) {
   res0=(a&0xff)+(b&0xff)+ c;
   a1=a>>8;
   b1=b>>8;
-  c1 = (res0>0xff) != 0 ? 1 : 0;
+  c1 = (res0>0xff) ? 1 : 0;
 
   res1=a1+b1+c1;
   setflags((int)(res1&0x80),
@@ -511,7 +511,7 @@ static uint8_t _add8(uint16_t a, uint16_t b) {
   uint16_t res;
 
   res=a+b;
-  setflags((res>>7)&1,
+  setflags((int)((res>>7)&1),
 	   (res&0xff)==0 ? 1 : 0,
 	   (a&0x0f)+(b&0x0f) > 0x0f ? 1 : 0,
 	   add_v8(a&0xff,b&0xff),
@@ -604,7 +604,7 @@ static uint8_t _dec8(uint16_t a) {
 	   1,    /* !spemu */
 	   -1);
   setundocflags8(res&0xff);
-  return res;
+  return res & 0xff;
 }
 
 /************************************************************************/
@@ -694,7 +694,7 @@ static uint16_t _pop16(void) {
 /************************************************************************/
 
 static uint8_t _res8(uint16_t a, uint16_t b) {
-  uint16_t res;
+  uint8_t res;
 
   res=b & ((1<<a)^0xff);
   return res;
@@ -748,7 +748,7 @@ static uint8_t _rra8(uint8_t a) {
   uint8_t nC,oC;
 
   nC=a&1;
-  oC=(cpus.F & fC)?1:0;
+  oC=(cpus.F & fC) != 0 ? 1 : 0;
   a=(a>>1)|(oC<<7);
   cpus.F = (cpus.F & ~(fU1|fHC|fU2|fN|fC)) | (a&(fU1|fU2)) | nC;
   cpus.flags_aff=1;
@@ -759,7 +759,7 @@ static uint8_t _rr8(uint8_t a) {
   uint8_t nC,oC;
 
   nC=a&1;
-  oC=(cpus.F & fC)?1:0;
+  oC=(cpus.F & fC) != 0 ? 1 : 0;
   a=(a>>1)|(oC<<7);
   cpus.F=ox_tab[a]|nC;
   cpus.flags_aff=1;
@@ -850,7 +850,7 @@ static uint8_t _sbc8(uint16_t a, uint16_t b) {
 	   sbc_v8(a&0xff,b&0xff,c&0xff),
 	   1,
 	   res>0xff ? 1 : 0);
-  setundocflags8(res);
+  setundocflags8(res&0xff);
   return res & 0xff;
 }
 
@@ -860,11 +860,11 @@ static uint16_t _sbc16(uint16_t a, uint16_t b) {
   c= (cpus.F&fC) != 0 ? 1 : 0;
 
   res0=(a&0xff)-(b&0xff)- c;
-  a1=a>>8; b1=b>>8; c1 = (res0>0xff) != 0 ? 1 : 0;
+  a1=a>>8; b1=b>>8; c1 = (res0>0xff) ? 1 : 0;
   res1=a1-b1-c1;
   setflags((int)(res1&0x80),
 	   ((res0&0xff)|(res1&0xff)) == 0 ? 1 : 0,
-	   (a1&0x0f) < (b1&0x0f)+c1,
+	   (int)(((a1&0x0f) < (b1&0x0f) ? 1 : 0)+c1),
 	   sbc_v16(a,b,c),
 	   1,
 	   res1>0xff ? 1 : 0);
@@ -877,7 +877,7 @@ static uint16_t _sbc16(uint16_t a, uint16_t b) {
 static uint8_t _set8(uint16_t a, uint16_t b) {
   uint8_t res;
 
-  res=b | (1<<a);
+  res=(uint8_t)b | (1<<a);
   return res;
 }
 
@@ -893,8 +893,8 @@ static uint8_t _sub8(uint16_t a, uint16_t b) {
 	   (a&0x0f)-(b&0x0f) < 0 ? 1 : 0, /* I hope */
 	   sub_v8(a&0xff,b&0xff),
 	   1,
-	   res>0xff);
-  setundocflags8(res);
+	   res>0xff ? 1 : 0);
+  setundocflags8(res & 0xff);
   return res & 0xff;
 }
 
@@ -1359,7 +1359,7 @@ static void ei_call_PO_NN(void) {
 static void ei_ccf(void) { /* complement carry flag */
   uint8_t nHC;
   
-  nHC=(cpus.F&fC)?fHC:0;
+  nHC=(cpus.F&fC) != 0 ? fHC : 0;
 
   /*
    * As found by Patrik Rak in 2012, if the previous instruction affected
@@ -1847,7 +1847,7 @@ static void ei_in_A_iN(void) {
 static void Ui_in_iC(void) {
 
 //  printf("ei_in_iC (unsupported)\n");
-  _in8(getBC());
+  (void)_in8(getBC());
   cpus.W=cpus.r[rB];
 
   uoc++;
@@ -2073,7 +2073,7 @@ static void ei_ind(void) {
            res==0 ? 1 : 0,
 	   ((uint16_t)val+(uint8_t)(cpus.r[rC]-1))>0xff ? 1 : 0,
 	   oddp8(((val+(uint8_t)(cpus.r[rC]-1))&7)^res),
-	   val>>7,
+	   (int)(val>>7),
 	   ((uint16_t)val+(uint8_t)(cpus.r[rC]-1))>0xff ? 1 : 0);
   
   cpus.r[rB]=res;
@@ -2094,7 +2094,7 @@ static void ei_indr(void) {
            res==0 ? 1 : 0,
 	   ((uint16_t)val+(uint8_t)(cpus.r[rC]-1))>0xff ? 1 : 0,
 	   oddp8(((val+(uint8_t)(cpus.r[rC]-1))&7)^res),
-	   val>>7,
+	   (int)(val>>7),
 	   ((uint16_t)val+(uint8_t)(cpus.r[rC]-1))>0xff ? 1 : 0);
   
   cpus.r[rB]=res;
@@ -2121,7 +2121,7 @@ static void ei_ini(void) {
            res==0 ? 1 : 0,
 	   ((uint16_t)val+(uint8_t)(cpus.r[rC]+1))>0xff ? 1 : 0,
 	   oddp8(((val+(uint8_t)(cpus.r[rC]+1))&7)^res),
-	   val>>7,
+	   (int)(val>>7),
 	   ((uint16_t)val+(uint8_t)(cpus.r[rC]+1))>0xff ? 1 : 0);
   
   cpus.r[rB]=res;
@@ -2142,7 +2142,7 @@ static void ei_inir(void) {
            res==0 ? 1 : 0,
 	   ((uint16_t)val+(uint8_t)(cpus.r[rC]+1))>0xff ? 1 : 0,
 	   oddp8(((val+(uint8_t)(cpus.r[rC]+1))&7)^res),
-	   val>>7,
+	   (int)(val>>7),
 	   ((uint16_t)val+(uint8_t)(cpus.r[rC]+1))>0xff ? 1 : 0);
   
   cpus.r[rB]=res;
@@ -3163,7 +3163,7 @@ static void ei_outd(void) {
            res==0 ? 1 : 0,
 	   ((uint16_t)val+cpus.r[rL])>0xff ? 1 : 0,
 	   oddp8(((val+cpus.r[rL])&7)^res),
-	   val>>7,
+	   (int)(val>>7),
 	   ((uint16_t)val+cpus.r[rL])>0xff ? 1 : 0);
    
   cpus.r[rB]=res;
@@ -3187,7 +3187,7 @@ static void ei_otdr(void) {
            res==0 ? 1 : 0,
 	   ((uint16_t)val+cpus.r[rL])>0xff ? 1 : 0,
 	   oddp8(((val+cpus.r[rL])&7)^res),
-	   val>>7,
+	   (int)(val>>7),
 	   ((uint16_t)val+cpus.r[rL])>0xff ? 1 : 0);
   
   cpus.r[rB]=res;
@@ -3216,7 +3216,7 @@ static void ei_outi(void) {
            res==0 ? 1 : 0,
 	   ((uint16_t)val+cpus.r[rL])>0xff ? 1 : 0,
 	   oddp8(((val+cpus.r[rL])&7)^res),
-	   val>>7,
+	   (int)(val>>7),
 	   ((uint16_t)val+cpus.r[rL])>0xff ? 1 : 0);
    
   cpus.r[rB]=res;
@@ -3240,7 +3240,7 @@ static void ei_otir(void) {
            res==0 ? 1 : 0,
 	   ((uint16_t)val+cpus.r[rL])>0xff ? 1 : 0,
 	   oddp8(((val+cpus.r[rL])&7)^res),
-	   val>>7,
+	   (int)(val>>7),
 	   ((uint16_t)val+cpus.r[rL])>0xff ? 1 : 0);
   
   cpus.r[rB]=res;

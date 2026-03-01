@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Instruction decode tables
  *
- * Copyright (c) 1999-2026 Jiri Svoboda
+ * Copyright (c) 1999-2017 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
