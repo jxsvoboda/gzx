@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Spectrum Screen
  *
- * Copyright (c) 1999-2025 Jiri Svoboda
+ * Copyright (c) 1999-2026 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,6 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define VERSION_STR "2025.1"
+#define VERSION_STR "2026.1"
 
 #endif

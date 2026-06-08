@@ -197,7 +197,9 @@ install-hos: hos
 	$(INSTALL) -d $(PREFIX_hos)/gzx
 	$(INSTALL) -T $(binary_helenos) $(PREFIX_hos)/gzx/gzx
 	$(INSTALL) -T $(binary_helenos_gtap) $(PREFIX_hos)/gzx/gtap
-	$(INSTALL) -T font.bin $(PREFIX_hos)/gzx/font.bin
+	$(INSTALL) -d $(PREFIX_hos)/gzx/fonts
+	$(INSTALL) -T fonts/font.bin $(PREFIX_hos)/gzx/fonts/font.bin
+	$(INSTALL) -T fonts/small4x6.fnt $(PREFIX_hos)/gzx/fonts/small4x6.fnt
 	$(INSTALL) -d $(PREFIX_hos)/gzx/roms
 	$(INSTALL) -T roms/zx48.rom $(PREFIX_hos)/gzx/roms/zx48.rom
 	$(INSTALL) -T roms/zx128_0.rom $(PREFIX_hos)/gzx/roms/zx128_0.rom
@@ -210,7 +212,9 @@ uninstall-hos:
 	rmdir $(PREFIX_hos)/gzx/roms
 	rm -f $(PREFIX_hos)/gzx/gzx
 	rm -f $(PREFIX_hos)/gzx/gtap
-	rm -f $(PREFIX_hos)/gzx/font.bin
+	rm -f $(PREFIX_hos)/gzx/fonts/font.bin
+	rm -f $(PREFIX_hos)/gzx/fonts/small4x6.fnt
+	rm -f $(PREFIX_hos)/gzx/fonts
 	rmdir $(PREFIX_hos)/gzx
 
 test-hos: install-hos
@@ -223,7 +227,7 @@ dist: $(binary) $(binary_gtap) $(binary_w32) $(binary_w32_gtap)
 	mkdir -p $(distdir)
 	cp -t $(distdir) $^
 	cp -r -t $(distdir) roms
-	cp -r -t $(distdir) font.bin
+	cp -r -t $(distdir) fonts
 	cp -r -t $(distdir) sp256.pal
 	cp -r -t $(distdir) README.md
 	echo $(version) > $(distdir)/VERSION
