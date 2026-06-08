@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Main module
  *
- * Copyright (c) 1999-2025 Jiri Svoboda
+ * Copyright (c) 1999-2026 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,6 +42,7 @@
 #include "memio.h"
 #include "midi.h"
 #include "mgfx.h"
+#include "fnt.h"
 #include "gzx.h"
 #include "iorec.h"
 #include "z80.h"
@@ -52,7 +53,9 @@
 #include "tape/quick.h"
 #include "ui/display.h"
 #include "ui/fdlg.h"
+#include "ui/font.h"
 #include "ui/hwopts.h"
+#include "ui/kbdhelp.h"
 #include "ui/mainmenu.h"
 #include "ui/model.h"
 #include "ui/tapemenu.h"
@@ -137,7 +140,7 @@ static void key_unmod(wkey_t *k)
 		main_menu();
 		break;
 	case WKEY_F1:
-		zx_load_snap("test.sna");
+		kbdhelp();
 		break;
 	case WKEY_F2:
 		save_snap_dialog();
@@ -381,7 +384,13 @@ static int zx_init(void)
 
 	fprintf(logfi, "Load font.\n");
 
-	rc = gloadfont("font.bin");
+	rc = gloadfont("fonts/font.bin");
+	if (rc < 0) {
+		printf("Error loading font.\n");
+		return -1;
+	}
+
+	rc = fnt_font_load("fonts/small4x6.fnt", &fnt);
 	if (rc < 0) {
 		printf("Error loading font.\n");
 		return -1;

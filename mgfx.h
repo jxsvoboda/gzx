@@ -51,6 +51,7 @@ void mgfx_fillrect(int x0, int y0, int x1, int y1, int color);
 extern uint8_t fgc, bgc;
 int gloadfont(const char *name);
 void gmovec(int cx, int cy);
+void gmove(int x, int y);
 void gputc(char c);
 void gputs(const char *s);
 
@@ -67,6 +68,7 @@ extern int dbl_ln;
 extern int write_l0, write_l1; /* read only, write using mgfx_selln */
 
 extern int thpos, tvpos;
+extern int gdx, gdy;
 
 /* gfx-api-dependent .. contained in gfx_win.c/gfx_vga.c */
 

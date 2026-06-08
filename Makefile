@@ -2,7 +2,7 @@
 # GZX - George's ZX Spectrum Emulator
 # Makefile
 #
-# Copyright (c) 1999-2025 Jiri Svoboda
+# Copyright (c) 1999-2026 Jiri Svoboda
 # All rights reserved.
 #
 # We can build:
@@ -37,6 +37,7 @@ distdir = $(distbase)/$(distname)
 
 sources_generic = \
     adt/list.c \
+    fnt.c \
     joystick/kempston.c \
     tape/deck.c \
     tape/player.c \
@@ -49,8 +50,10 @@ sources_generic = \
     tape/wav.c \
     ui/display.c \
     ui/fdlg.c \
+    ui/font.c \
     ui/fsel.c \
     ui/hwopts.c \
+    ui/kbdhelp.c \
     ui/mainmenu.c \
     ui/menu.c \
     ui/model.c \

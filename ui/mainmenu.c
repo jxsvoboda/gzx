@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Main menu
  *
- * Copyright (c) 1999-2025 Jiri Svoboda
+ * Copyright (c) 1999-2026 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,14 +36,16 @@
 #include "display.h"
 #include "fdlg.h"
 #include "hwopts.h"
+#include "kbdhelp.h"
 #include "mainmenu.h"
 #include "menu.h"
 #include "model.h"
 #include "tapemenu.h"
 
-#define MENU_NENT 10
+#define MENU_NENT 11
 
 static const char *mentry_text[MENU_NENT] = {
+	"~Keyboard Help",
 	"~Load Snapshot",
 	"~Save Snapshot",
 	"Select ~Tapefile",
@@ -57,7 +59,7 @@ static const char *mentry_text[MENU_NENT] = {
 };
 
 static int mkeys[MENU_NENT] = {
-	WKEY_L, WKEY_S, WKEY_T, WKEY_A, WKEY_R, WKEY_M, WKEY_D, WKEY_H,
+	WKEY_K, WKEY_L, WKEY_S, WKEY_T, WKEY_A, WKEY_R, WKEY_M, WKEY_D, WKEY_H,
 	WKEY_U, WKEY_Q
 };
 
@@ -65,33 +67,36 @@ static void menu_run_line(int l)
 {
 	switch (l) {
 	case 0:
-		load_snap_dialog();
+		kbdhelp();
 		break;
 	case 1:
-		save_snap_dialog();
+		load_snap_dialog();
 		break;
 	case 2:
-		select_tapefile_dialog();
+		save_snap_dialog();
 		break;
 	case 3:
-		tape_menu();
+		select_tapefile_dialog();
 		break;
 	case 4:
-		zx_reset();
+		tape_menu();
 		break;
 	case 5:
-		model_menu();
+		zx_reset();
 		break;
 	case 6:
-		display_menu();
+		model_menu();
 		break;
 	case 7:
-		hwopts_menu();
+		display_menu();
 		break;
 	case 8:
-		gzx_ui_lock();
+		hwopts_menu();
 		break;
 	case 9:
+		gzx_ui_lock();
+		break;
+	case 10:
 		quit = 1;
 		break;
 	}
@@ -109,24 +114,26 @@ static const char *menu_get_opt(int l)
 {
 	switch (l) {
 	case 0:
-		return "F3";
+		return "F1";
 	case 1:
-		return "F2";
+		return "F3";
 	case 2:
-		return "F9";
+		return "F2";
 	case 3:
-		return "F5";
+		return "F9";
 	case 4:
-		return "F7";
+		return "F5";
 	case 5:
-		return "F8";
+		return "F7";
 	case 6:
-		return "F4";
+		return "F8";
 	case 7:
-		return "F6";
+		return "F4";
 	case 8:
-		return "Alt-Sh-L";
+		return "F6";
 	case 9:
+		return "Alt-Sh-L";
+	case 10:
 		return "F10";
 	default:
 		return NULL;

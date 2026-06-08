@@ -2,7 +2,7 @@
  * GZX - George's ZX Spectrum Emulator
  * Portable graphics/keyboard module
  *
- * Copyright (c) 1999-2025 Jiri Svoboda
+ * Copyright (c) 1999-2026 Jiri Svoboda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -114,7 +114,7 @@ void mgfx_drawpixel(int x, int y)
 /** ** gui - text/windows *** */
 
 static uint8_t *gfont;
-static int gdx, gdy;
+int gdx, gdy;
 uint8_t fgc, bgc;
 
 int gloadfont(const char *name)
@@ -143,6 +143,12 @@ void gmovec(int cx, int cy)
 {
 	gdx = cx << 3;
 	gdy = cy << 3;
+}
+
+void gmove(int x, int y)
+{
+	gdx = x;
+	gdy = y;
 }
 
 void gputc(char c)

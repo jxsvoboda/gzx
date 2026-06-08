@@ -1,6 +1,6 @@
 GZX - George's ZX Spectrum Emulator
 ===================================
-Copyright (c) 1999-2025 Jiri Svoboda
+Copyright (c) 1999-2026 Jiri Svoboda
 
 Introduction
 ------------
@@ -55,6 +55,7 @@ Note that most functions can be accessed via menus as well as via shortcuts.
   Key         | Function
   ----------- | --------
   Esc         | Open main menu
+  F1          | ZX Spectrum keyboard help
   F2          | Save snapshot
   F3          | Load snapshot
   F4          | Display options
